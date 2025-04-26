@@ -128,9 +128,16 @@ const CreateCommunityDialog = () => {
                   </FormDescription>
                   {field.value && (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {(Array.isArray(field.value) ? field.value : 
-                        typeof field.value === 'string' ? field.value.split(",") : []
-                      ).map((tag, index) => {
+                      {(() => {
+                        // Safe parsing function to handle all possible types
+                        if (Array.isArray(field.value)) {
+                          return field.value;
+                        } else if (typeof field.value === 'string') {
+                          return field.value.split(",");
+                        } else {
+                          return [];
+                        }
+                      })().map((tag, index) => {
                         return typeof tag === 'string' && tag.trim() ? (
                           <Badge key={index} variant="secondary" className="bg-social-accent/50">
                             {tag.trim()}
