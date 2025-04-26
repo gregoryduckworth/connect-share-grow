@@ -120,7 +120,7 @@ const CreateCommunityDialog = () => {
                   </FormDescription>
                   {field.value && (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {field.value.split(",").map((tag, index) => (
+                      {field.value.toString().split(",").map((tag, index) => (
                         tag.trim() && (
                           <Badge key={index} variant="secondary" className="bg-social-accent/50">
                             {tag.trim()}
