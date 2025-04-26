@@ -1,7 +1,13 @@
 
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Home, Users, MessageCircle, Search, User, Settings, Video } from "lucide-react";
+import { Home, Users, MessageCircle, Search, User, Settings, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+interface SidebarProps {
+  onCloseMobile?: () => void;
+}
 
 const navItems = [
   { icon: Home, label: "Home", path: "/" },
@@ -12,20 +18,36 @@ const navItems = [
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ onCloseMobile }: SidebarProps) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="h-screen w-64 bg-white border-r flex flex-col">
-      <div className="p-4 border-b">
-        <h2 className="text-xl font-bold text-social-primary">ConnectSphere</h2>
-        <p className="text-sm text-social-muted">Connect. Share. Grow.</p>
+      <div className="p-4 border-b flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-bold text-social-primary">ConnectSphere</h2>
+          <p className="text-sm text-social-muted">Connect. Share. Grow.</p>
+        </div>
+        {isMobile && (
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onCloseMobile}
+            className="md:hidden"
+            aria-label="Close sidebar"
+          >
+            <X size={20} />
+          </Button>
+        )}
       </div>
       
-      <nav className="flex-1 p-2">
+      <nav className="flex-1 p-2 overflow-y-auto">
         <ul className="space-y-1">
           {navItems.map((item) => (
             <li key={item.path}>
               <NavLink
                 to={item.path}
+                onClick={isMobile ? onCloseMobile : undefined}
                 className={({ isActive }) => cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
                   isActive 

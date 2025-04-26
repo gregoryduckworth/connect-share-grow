@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Search, Video } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import CreateCommunityDialog from "@/components/community/CreateCommunityDialog";
 
 interface Community {
   id: number;
@@ -88,14 +89,17 @@ const CommunitiesPage = () => {
           <h1 className="text-3xl font-bold text-social-primary">Communities</h1>
           <p className="text-social-muted">Connect with people who share your interests</p>
         </div>
-        <div className="relative w-full md:w-64">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search communities..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search communities..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <CreateCommunityDialog />
         </div>
       </div>
 
@@ -103,10 +107,11 @@ const CommunitiesPage = () => {
         <TabsList className="mb-4">
           <TabsTrigger value="discover">Discover</TabsTrigger>
           <TabsTrigger value="my-communities">My Communities</TabsTrigger>
+          <TabsTrigger value="pending">Pending</TabsTrigger>
         </TabsList>
         
         <TabsContent value="discover" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
             {filteredCommunities.map(community => (
               <Card key={community.id} className="hover-scale">
                 <CardHeader>
@@ -127,7 +132,7 @@ const CommunitiesPage = () => {
                     ))}
                   </div>
                 </CardContent>
-                <CardFooter className="flex justify-between">
+                <CardFooter className="flex flex-wrap gap-2">
                   <Button 
                     variant={community.joined ? "outline" : "default"}
                     className={community.joined 
@@ -160,7 +165,7 @@ const CommunitiesPage = () => {
         </TabsContent>
         
         <TabsContent value="my-communities" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
             {filteredCommunities.filter(c => c.joined).map(community => (
               <Card key={community.id} className="hover-scale">
                 <CardHeader>
@@ -181,7 +186,7 @@ const CommunitiesPage = () => {
                     ))}
                   </div>
                 </CardContent>
-                <CardFooter className="flex justify-between">
+                <CardFooter className="flex flex-wrap gap-2">
                   <Button 
                     variant="outline"
                     className="border-social-primary text-social-primary"
@@ -210,6 +215,16 @@ const CommunitiesPage = () => {
               </Button>
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="pending" className="space-y-4">
+          <div className="text-center p-8">
+            <p className="text-social-muted">You don't have any pending community requests.</p>
+            <p className="text-social-muted mt-1">Create a new community and wait for admin approval.</p>
+            <div className="mt-4">
+              <CreateCommunityDialog />
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
