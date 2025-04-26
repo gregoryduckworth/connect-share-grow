@@ -8,10 +8,14 @@ import MainLayout from "@/components/layout/MainLayout";
 import Index from "./pages/Index";
 import ProfilePage from "./pages/ProfilePage";
 import CommunitiesPage from "./pages/CommunitiesPage";
+import CommunityDetailPage from "./pages/CommunityDetailPage";
 import ChatPage from "./pages/ChatPage";
 import DiscoverPage from "./pages/DiscoverPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import ProfileSetupPage from "./pages/ProfileSetupPage";
 
 const queryClient = new QueryClient();
 
@@ -22,10 +26,17 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Auth Routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register/profile" element={<ProfileSetupPage />} />
+          
+          {/* Protected Routes */}
           <Route element={<MainLayout />}>
             <Route path="/" element={<Index />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/communities" element={<CommunitiesPage />} />
+            <Route path="/communities/:id" element={<CommunityDetailPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/discover" element={<DiscoverPage />} />
             <Route path="/settings" element={<SettingsPage />} />

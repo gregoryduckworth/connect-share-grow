@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -109,9 +110,11 @@ const CommunitiesPage = () => {
             {filteredCommunities.map(community => (
               <Card key={community.id} className="hover-scale">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    {community.name}
-                  </CardTitle>
+                  <Link to={`/communities/${community.id}`}>
+                    <CardTitle className="flex items-center gap-2 hover:text-social-primary transition-colors">
+                      {community.name}
+                    </CardTitle>
+                  </Link>
                   <CardDescription className="flex items-center gap-1">
                     <Users className="h-4 w-4" /> {community.members.toLocaleString()} members
                   </CardDescription>
@@ -134,6 +137,11 @@ const CommunitiesPage = () => {
                   >
                     {community.joined ? "Leave" : "Join"} Community
                   </Button>
+                  <Link to={`/communities/${community.id}`}>
+                    <Button variant="outline">
+                      View Discussions
+                    </Button>
+                  </Link>
                   {community.joined && (
                     <Button variant="outline" className="border-social-primary text-social-primary">
                       <Video className="h-4 w-4 mr-2" /> Video Chat
@@ -156,7 +164,11 @@ const CommunitiesPage = () => {
             {filteredCommunities.filter(c => c.joined).map(community => (
               <Card key={community.id} className="hover-scale">
                 <CardHeader>
-                  <CardTitle>{community.name}</CardTitle>
+                  <Link to={`/communities/${community.id}`}>
+                    <CardTitle className="hover:text-social-primary transition-colors">
+                      {community.name}
+                    </CardTitle>
+                  </Link>
                   <CardDescription className="flex items-center gap-1">
                     <Users className="h-4 w-4" /> {community.members.toLocaleString()} members
                   </CardDescription>
@@ -177,6 +189,11 @@ const CommunitiesPage = () => {
                   >
                     Leave Community
                   </Button>
+                  <Link to={`/communities/${community.id}`}>
+                    <Button variant="outline">
+                      View Discussions
+                    </Button>
+                  </Link>
                   <Button variant="outline" className="border-social-primary text-social-primary">
                     <Video className="h-4 w-4 mr-2" /> Video Chat
                   </Button>
