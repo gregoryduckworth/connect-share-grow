@@ -117,7 +117,7 @@ const CreateCommunityDialog = () => {
                   <FormControl>
                     <Input 
                       placeholder="Photography, Art, Creative" 
-                      value={typeof field.value === 'string' ? field.value : field.value.join(',')}
+                      value={Array.isArray(field.value) ? field.value.join(',') : field.value}
                       onChange={(e) => {
                         field.onChange(e.target.value);
                       }}
@@ -128,7 +128,9 @@ const CreateCommunityDialog = () => {
                   </FormDescription>
                   {field.value && (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {(Array.isArray(field.value) ? field.value : field.value.split(",")).map((tag, index) => {
+                      {(Array.isArray(field.value) ? field.value : 
+                        typeof field.value === 'string' ? field.value.split(",") : []
+                      ).map((tag, index) => {
                         return typeof tag === 'string' && tag.trim() ? (
                           <Badge key={index} variant="secondary" className="bg-social-accent/50">
                             {tag.trim()}
