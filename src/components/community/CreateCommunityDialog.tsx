@@ -128,13 +128,13 @@ const CreateCommunityDialog = () => {
                   </FormDescription>
                   {field.value && (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {(Array.isArray(field.value) ? field.value : field.value.split(",")).map((tag, index) => (
-                        typeof tag === 'string' && tag.trim() && (
+                      {(Array.isArray(field.value) ? field.value : field.value.split(",")).map((tag, index) => {
+                        return typeof tag === 'string' && tag.trim() ? (
                           <Badge key={index} variant="secondary" className="bg-social-accent/50">
                             {tag.trim()}
                           </Badge>
-                        )
-                      ))}
+                        ) : null;
+                      })}
                     </div>
                   )}
                   <FormMessage />
