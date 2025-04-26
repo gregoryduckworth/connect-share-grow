@@ -20,7 +20,9 @@ import { Badge } from "@/components/ui/badge";
 const formSchema = z.object({
   name: z.string().min(3, { message: "Community name must be at least 3 characters." }).max(50),
   description: z.string().min(20, { message: "Description must be at least 20 characters." }).max(500),
-  tags: z.string().transform((val) => val.split(",").map((tag) => tag.trim()).filter(Boolean))
+  tags: z.array(z.string()).default([]).or(
+    z.string().transform((val) => val.split(",").map((tag) => tag.trim()).filter(Boolean))
+  )
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -34,7 +36,7 @@ const CreateCommunityDialog = () => {
     defaultValues: {
       name: "",
       description: "",
-      tags: "",
+      tags: [],
     }
   });
 
@@ -113,15 +115,21 @@ const CreateCommunityDialog = () => {
                 <FormItem>
                   <FormLabel>Tags (comma separated)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Photography, Art, Creative" {...field} />
+                    <Input 
+                      placeholder="Photography, Art, Creative" 
+                      value={typeof field.value === 'string' ? field.value : field.value.join(',')}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                      }}
+                    />
                   </FormControl>
                   <FormDescription>
                     Add tags to help others find your community.
                   </FormDescription>
                   {field.value && (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {field.value.toString().split(",").map((tag, index) => (
-                        tag.trim() && (
+                      {(Array.isArray(field.value) ? field.value : field.value.split(",")).map((tag, index) => (
+                        typeof tag === 'string' && tag.trim() && (
                           <Badge key={index} variant="secondary" className="bg-social-accent/50">
                             {tag.trim()}
                           </Badge>
