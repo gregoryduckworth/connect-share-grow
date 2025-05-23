@@ -10,6 +10,7 @@ interface AdminMetricsCardProps {
     value: string;
     isPositive: boolean;
   };
+  className?: string;
 }
 
 const AdminMetricsCard = ({
@@ -18,9 +19,10 @@ const AdminMetricsCard = ({
   description,
   icon,
   trend,
+  className,
 }: AdminMetricsCardProps) => {
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <div className="text-muted-foreground">{icon}</div>

@@ -4,8 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CheckCircle2, Lock, MessageSquare, Shield } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Ban, MessageSquare, Shield, Users } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Avatar } from "@/components/ui/avatar";
 
 export interface Report {
   id: string;
@@ -19,26 +21,48 @@ export interface Report {
   status: 'pending' | 'reviewed';
 }
 
+interface CommunityMember {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+  joinDate: Date;
+  isBanned: boolean;
+}
+
 interface ModeratorPanelProps {
   communityId: string;
   reports: Report[];
+  members: CommunityMember[];
   onResolveReport: (reportId: string) => void;
   onLockPost: (postId: string) => void;
   onLockComments: (postId: string) => void;
+  onBanUser: (userId: string) => void;
+  onUnbanUser: (userId: string) => void;
 }
 
 const ModeratorPanel = ({ 
   communityId, 
-  reports, 
+  reports = [],
+  members = [],
   onResolveReport,
   onLockPost,
-  onLockComments
+  onLockComments,
+  onBanUser,
+  onUnbanUser
 }: ModeratorPanelProps) => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("reports");
   
   const pendingReports = reports.filter(report => report.status === 'pending');
   const resolvedReports = reports.filter(report => report.status === 'reviewed');
+
+  // Mock data for members if not provided
+  const displayMembers = members.length > 0 ? members : [
+    { id: "user-1", name: "John Doe", joinDate: new Date(2023, 1, 15), isBanned: false },
+    { id: "user-2", name: "Jane Smith", joinDate: new Date(2023, 2, 5), isBanned: true },
+    { id: "user-3", name: "Robert Johnson", joinDate: new Date(2023, 3, 20), isBanned: false },
+    { id: "user-4", name: "Lisa Brown", joinDate: new Date(2023, 4, 12), isBanned: false },
+  ];
 
   const handleResolveReport = (reportId: string) => {
     onResolveReport(reportId);
@@ -67,6 +91,25 @@ const ModeratorPanel = ({
     });
   };
 
+  const handleBanUser = (userId: string) => {
+    onBanUser(userId);
+    
+    toast({
+      title: "User banned",
+      description: "The user has been banned from this community.",
+      variant: "destructive"
+    });
+  };
+
+  const handleUnbanUser = (userId: string) => {
+    onUnbanUser(userId);
+    
+    toast({
+      title: "User unbanned",
+      description: "The user has been unbanned from this community.",
+    });
+  };
+
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
       day: 'numeric',
@@ -84,22 +127,26 @@ const ModeratorPanel = ({
           <CardTitle>Moderator Panel</CardTitle>
         </div>
         <CardDescription>
-          Manage reported content and moderate community discussions
+          Manage reported content and community members
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="reports" className="flex gap-2 items-center">
               <AlertTriangle className="h-4 w-4" />
-              <span>Reported Content</span>
+              <span>Reports</span>
               {pendingReports.length > 0 && (
                 <Badge className="ml-1 bg-red-500">{pendingReports.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="resolved">
               <CheckCircle2 className="h-4 w-4 mr-2" />
-              Resolved Reports
+              Resolved
+            </TabsTrigger>
+            <TabsTrigger value="members" className="flex gap-2 items-center">
+              <Users className="h-4 w-4" />
+              <span>Members</span>
             </TabsTrigger>
           </TabsList>
           
@@ -162,7 +209,7 @@ const ModeratorPanel = ({
                             className="text-xs border-orange-200 hover:bg-orange-50"
                             onClick={() => handleLockPost(report.contentId)}
                           >
-                            <Lock className="h-3.5 w-3.5 mr-1" />
+                            <Ban className="h-3.5 w-3.5 mr-1" />
                             Lock Post
                           </Button>
                           <Button
@@ -212,6 +259,71 @@ const ModeratorPanel = ({
                 ))}
               </div>
             )}
+          </TabsContent>
+          
+          <TabsContent value="members" className="pt-4">
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Member</TableHead>
+                    <TableHead>Joined</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {displayMembers.map((member) => (
+                    <TableRow key={member.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8 bg-social-primary text-white">
+                            <div className="flex h-full w-full items-center justify-center">
+                              {member.name.charAt(0)}
+                            </div>
+                          </Avatar>
+                          <span>{member.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{formatDate(member.joinDate)}</TableCell>
+                      <TableCell>
+                        {member.isBanned ? (
+                          <Badge variant="outline" className="bg-red-100 text-red-800">
+                            Banned
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-green-100 text-green-800">
+                            Active
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {member.isBanned ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs"
+                            onClick={() => handleUnbanUser(member.id)}
+                          >
+                            Unban User
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs border-red-200 hover:bg-red-50"
+                            onClick={() => handleBanUser(member.id)}
+                          >
+                            <Ban className="h-3.5 w-3.5 mr-1" />
+                            Ban from Community
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </TabsContent>
         </Tabs>
       </CardContent>
