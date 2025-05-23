@@ -13,7 +13,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, Users, Settings, UserPlus } from "lucide-react";
+import { Search, Users, Settings, UserPlus, Check } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 
 interface Community {
