@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,6 +28,14 @@ const CommunityDetailPage = () => {
     joined: true,
     isModeratedBy: mockCurrentUser.id
   });
+
+  // Define members state for the community
+  const [members, setMembers] = useState([
+    { id: "user-1", name: "John Doe", joinDate: new Date(2022, 5, 15), isBanned: false },
+    { id: "user-2", name: "Jane Smith", joinDate: new Date(2022, 6, 20), isBanned: false },
+    { id: "user-3", name: "Robert Johnson", joinDate: new Date(2022, 7, 10), isBanned: true },
+    { id: "user-4", name: "Lisa Brown", joinDate: new Date(2023, 1, 5), isBanned: false }
+  ]);
 
   const [posts, setPosts] = useState<Post[]>([
     {
@@ -319,6 +326,43 @@ const CommunityDetailPage = () => {
     }));
   };
 
+  // Handle banning a user from the community
+  const handleBanUser = (userId: string) => {
+    setMembers(members.map(member => {
+      if (member.id === userId) {
+        return {
+          ...member,
+          isBanned: true
+        };
+      }
+      return member;
+    }));
+
+    toast({
+      title: "User banned",
+      description: "The user has been banned from this community.",
+      variant: "destructive"
+    });
+  };
+
+  // Handle unbanning a user from the community
+  const handleUnbanUser = (userId: string) => {
+    setMembers(members.map(member => {
+      if (member.id === userId) {
+        return {
+          ...member,
+          isBanned: false
+        };
+      }
+      return member;
+    }));
+
+    toast({
+      title: "User unbanned",
+      description: "The user has been unbanned from this community.",
+    });
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
@@ -400,9 +444,12 @@ const CommunityDetailPage = () => {
             <ModeratorPanel 
               communityId={community.id}
               reports={reports}
+              members={members}
               onResolveReport={handleResolveReport}
               onLockPost={handleLockPost}
               onLockComments={handleLockComments}
+              onBanUser={handleBanUser}
+              onUnbanUser={handleUnbanUser}
             />
           </TabsContent>
         )}

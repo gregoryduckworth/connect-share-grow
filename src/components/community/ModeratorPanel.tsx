@@ -32,12 +32,12 @@ interface CommunityMember {
 interface ModeratorPanelProps {
   communityId: string;
   reports: Report[];
-  members: CommunityMember[];
+  members?: CommunityMember[];
   onResolveReport: (reportId: string) => void;
   onLockPost: (postId: string) => void;
   onLockComments: (postId: string) => void;
-  onBanUser: (userId: string) => void;
-  onUnbanUser: (userId: string) => void;
+  onBanUser?: (userId: string) => void;
+  onUnbanUser?: (userId: string) => void;
 }
 
 const ModeratorPanel = ({ 
@@ -92,22 +92,26 @@ const ModeratorPanel = ({
   };
 
   const handleBanUser = (userId: string) => {
-    onBanUser(userId);
-    
-    toast({
-      title: "User banned",
-      description: "The user has been banned from this community.",
-      variant: "destructive"
-    });
+    if (onBanUser) {
+      onBanUser(userId);
+      
+      toast({
+        title: "User banned",
+        description: "The user has been banned from this community.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleUnbanUser = (userId: string) => {
-    onUnbanUser(userId);
-    
-    toast({
-      title: "User unbanned",
-      description: "The user has been unbanned from this community.",
-    });
+    if (onUnbanUser) {
+      onUnbanUser(userId);
+      
+      toast({
+        title: "User unbanned",
+        description: "The user has been unbanned from this community.",
+      });
+    }
   };
 
   const formatDate = (date: Date) => {
@@ -304,6 +308,7 @@ const ModeratorPanel = ({
                             size="sm"
                             className="text-xs"
                             onClick={() => handleUnbanUser(member.id)}
+                            disabled={!onUnbanUser}
                           >
                             Unban User
                           </Button>
@@ -313,6 +318,7 @@ const ModeratorPanel = ({
                             size="sm"
                             className="text-xs border-red-200 hover:bg-red-50"
                             onClick={() => handleBanUser(member.id)}
+                            disabled={!onBanUser}
                           >
                             <Ban className="h-3.5 w-3.5 mr-1" />
                             Ban from Community
