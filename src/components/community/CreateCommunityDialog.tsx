@@ -20,9 +20,7 @@ import { Badge } from "@/components/ui/badge";
 const formSchema = z.object({
   name: z.string().min(3, { message: "Community name must be at least 3 characters." }).max(50),
   description: z.string().min(20, { message: "Description must be at least 20 characters." }).max(500),
-  tags: z.array(z.string()).default([]).or(
-    z.string().transform((val) => val.split(",").map((tag) => tag.trim()).filter(Boolean))
-  )
+  tags: z.array(z.string()).default([])
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -119,36 +117,25 @@ const CreateCommunityDialog = () => {
                       placeholder="Photography, Art, Creative" 
                       value={typeof field.value === 'string' ? field.value : Array.isArray(field.value) ? field.value.join(',') : ''}
                       onChange={(e) => {
-                        field.onChange(e.target.value);
+                        const tagsArray = e.target.value.split(',').map(tag => tag.trim()).filter(Boolean);
+                        field.onChange(tagsArray);
                       }}
                     />
                   </FormControl>
                   <FormDescription>
                     Add tags to help others find your community.
                   </FormDescription>
-                  {field.value && (
+                  
+                  {field.value && Array.isArray(field.value) && field.value.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {(() => {
-                        const tagArray: string[] = [];
-                        
-                        if (Array.isArray(field.value)) {
-                          return field.value;
-                        } else if (typeof field.value === 'string') {
-                          return field.value.split(",");
-                        } else {
-                          return [];
-                        }
-                      })().map((tag: string, index: number) => {
-                        if (!tag.trim()) return null;
-                        
-                        return (
-                          <Badge key={index} variant="secondary" className="bg-social-accent/50">
-                            {tag.trim()}
-                          </Badge>
-                        );
-                      })}
+                      {field.value.map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="bg-social-accent/50">
+                          {tag}
+                        </Badge>
+                      ))}
                     </div>
                   )}
+                  
                   <FormMessage />
                 </FormItem>
               )}
