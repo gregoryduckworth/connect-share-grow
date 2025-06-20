@@ -3,41 +3,122 @@ import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Search, Filter, RotateCcw } from "lucide-react";
 import { adminLogs } from "@/lib/admin-logger";
 
 const AdminAuditLogs = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterBy, setFilterBy] = useState("all");
+  const [actionFilter, setActionFilter] = useState("all");
+  const [targetTypeFilter, setTargetTypeFilter] = useState("all");
+
+  const actionTypes = useMemo(() => {
+    const types = Array.from(new Set(adminLogs.map(log => log.action)));
+    return types.sort();
+  }, []);
+
+  const targetTypes = useMemo(() => {
+    const types = Array.from(new Set(adminLogs.map(log => log.targetType)));
+    return types.sort();
+  }, []);
   
   const filteredLogs = useMemo(() => {
-    return adminLogs.filter(log => 
-      log.action.includes(searchQuery.toLowerCase()) ||
-      log.details.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      log.adminId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      log.timestamp.toLocaleString().includes(searchQuery)
-    ).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-  }, [searchQuery, adminLogs]);
+    let filtered = adminLogs;
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter(log => 
+        log.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.details.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.adminId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.targetId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.timestamp.toLocaleString().toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Action type filter
+    if (actionFilter !== "all") {
+      filtered = filtered.filter(log => log.action === actionFilter);
+    }
+
+    // Target type filter
+    if (targetTypeFilter !== "all") {
+      filtered = filtered.filter(log => log.targetType === targetTypeFilter);
+    }
+
+    return filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }, [searchQuery, actionFilter, targetTypeFilter]);
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setActionFilter("all");
+    setTargetTypeFilter("all");
+  };
 
   const getBadgeColor = (action: string) => {
     if (action.includes('approved') || action.includes('activated')) return 'bg-green-500';
     if (action.includes('rejected') || action.includes('suspend') || action.includes('banned')) return 'bg-red-500';
     if (action.includes('locked') || action.includes('warn')) return 'bg-orange-500';
+    if (action.includes('moderator')) return 'bg-blue-500';
     return 'bg-social-primary';
+  };
+
+  const formatActionText = (action: string) => {
+    return action.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-2xl font-semibold">Audit Log</h2>
-        <div className="relative w-full md:w-64">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search logs..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="flex flex-col md:flex-row gap-2">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search logs..."
+              className="pl-8 w-full md:w-64"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <Select value={actionFilter} onValueChange={setActionFilter}>
+            <SelectTrigger className="w-full md:w-40">
+              <SelectValue placeholder="Action Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Actions</SelectItem>
+              {actionTypes.map(action => (
+                <SelectItem key={action} value={action}>
+                  {formatActionText(action)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={targetTypeFilter} onValueChange={setTargetTypeFilter}>
+            <SelectTrigger className="w-full md:w-40">
+              <SelectValue placeholder="Target Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              {targetTypes.map(type => (
+                <SelectItem key={type} value={type}>
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button variant="outline" onClick={clearFilters} className="flex items-center gap-2">
+            <RotateCcw className="h-4 w-4" />
+            Clear
+          </Button>
         </div>
+      </div>
+
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Filter className="h-4 w-4" />
+        <span>Showing {filteredLogs.length} of {adminLogs.length} log entries</span>
       </div>
       
       <Card>
@@ -59,14 +140,24 @@ const AdminAuditLogs = () => {
               <tbody>
                 {filteredLogs.map((log, index) => (
                   <tr key={index} className="border-b hover:bg-muted/20">
-                    <td className="p-4 whitespace-nowrap">{log.timestamp.toLocaleString()}</td>
-                    <td className="p-4">{log.adminId}</td>
+                    <td className="p-4 whitespace-nowrap text-sm">
+                      {log.timestamp.toLocaleDateString()} {log.timestamp.toLocaleTimeString()}
+                    </td>
                     <td className="p-4">
-                      <Badge className={getBadgeColor(log.action)}>
-                        {log.action.replace('_', ' ')}
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                        {log.adminId}
                       </Badge>
                     </td>
-                    <td className="p-4 hidden md:table-cell">{log.details}</td>
+                    <td className="p-4">
+                      <Badge className={getBadgeColor(log.action)}>
+                        {formatActionText(log.action)}
+                      </Badge>
+                    </td>
+                    <td className="p-4 hidden md:table-cell max-w-md">
+                      <div className="truncate" title={log.details}>
+                        {log.details}
+                      </div>
+                    </td>
                     <td className="p-4 hidden md:table-cell">
                       <Badge variant="outline">
                         {log.targetType}: {log.targetId}
@@ -80,7 +171,7 @@ const AdminAuditLogs = () => {
           
           {filteredLogs.length === 0 && (
             <div className="text-center p-8">
-              <p className="text-social-muted">No logs found matching your search.</p>
+              <p className="text-social-muted">No logs found matching your search criteria.</p>
             </div>
           )}
         </CardContent>
