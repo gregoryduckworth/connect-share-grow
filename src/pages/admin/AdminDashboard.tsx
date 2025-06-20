@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,6 +12,7 @@ import AdminMetricsCard from "@/components/admin/AdminMetricsCard";
 import AdminActivityChart from "@/components/admin/AdminActivityChart";
 import AdminCommunityMetrics from "@/components/admin/AdminCommunityMetrics";
 import { UsersRound, AlertTriangle, Shield, History, MessageSquare, FileText, Award, BarChart3 } from "lucide-react";
+import InactiveModeratorAlert from "@/components/admin/InactiveModeratorAlert";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -47,8 +47,10 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <AdminHeader />
+      
+      <InactiveModeratorAlert />
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full">

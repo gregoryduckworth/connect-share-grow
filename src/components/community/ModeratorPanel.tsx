@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CheckCircle2, Ban, MessageSquare, Shield, Users } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Ban, MessageSquare, Shield, Users, Unlock } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar } from "@/components/ui/avatar";
@@ -33,9 +32,12 @@ interface ModeratorPanelProps {
   communityId: string;
   reports: Report[];
   members?: CommunityMember[];
+  posts?: Array<{ id: string; title: string; isLocked: boolean; areCommentsLocked: boolean }>;
   onResolveReport: (reportId: string) => void;
   onLockPost: (postId: string) => void;
   onLockComments: (postId: string) => void;
+  onUnlockPost?: (postId: string) => void;
+  onUnlockComments?: (postId: string) => void;
   onBanUser?: (userId: string) => void;
   onUnbanUser?: (userId: string) => void;
 }
@@ -44,9 +46,12 @@ const ModeratorPanel = ({
   communityId, 
   reports = [],
   members = [],
+  posts = [],
   onResolveReport,
   onLockPost,
   onLockComments,
+  onUnlockPost,
+  onUnlockComments,
   onBanUser,
   onUnbanUser
 }: ModeratorPanelProps) => {
@@ -55,6 +60,7 @@ const ModeratorPanel = ({
   
   const pendingReports = reports.filter(report => report.status === 'pending');
   const resolvedReports = reports.filter(report => report.status === 'reviewed');
+  const lockedPosts = posts.filter(post => post.isLocked || post.areCommentsLocked);
 
   // Mock data for members if not provided
   const displayMembers = members.length > 0 ? members : [
@@ -89,6 +95,28 @@ const ModeratorPanel = ({
       title: "Comments locked",
       description: "Comments for this post have been locked successfully.",
     });
+  };
+
+  const handleUnlockPost = (postId: string) => {
+    if (onUnlockPost) {
+      onUnlockPost(postId);
+      
+      toast({
+        title: "Post unlocked",
+        description: "The post has been unlocked successfully.",
+      });
+    }
+  };
+
+  const handleUnlockComments = (postId: string) => {
+    if (onUnlockComments) {
+      onUnlockComments(postId);
+      
+      toast({
+        title: "Comments unlocked",
+        description: "Comments for this post have been unlocked successfully.",
+      });
+    }
   };
 
   const handleBanUser = (userId: string) => {
@@ -136,7 +164,7 @@ const ModeratorPanel = ({
       </CardHeader>
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="reports" className="flex gap-2 items-center">
               <AlertTriangle className="h-4 w-4" />
               <span>Reports</span>
@@ -147,6 +175,13 @@ const ModeratorPanel = ({
             <TabsTrigger value="resolved">
               <CheckCircle2 className="h-4 w-4 mr-2" />
               Resolved
+            </TabsTrigger>
+            <TabsTrigger value="locked" className="flex gap-2 items-center">
+              <Ban className="h-4 w-4" />
+              <span>Locked</span>
+              {lockedPosts.length > 0 && (
+                <Badge className="ml-1 bg-orange-500">{lockedPosts.length}</Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="members" className="flex gap-2 items-center">
               <Users className="h-4 w-4" />
@@ -260,6 +295,65 @@ const ModeratorPanel = ({
                       Resolved
                     </Badge>
                   </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="locked" className="pt-4">
+            {lockedPosts.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Ban className="mx-auto h-10 w-10 mb-2 text-muted-foreground/60" />
+                <p>No locked posts or comments.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {lockedPosts.map((post) => (
+                  <Card key={post.id} className="border-orange-200">
+                    <CardHeader className="py-3 px-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-medium">{post.title}</div>
+                          <div className="flex gap-2 mt-1">
+                            {post.isLocked && (
+                              <Badge variant="outline" className="bg-red-100 text-red-800">
+                                Post Locked
+                              </Badge>
+                            )}
+                            {post.areCommentsLocked && (
+                              <Badge variant="outline" className="bg-orange-100 text-orange-800">
+                                Comments Locked
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <div className="px-4 pb-4 flex flex-wrap gap-2">
+                      {post.isLocked && onUnlockPost && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs border-green-200 hover:bg-green-50"
+                          onClick={() => handleUnlockPost(post.id)}
+                        >
+                          <Unlock className="h-3.5 w-3.5 mr-1" />
+                          Unlock Post
+                        </Button>
+                      )}
+                      {post.areCommentsLocked && onUnlockComments && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs border-blue-200 hover:bg-blue-50"
+                          onClick={() => handleUnlockComments(post.id)}
+                        >
+                          <MessageSquare className="h-3.5 w-3.5 mr-1" />
+                          Unlock Comments
+                        </Button>
+                      )}
+                    </div>
+                  </Card>
                 ))}
               </div>
             )}

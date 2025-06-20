@@ -8,6 +8,7 @@ import { Users, Settings, Shield } from "lucide-react";
 import CommunityPost, { Post, User, Reply } from "@/components/community/CommunityPost";
 import CreatePostForm from "@/components/community/CreatePostForm";
 import ModeratorPanel, { Report } from "@/components/community/ModeratorPanel";
+import ModeratorSuccessionDialog from "@/components/community/ModeratorSuccessionDialog";
 import { useToast } from "@/components/ui/use-toast";
 
 const mockCurrentUser: User = {
@@ -145,6 +146,8 @@ const CommunityDetailPage = () => {
       status: 'reviewed'
     }
   ]);
+
+  const [showSuccessionDialog, setShowSuccessionDialog] = useState(false);
 
   const handleLikePost = (postId: string) => {
     setPosts(posts.map(post => {
@@ -326,7 +329,74 @@ const CommunityDetailPage = () => {
     }));
   };
 
-  // Handle banning a user from the community
+  const handleUnlockPost = (postId: string) => {
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          isLocked: false
+        };
+      }
+      return post;
+    }));
+
+    toast({
+      title: "Post unlocked",
+      description: "The post has been unlocked successfully.",
+    });
+  };
+
+  const handleUnlockComments = (postId: string) => {
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          areCommentsLocked: false
+        };
+      }
+      return post;
+    }));
+
+    toast({
+      title: "Comments unlocked", 
+      description: "Comments for this post have been unlocked successfully.",
+    });
+  };
+
+  const handleLeaveCommunity = () => {
+    // Check if current user is the last moderator
+    const moderatorCount = community.isModeratedBy ? 1 : 0; // Simplified check
+    
+    if (moderatorCount === 1 && mockCurrentUser.isModerator) {
+      setShowSuccessionDialog(true);
+    } else {
+      // Proceed with leaving normally
+      setCommunity({ ...community, joined: false });
+      toast({
+        title: "Left community",
+        description: `You have left ${community.name}.`,
+      });
+    }
+  };
+
+  const handleSelectNewModerator = (userId: string) => {
+    const newModerator = members.find(m => m.id === userId);
+    
+    if (newModerator) {
+      // Update community to reflect new moderator
+      setCommunity({ 
+        ...community, 
+        joined: false,
+        isModeratedBy: userId 
+      });
+      
+      toast({
+        title: "New moderator appointed",
+        description: `${newModerator.name} is now the moderator of ${community.name}. You have left the community.`,
+      });
+    }
+  };
+
   const handleBanUser = (userId: string) => {
     setMembers(members.map(member => {
       if (member.id === userId) {
@@ -345,7 +415,6 @@ const CommunityDetailPage = () => {
     });
   };
 
-  // Handle unbanning a user from the community
   const handleUnbanUser = (userId: string) => {
     setMembers(members.map(member => {
       if (member.id === userId) {
@@ -397,6 +466,7 @@ const CommunityDetailPage = () => {
             className={community.joined 
               ? "border-social-primary text-social-primary" 
               : "bg-social-primary hover:bg-social-secondary"}
+            onClick={community.joined ? handleLeaveCommunity : undefined}
           >
             {community.joined ? "Leave" : "Join"} Community
           </Button>
@@ -445,15 +515,26 @@ const CommunityDetailPage = () => {
               communityId={community.id}
               reports={reports}
               members={members}
+              posts={posts}
               onResolveReport={handleResolveReport}
               onLockPost={handleLockPost}
               onLockComments={handleLockComments}
+              onUnlockPost={handleUnlockPost}
+              onUnlockComments={handleUnlockComments}
               onBanUser={handleBanUser}
               onUnbanUser={handleUnbanUser}
             />
           </TabsContent>
         )}
       </Tabs>
+
+      <ModeratorSuccessionDialog
+        isOpen={showSuccessionDialog}
+        onClose={() => setShowSuccessionDialog(false)}
+        members={members}
+        onSelectNewModerator={handleSelectNewModerator}
+        communityName={community.name}
+      />
     </div>
   );
 };
