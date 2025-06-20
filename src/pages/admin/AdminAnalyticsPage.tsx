@@ -4,13 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
-import { Users, MessageSquare, UserPlus, TrendingUp, Calendar, RotateCcw } from "lucide-react";
+import { Users, MessageSquare, UserPlus, TrendingUp, Calendar, RotateCcw, Check, ChevronsUpDown } from "lucide-react";
 import AdminMetricsCard from "@/components/admin/AdminMetricsCard";
 
 const AdminAnalyticsPage = () => {
   const [selectedCommunity, setSelectedCommunity] = useState("all");
   const [timeRange, setTimeRange] = useState("30");
+  const [open, setOpen] = useState(false);
 
   // Mock data for communities
   const communities = [
@@ -64,7 +68,6 @@ const AdminAnalyticsPage = () => {
     { date: "2024-06-21", users: 158, posts: 61, comments: 240 },
   ];
 
-  // Community size distribution
   const sizeDistribution = [
     { name: "Small (0-50)", value: 3, color: "#8884d8" },
     { name: "Medium (51-150)", value: 6, color: "#82ca9d" },
@@ -84,19 +87,63 @@ const AdminAnalyticsPage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-2xl font-semibold">Analytics & Statistics</h2>
         <div className="flex flex-col md:flex-row gap-2">
-          <Select value={selectedCommunity} onValueChange={setSelectedCommunity}>
-            <SelectTrigger className="w-full md:w-48">
-              <SelectValue placeholder="Select Community" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Communities</SelectItem>
-              {communities.map(community => (
-                <SelectItem key={community.id} value={community.id}>
-                  {community.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full md:w-48 justify-between"
+              >
+                {selectedCommunity === "all" 
+                  ? "All Communities" 
+                  : communities.find(c => c.id === selectedCommunity)?.name
+                }
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-0">
+              <Command>
+                <CommandInput placeholder="Search communities..." />
+                <CommandList>
+                  <CommandEmpty>No community found.</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      value="all"
+                      onSelect={() => {
+                        setSelectedCommunity("all");
+                        setOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={`mr-2 h-4 w-4 ${
+                          selectedCommunity === "all" ? "opacity-100" : "opacity-0"
+                        }`}
+                      />
+                      All Communities
+                    </CommandItem>
+                    {communities.map((community) => (
+                      <CommandItem
+                        key={community.id}
+                        value={community.name}
+                        onSelect={() => {
+                          setSelectedCommunity(community.id);
+                          setOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={`mr-2 h-4 w-4 ${
+                            selectedCommunity === community.id ? "opacity-100" : "opacity-0"
+                          }`}
+                        />
+                        {community.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger className="w-full md:w-32">
               <SelectValue placeholder="Time Range" />

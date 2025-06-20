@@ -9,7 +9,7 @@ import CommunityPost, { Post, User, Reply } from "@/components/community/Communi
 import CreatePostForm from "@/components/community/CreatePostForm";
 import ModeratorPanel, { Report } from "@/components/community/ModeratorPanel";
 import ModeratorSuccessionDialog from "@/components/community/ModeratorSuccessionDialog";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const mockCurrentUser: User = {
   id: "user-1",
@@ -108,6 +108,9 @@ const CommunityDetailPage = () => {
       isReported: true,
       isLocked: true,
       areCommentsLocked: false,
+      lockReason: "This post contains spam and promotional content that violates community guidelines.",
+      lockDate: new Date(Date.now() - 1000 * 60 * 60 * 12),
+      lockedBy: "Moderator John",
       replies: []
     }
   ]);
@@ -305,28 +308,52 @@ const CommunityDetailPage = () => {
     }));
   };
 
-  const handleLockPost = (postId: string) => {
+  const handleLockPost = (postId: string, reason: string) => {
     setPosts(posts.map(post => {
       if (post.id === postId) {
         return {
           ...post,
-          isLocked: true
+          isLocked: true,
+          lockReason: reason,
+          lockDate: new Date(),
+          lockedBy: mockCurrentUser.name
         };
       }
       return post;
     }));
+
+    // Notify the post author
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      toast({
+        title: "Post locked",
+        description: `The post "${post.title}" has been locked. The author has been notified.`,
+      });
+    }
   };
 
-  const handleLockComments = (postId: string) => {
+  const handleLockComments = (postId: string, reason: string) => {
     setPosts(posts.map(post => {
       if (post.id === postId) {
         return {
           ...post,
-          areCommentsLocked: true
+          areCommentsLocked: true,
+          lockReason: reason,
+          lockDate: new Date(),
+          lockedBy: mockCurrentUser.name
         };
       }
       return post;
     }));
+
+    // Notify the post author
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      toast({
+        title: "Comments locked",
+        description: `Comments for "${post.title}" have been locked. The author has been notified.`,
+      });
+    }
   };
 
   const handleUnlockPost = (postId: string) => {
@@ -334,7 +361,10 @@ const CommunityDetailPage = () => {
       if (post.id === postId) {
         return {
           ...post,
-          isLocked: false
+          isLocked: false,
+          lockReason: undefined,
+          lockDate: undefined,
+          lockedBy: undefined
         };
       }
       return post;
@@ -351,7 +381,10 @@ const CommunityDetailPage = () => {
       if (post.id === postId) {
         return {
           ...post,
-          areCommentsLocked: false
+          areCommentsLocked: false,
+          lockReason: undefined,
+          lockDate: undefined,
+          lockedBy: undefined
         };
       }
       return post;
@@ -505,6 +538,8 @@ const CommunityDetailPage = () => {
               onReportReply={handleReportReply}
               onLockPost={mockCurrentUser.isModerator ? handleLockPost : undefined}
               onLockComments={mockCurrentUser.isModerator ? handleLockComments : undefined}
+              onUnlockPost={mockCurrentUser.isModerator ? handleUnlockPost : undefined}
+              onUnlockComments={mockCurrentUser.isModerator ? handleUnlockComments : undefined}
             />
           ))}
         </TabsContent>

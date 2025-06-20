@@ -1,78 +1,84 @@
 
-import { NavLink } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { Home, Users, MessageCircle, Search, User, Settings, X } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Home, Users, MessageSquare, Compass, Settings } from "lucide-react";
+import UserMenu from "./UserMenu";
 
-interface SidebarProps {
-  onCloseMobile?: () => void;
-}
-
-const navItems = [
-  { icon: Home, label: "Home", path: "/" },
-  { icon: Users, label: "Communities", path: "/communities" },
-  { icon: MessageCircle, label: "Chat", path: "/chat" },
-  { icon: Search, label: "Discover", path: "/discover" },
-  { icon: User, label: "Profile", path: "/profile" },
-  { icon: Settings, label: "Settings", path: "/settings" },
-];
-
-const Sidebar = ({ onCloseMobile }: SidebarProps) => {
-  const isMobile = useIsMobile();
+const Sidebar = () => {
+  const location = useLocation();
   
+  const navigationItems = [
+    {
+      name: "Home",
+      href: "/",
+      icon: Home,
+    },
+    {
+      name: "Communities",
+      href: "/communities",
+      icon: Users,
+    },
+    {
+      name: "Chat",
+      href: "/chat",
+      icon: MessageSquare,
+    },
+    {
+      name: "Discover",
+      href: "/discover",
+      icon: Compass,
+    },
+    {
+      name: "Settings",
+      href: "/settings",
+      icon: Settings,
+    },
+  ];
+
+  // Mock user data
+  const currentUser = {
+    name: "John Doe",
+    email: "john.doe@example.com",
+  };
+
   return (
-    <div className="h-screen w-64 bg-white border-r flex flex-col">
-      <div className="p-4 border-b flex justify-between items-center">
-        <div>
-          <h2 className="text-xl font-bold text-social-primary">ConnectSphere</h2>
-          <p className="text-sm text-social-muted">Connect. Share. Grow.</p>
-        </div>
-        {isMobile && (
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onCloseMobile}
-            className="md:hidden"
-            aria-label="Close sidebar"
-          >
-            <X size={20} />
-          </Button>
-        )}
+    <div className="flex h-full w-64 flex-col bg-card border-r">
+      <div className="flex h-14 items-center border-b px-4">
+        <Link to="/" className="flex items-center space-x-2">
+          <div className="h-8 w-8 rounded-lg bg-social-primary flex items-center justify-center">
+            <span className="text-white font-bold">S</span>
+          </div>
+          <span className="font-bold text-social-primary">SocialHub</span>
+        </Link>
       </div>
       
-      <nav className="flex-1 p-2 overflow-y-auto">
-        <ul className="space-y-1">
-          {navItems.map((item) => (
-            <li key={item.path}>
-              <NavLink
-                to={item.path}
-                onClick={isMobile ? onCloseMobile : undefined}
-                className={({ isActive }) => cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
-                  isActive 
-                    ? "bg-social-primary text-white font-medium" 
-                    : "hover:bg-social-background text-foreground"
-                )}
-              >
-                <item.icon className="h-5 w-5" />
-                <span>{item.label}</span>
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      
-      <div className="p-4 border-t">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-social-primary flex items-center justify-center text-white">
-            <User size={18} />
-          </div>
-          <div>
-            <p className="text-sm font-medium">Guest User</p>
-            <p className="text-xs text-social-muted">Online</p>
-          </div>
-        </div>
+      <ScrollArea className="flex-1 px-3 py-4">
+        <nav className="space-y-1">
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.href;
+            
+            return (
+              <Link key={item.name} to={item.href}>
+                <Button
+                  variant={isActive ? "secondary" : "ghost"}
+                  className={`w-full justify-start gap-3 ${
+                    isActive ? "bg-social-accent/50 text-social-primary" : ""
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.name}
+                </Button>
+              </Link>
+            );
+          })}
+        </nav>
+      </ScrollArea>
+
+      {/* User Menu at the bottom */}
+      <div className="border-t p-3">
+        <UserMenu user={currentUser} />
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Shield, Users, Save, Plus } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 
@@ -15,6 +15,7 @@ interface Permission {
   name: string;
   description: string;
   enabled: boolean;
+  locked?: boolean; // Add locked property for system roles
 }
 
 interface RolePermissions {
@@ -27,18 +28,18 @@ const AdminRolesPage = () => {
   
   const [rolePermissions, setRolePermissions] = useState<RolePermissions>({
     "admin": [
-      { id: "perm-1", name: "manage_users", description: "Create, update, and delete users", enabled: true },
-      { id: "perm-2", name: "manage_communities", description: "Create, update, and delete communities", enabled: true },
-      { id: "perm-3", name: "manage_content", description: "Moderate all content across the platform", enabled: true },
-      { id: "perm-4", name: "manage_roles", description: "Assign roles to users", enabled: true },
-      { id: "perm-5", name: "view_analytics", description: "Access analytics and reports", enabled: true },
+      { id: "perm-1", name: "manage_users", description: "Create, update, and delete users", enabled: true, locked: true },
+      { id: "perm-2", name: "manage_communities", description: "Create, update, and delete communities", enabled: true, locked: true },
+      { id: "perm-3", name: "manage_content", description: "Moderate all content across the platform", enabled: true, locked: true },
+      { id: "perm-4", name: "manage_roles", description: "Assign roles to users", enabled: true, locked: true },
+      { id: "perm-5", name: "view_analytics", description: "Access analytics and reports", enabled: true, locked: true },
     ],
     "moderator": [
-      { id: "perm-1", name: "manage_users", description: "Create, update, and delete users", enabled: false },
-      { id: "perm-2", name: "manage_communities", description: "Create, update, and delete communities", enabled: false },
-      { id: "perm-3", name: "manage_content", description: "Moderate all content across the platform", enabled: true },
-      { id: "perm-4", name: "manage_roles", description: "Assign roles to users", enabled: false },
-      { id: "perm-5", name: "view_analytics", description: "Access analytics and reports", enabled: true },
+      { id: "perm-1", name: "manage_users", description: "Create, update, and delete users", enabled: false, locked: true },
+      { id: "perm-2", name: "manage_communities", description: "Create, update, and delete communities", enabled: false, locked: true },
+      { id: "perm-3", name: "manage_content", description: "Moderate all content across the platform", enabled: true, locked: true },
+      { id: "perm-4", name: "manage_roles", description: "Assign roles to users", enabled: false, locked: true },
+      { id: "perm-5", name: "view_analytics", description: "Access analytics and reports", enabled: true, locked: true },
     ],
     "community_moderator": [
       { id: "perm-1", name: "manage_users", description: "Create, update, and delete users", enabled: false },
@@ -48,11 +49,11 @@ const AdminRolesPage = () => {
       { id: "perm-5", name: "view_analytics", description: "Access analytics and reports", enabled: false },
     ],
     "user": [
-      { id: "perm-1", name: "manage_users", description: "Create, update, and delete users", enabled: false },
-      { id: "perm-2", name: "manage_communities", description: "Create, update, and delete communities", enabled: false },
-      { id: "perm-3", name: "manage_content", description: "Moderate content across the platform", enabled: false },
-      { id: "perm-4", name: "manage_roles", description: "Assign roles to users", enabled: false },
-      { id: "perm-5", name: "view_analytics", description: "Access analytics and reports", enabled: false },
+      { id: "perm-1", name: "manage_users", description: "Create, update, and delete users", enabled: false, locked: true },
+      { id: "perm-2", name: "manage_communities", description: "Create, update, and delete communities", enabled: false, locked: true },
+      { id: "perm-3", name: "manage_content", description: "Moderate content across the platform", enabled: false, locked: true },
+      { id: "perm-4", name: "manage_roles", description: "Assign roles to users", enabled: false, locked: true },
+      { id: "perm-5", name: "view_analytics", description: "Access analytics and reports", enabled: false, locked: true },
     ],
   });
 
@@ -103,10 +104,10 @@ const AdminRolesPage = () => {
                   <Shield className="h-5 w-5 text-social-primary" />
                   <CardTitle>Admin</CardTitle>
                 </div>
-                <Badge className="bg-social-primary">System Role</Badge>
+                <Badge className="bg-social-primary">System Role - Fixed</Badge>
               </div>
               <CardDescription>
-                Full access to manage the entire platform
+                Full access to manage the entire platform - permissions cannot be modified
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
@@ -120,14 +121,14 @@ const AdminRolesPage = () => {
                     <Switch 
                       checked={perm.enabled} 
                       onCheckedChange={() => handlePermissionToggle("admin", perm.id)}
-                      disabled={true} // Admin has all permissions by default
+                      disabled={perm.locked}
                     />
                   </div>
                 ))}
               </div>
               <div className="mt-6 flex justify-end">
-                <Button onClick={() => handleSavePermissions("admin")} disabled>
-                  <Save className="h-4 w-4 mr-2" /> Save Changes
+                <Button disabled>
+                  <Save className="h-4 w-4 mr-2" /> Cannot Modify System Role
                 </Button>
               </div>
             </CardContent>
@@ -141,10 +142,10 @@ const AdminRolesPage = () => {
                   <Shield className="h-5 w-5 text-social-secondary" />
                   <CardTitle>Moderator</CardTitle>
                 </div>
-                <Badge className="bg-social-secondary">System Role</Badge>
+                <Badge className="bg-social-secondary">System Role - Fixed</Badge>
               </div>
               <CardDescription>
-                Platform-wide moderation capabilities
+                Platform-wide moderation capabilities - permissions cannot be modified
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
@@ -158,13 +159,14 @@ const AdminRolesPage = () => {
                     <Switch 
                       checked={perm.enabled} 
                       onCheckedChange={() => handlePermissionToggle("moderator", perm.id)}
+                      disabled={perm.locked}
                     />
                   </div>
                 ))}
               </div>
               <div className="mt-6 flex justify-end">
-                <Button onClick={() => handleSavePermissions("moderator")}>
-                  <Save className="h-4 w-4 mr-2" /> Save Changes
+                <Button disabled>
+                  <Save className="h-4 w-4 mr-2" /> Cannot Modify System Role
                 </Button>
               </div>
             </CardContent>
@@ -178,10 +180,10 @@ const AdminRolesPage = () => {
                   <Users className="h-5 w-5" />
                   <CardTitle>User</CardTitle>
                 </div>
-                <Badge variant="outline">Default Role</Badge>
+                <Badge variant="outline">Default Role - Fixed</Badge>
               </div>
               <CardDescription>
-                Basic platform access for regular users
+                Basic platform access for regular users - permissions cannot be modified
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
@@ -195,13 +197,14 @@ const AdminRolesPage = () => {
                     <Switch 
                       checked={perm.enabled} 
                       onCheckedChange={() => handlePermissionToggle("user", perm.id)}
+                      disabled={perm.locked}
                     />
                   </div>
                 ))}
               </div>
               <div className="mt-6 flex justify-end">
-                <Button onClick={() => handleSavePermissions("user")}>
-                  <Save className="h-4 w-4 mr-2" /> Save Changes
+                <Button disabled>
+                  <Save className="h-4 w-4 mr-2" /> Cannot Modify System Role
                 </Button>
               </div>
             </CardContent>
@@ -234,6 +237,7 @@ const AdminRolesPage = () => {
                     <Switch 
                       checked={perm.enabled} 
                       onCheckedChange={() => handlePermissionToggle("community_moderator", perm.id)}
+                      disabled={perm.locked}
                     />
                   </div>
                 ))}
