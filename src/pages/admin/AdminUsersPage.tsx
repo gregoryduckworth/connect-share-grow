@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Table, TableBody, TableCell, TableHead, 
@@ -14,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { Shield, Search, User, Check } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
+import UserProfileDialog from "@/components/admin/UserProfileDialog";
 
 interface AppUser {
   id: string;
@@ -146,7 +146,7 @@ const AdminUsersPage = () => {
                   <Select 
                     defaultValue={user.role} 
                     onValueChange={(value) => handleRoleChange(user.id, value)}
-                    disabled={user.role === "admin"} // Can't change admin roles
+                    disabled={user.role === "admin"}
                   >
                     <SelectTrigger className="w-32">
                       <SelectValue />
@@ -168,19 +168,15 @@ const AdminUsersPage = () => {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-xs"
-                    onClick={() => {
-                      toast({
-                        title: "View Profile",
-                        description: `Viewing ${user.name}'s profile details.`
-                      });
-                    }}
-                  >
-                    View Profile
-                  </Button>
+                  <UserProfileDialog user={user}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-xs"
+                    >
+                      View Profile
+                    </Button>
+                  </UserProfileDialog>
                 </TableCell>
               </TableRow>
             ))}

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Table, TableBody, TableCell, TableHead, 
@@ -13,7 +12,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, Users, Settings, UserPlus, Check } from "lucide-react";
+import { Search, Users, Settings, UserPlus, Check, MessageSquare } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 
 interface Community {
@@ -21,6 +20,7 @@ interface Community {
   name: string;
   description: string;
   memberCount: number;
+  postCount: number;
   createdAt: Date;
   status: "active" | "pending" | "archived";
   createdBy: string;
@@ -44,6 +44,7 @@ const AdminCommunitiesPage = () => {
       name: "Photography Enthusiasts",
       description: "A community for sharing photography tips and showcasing your work.",
       memberCount: 128,
+      postCount: 342,
       createdAt: new Date(2023, 1, 15),
       status: "active",
       createdBy: "John Doe",
@@ -54,6 +55,7 @@ const AdminCommunitiesPage = () => {
       name: "Tech Talk",
       description: "Discuss the latest in technology, software, and gadgets.",
       memberCount: 256,
+      postCount: 789,
       createdAt: new Date(2023, 2, 10),
       status: "active",
       createdBy: "Robert Johnson",
@@ -64,6 +66,7 @@ const AdminCommunitiesPage = () => {
       name: "Book Readers",
       description: "Share book recommendations and discuss literature.",
       memberCount: 96,
+      postCount: 156,
       createdAt: new Date(2023, 3, 5),
       status: "active",
       createdBy: "Lisa Brown",
@@ -74,6 +77,7 @@ const AdminCommunitiesPage = () => {
       name: "Travel Adventures",
       description: "Share travel stories, tips, and destinations.",
       memberCount: 78,
+      postCount: 234,
       createdAt: new Date(2023, 4, 20),
       status: "pending",
       createdBy: "Jane Smith",
@@ -159,7 +163,8 @@ const AdminCommunitiesPage = () => {
             <TableRow>
               <TableHead>Name</TableHead>
               <TableHead className="hidden md:table-cell">Members</TableHead>
-              <TableHead className="hidden md:table-cell">Created</TableHead>
+              <TableHead className="hidden md:table-cell">Posts</TableHead>
+              <TableHead className="hidden lg:table-cell">Created</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -177,7 +182,13 @@ const AdminCommunitiesPage = () => {
                     <span>{community.memberCount}</span>
                   </div>
                 </TableCell>
-                <TableCell className="hidden md:table-cell">{community.createdAt.toLocaleDateString()}</TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <div className="flex items-center gap-1">
+                    <MessageSquare className="h-4 w-4" />
+                    <span>{community.postCount}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="hidden lg:table-cell">{community.createdAt.toLocaleDateString()}</TableCell>
                 <TableCell>
                   <Badge className={
                     community.status === "active" ? "bg-green-500" :

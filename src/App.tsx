@@ -23,6 +23,7 @@ import AdminCommunitiesPage from "./pages/admin/AdminCommunitiesPage";
 import AdminRolesPage from "./pages/admin/AdminRolesPage";
 import AdminLogsPage from "./pages/admin/AdminLogsPage";
 import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="roles" element={<AdminRolesPage />} />
             <Route path="logs" element={<AdminLogsPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
+            <Route path="analytics" element={<AdminAnalyticsPage />} />
           </Route>
           
           {/* Protected Routes */}
