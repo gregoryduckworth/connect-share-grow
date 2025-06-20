@@ -1,575 +1,385 @@
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Users, Settings, Shield } from "lucide-react";
-import CommunityPost, { Post, User, Reply } from "@/components/community/CommunityPost";
-import CreatePostForm from "@/components/community/CreatePostForm";
-import ModeratorPanel, { Report } from "@/components/community/ModeratorPanel";
-import ModeratorSuccessionDialog from "@/components/community/ModeratorSuccessionDialog";
-import { useToast } from "@/hooks/use-toast";
 
-const mockCurrentUser: User = {
-  id: "user-1",
-  name: "John Doe",
-  isModerator: true
-};
+import { useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  Users, Plus, ArrowLeft, Pin, Settings, 
+  UserPlus, Shield, MessageSquare, TrendingUp 
+} from "lucide-react";
+import CommunityPost from "@/components/community/CommunityPost";
+import CreatePostForm from "@/components/community/CreatePostForm";
+import ModeratorPanel from "@/components/community/ModeratorPanel";
 
 const CommunityDetailPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams();
   const { toast } = useToast();
-  const [community, setCommunity] = useState({
+  const [showCreatePost, setShowCreatePost] = useState(false);
+  const [activeTab, setActiveTab] = useState<"posts" | "moderator">("posts");
+
+  // Mock data - in a real app, this would come from your API
+  const community = {
     id: id || "1",
     name: "Photography Enthusiasts",
-    description: "Share your best shots, photography tips, and camera recommendations.",
-    members: 2453,
-    tags: ["Photography", "Art", "Creative"],
-    joined: true,
-    isModeratedBy: mockCurrentUser.id
-  });
+    description: "A community dedicated to sharing photography tips, techniques, and showcasing beautiful captures from around the world.",
+    memberCount: 1234,
+    postCount: 567,
+    tags: ["Photography", "Art", "Creative", "Nature"],
+    rules: [
+      "Be respectful to all members",
+      "No spam or self-promotion without permission",
+      "Use appropriate tags for your posts",
+      "Keep content photography-related"
+    ],
+    moderators: ["Alice Johnson", "Bob Smith", "Carol Williams"],
+    isJoined: true,
+    isModerator: true // For demo purposes
+  };
 
-  // Define members state for the community
-  const [members, setMembers] = useState([
-    { id: "user-1", name: "John Doe", joinDate: new Date(2022, 5, 15), isBanned: false },
-    { id: "user-2", name: "Jane Smith", joinDate: new Date(2022, 6, 20), isBanned: false },
-    { id: "user-3", name: "Robert Johnson", joinDate: new Date(2022, 7, 10), isBanned: true },
-    { id: "user-4", name: "Lisa Brown", joinDate: new Date(2023, 1, 5), isBanned: false }
-  ]);
-
-  const [posts, setPosts] = useState<Post[]>([
+  const [posts, setPosts] = useState([
     {
-      id: "post-1",
-      title: "New Camera Recommendation?",
-      content: "I'm looking to upgrade from my entry-level DSLR. Budget is around $1,000. Any recommendations for a good mirrorless camera?",
-      author: { id: "user-2", name: "Jane Smith" },
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      tags: ["Question", "Equipment", "Mirrorless"],
-      likes: 12,
-      isLiked: false,
-      isReported: false,
-      isLocked: false,
-      areCommentsLocked: false,
-      replies: [
-        {
-          id: "reply-1",
-          content: "I'd recommend the Sony Alpha a6400. Great image quality and within your budget when bought with the kit lens.",
-          author: { id: "user-3", name: "Michael Brown" },
-          createdAt: new Date(Date.now() - 1000 * 60 * 60), // 1 hour ago
-          likes: 5,
-          isLiked: true,
-          isReported: false
-        },
-        {
-          id: "reply-2",
-          content: "Fujifilm X-T30 is also excellent. Beautiful color science and film simulations.",
-          author: { id: "user-4", name: "Sarah Wilson" },
-          createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-          likes: 3,
-          isLiked: false,
-          isReported: false
-        }
-      ]
-    },
-    {
-      id: "post-2",
-      title: "Sunset Photography Tips?",
-      content: "I'm struggling to capture good sunset shots. Any tips on camera settings and composition for better sunset photography?",
-      author: { id: "user-5", name: "Alex Johnson" },
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
-      tags: ["Tips", "Landscape", "Lighting"],
-      likes: 24,
+      id: "1",
+      title: "Golden Hour Landscape Photography Tips",
+      content: "Here are some essential tips for capturing stunning golden hour landscapes...",
+      author: "Alice Johnson",
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
+      likes: 45,
+      comments: 12,
       isLiked: true,
-      isReported: false,
+      isPinned: true,
       isLocked: false,
-      areCommentsLocked: false,
-      replies: [
-        {
-          id: "reply-3",
-          content: "Use a tripod and bracket your exposures. The dynamic range during sunset is too wide for a single shot.",
-          author: { id: "user-6", name: "Chris Taylor", isModerator: true },
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4 hours ago
-          likes: 8,
-          isLiked: false,
-          isReported: false
-        }
-      ]
+      commentsLocked: false,
+      tags: ["Tips", "Landscape", "Golden Hour"]
     },
     {
-      id: "post-3",
-      title: "Portrait lens recommendation",
-      content: "What's your favorite portrait lens for full-frame cameras? Looking to create beautiful bokeh for my portrait shots.",
-      author: { id: "user-7", name: "Emma Davis" },
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-      tags: ["Portrait", "Lens", "Equipment"],
-      likes: 18,
+      id: "2",
+      title: "My Latest Wildlife Photography Adventure",
+      content: "Just got back from an amazing wildlife photography trip to Yellowstone...",
+      author: "David Chen",
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5),
+      likes: 23,
+      comments: 8,
       isLiked: false,
-      isReported: true,
+      isPinned: false,
       isLocked: true,
-      areCommentsLocked: false,
-      lockReason: "This post contains spam and promotional content that violates community guidelines.",
-      lockDate: new Date(Date.now() - 1000 * 60 * 60 * 12),
-      lockedBy: "Moderator John",
-      replies: []
-    }
-  ]);
-
-  const [reports, setReports] = useState<Report[]>([
-    {
-      id: "report-1",
-      contentType: 'post',
-      contentId: "post-3",
-      contentTitle: "Portrait lens recommendation",
-      contentPreview: "What's your favorite portrait lens for full-frame cameras? Looking to create beautiful bokeh for my portrait shots.",
-      reportedBy: "user-8",
-      reason: "This post contains spam and off-topic content promoting specific brands.",
-      createdAt: new Date(Date.now() - 1000 * 60 * 30),
-      status: 'pending'
+      lockReason: "Post contains inappropriate language and has been temporarily locked pending review.",
+      commentsLocked: false,
+      tags: ["Wildlife", "Adventure", "Nature"]
     },
     {
-      id: "report-2",
-      contentType: 'reply',
-      contentId: "reply-3",
-      contentPreview: "Use a tripod and bracket your exposures. The dynamic range during sunset is too wide for a single shot.",
-      reportedBy: "user-9",
-      reason: "This reply contains misleading information about photography techniques.",
-      createdAt: new Date(Date.now() - 1000 * 60 * 45),
-      status: 'pending'
-    },
-    {
-      id: "report-3",
-      contentType: 'post',
-      contentId: "post-2",
-      contentTitle: "Sunset Photography Tips?",
-      contentPreview: "I'm struggling to capture good sunset shots. Any tips on camera settings and composition for better sunset photography?",
-      reportedBy: "user-10",
-      reason: "This content was previously resolved as part of a monthly cleanup.",
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48),
-      status: 'reviewed'
-    }
-  ]);
-
-  const [showSuccessionDialog, setShowSuccessionDialog] = useState(false);
-
-  const handleLikePost = (postId: string) => {
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          likes: post.isLiked ? post.likes - 1 : post.likes + 1,
-          isLiked: !post.isLiked
-        };
-      }
-      return post;
-    }));
-  };
-
-  const handleLikeReply = (postId: string, replyId: string) => {
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          replies: post.replies.map(reply => {
-            if (reply.id === replyId) {
-              return {
-                ...reply,
-                likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1,
-                isLiked: !reply.isLiked
-              };
-            }
-            return reply;
-          })
-        };
-      }
-      return post;
-    }));
-  };
-
-  const handleCreateReply = (postId: string, content: string) => {
-    const newReply: Reply = {
-      id: `reply-${Date.now()}`,
-      content,
-      author: mockCurrentUser,
-      createdAt: new Date(),
-      likes: 0,
+      id: "3",
+      title: "Camera Gear Recommendations for Beginners",
+      content: "Starting your photography journey? Here's what I recommend for beginners...",
+      author: "Sarah Martinez",
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8),
+      likes: 67,
+      comments: 34,
       isLiked: false,
-      isReported: false
-    };
+      isPinned: false,
+      isLocked: false,
+      commentsLocked: true,
+      commentsLockReason: "Comments locked due to multiple off-topic discussions and arguments.",
+      tags: ["Gear", "Beginner", "Recommendations"]
+    }
+  ]);
 
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          replies: [...post.replies, newReply]
-        };
-      }
-      return post;
-    }));
-
+  const handleJoinCommunity = () => {
     toast({
-      title: "Reply posted",
-      description: "Your reply has been added to the discussion.",
+      title: "Joined Community",
+      description: `You've successfully joined ${community.name}!`,
     });
   };
 
-  const handleReportPost = (postId: string) => {
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          isReported: true
-        };
-      }
-      return post;
-    }));
-
-    // Simulate creating a new report
-    setReports([...reports, {
-      id: `report-${Date.now()}`,
-      contentType: 'post',
-      contentId: postId,
-      contentTitle: posts.find(p => p.id === postId)?.title,
-      contentPreview: posts.find(p => p.id === postId)?.content || "",
-      reportedBy: mockCurrentUser.id,
-      reason: "Reported by user",
-      createdAt: new Date(),
-      status: 'pending'
-    }]);
+  const handleLike = (postId: string) => {
+    setPosts(posts.map(post => 
+      post.id === postId 
+        ? { 
+            ...post, 
+            isLiked: !post.isLiked, 
+            likes: post.isLiked ? post.likes - 1 : post.likes + 1 
+          }
+        : post
+    ));
   };
 
-  const handleReportReply = (postId: string, replyId: string) => {
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          replies: post.replies.map(reply => {
-            if (reply.id === replyId) {
-              return {
-                ...reply,
-                isReported: true
-              };
-            }
-            return reply;
-          })
-        };
-      }
-      return post;
-    }));
+  const handleComment = (postId: string) => {
+    console.log(`Comment on post ${postId}`);
+  };
 
-    // Find the reply content
+  const handlePin = (postId: string) => {
+    setPosts(posts.map(post => 
+      post.id === postId 
+        ? { ...post, isPinned: !post.isPinned }
+        : post
+    ));
+    
     const post = posts.find(p => p.id === postId);
-    const reply = post?.replies.find(r => r.id === replyId);
-
-    if (reply) {
-      // Simulate creating a new report
-      setReports([...reports, {
-        id: `report-${Date.now()}`,
-        contentType: 'reply',
-        contentId: replyId,
-        contentPreview: reply.content,
-        reportedBy: mockCurrentUser.id,
-        reason: "Reported by user",
-        createdAt: new Date(),
-        status: 'pending'
-      }]);
-    }
+    toast({
+      title: post?.isPinned ? "Post Unpinned" : "Post Pinned",
+      description: post?.isPinned ? "Post has been unpinned." : "Post has been pinned to the top.",
+    });
   };
 
-  const handlePostCreated = () => {
-    // Simulate adding a new post to the list
-    const newPost: Post = {
-      id: `post-${Date.now()}`,
-      title: "New Post Title",
-      content: "This is a newly created post content.",
-      author: mockCurrentUser,
-      createdAt: new Date(),
-      tags: ["New", "Discussion"],
-      likes: 0,
-      isLiked: false,
-      isReported: false,
-      isLocked: false,
-      areCommentsLocked: false,
-      replies: []
-    };
-
-    setPosts([newPost, ...posts]);
+  const handleLock = (postId: string, reason: string) => {
+    setPosts(posts.map(post => 
+      post.id === postId 
+        ? { ...post, isLocked: true, lockReason: reason }
+        : post
+    ));
+    
+    toast({
+      title: "Post Locked",
+      description: "The post has been locked and the author has been notified.",
+    });
   };
 
-  const handleResolveReport = (reportId: string) => {
-    setReports(reports.map(report => {
-      if (report.id === reportId) {
-        return {
-          ...report,
-          status: 'reviewed'
-        };
-      }
-      return report;
-    }));
-  };
-
-  const handleLockPost = (postId: string, reason: string) => {
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          isLocked: true,
-          lockReason: reason,
-          lockDate: new Date(),
-          lockedBy: mockCurrentUser.name
-        };
-      }
-      return post;
-    }));
-
-    // Notify the post author
-    const post = posts.find(p => p.id === postId);
-    if (post) {
-      toast({
-        title: "Post locked",
-        description: `The post "${post.title}" has been locked. The author has been notified.`,
-      });
-    }
+  const handleUnlock = (postId: string) => {
+    setPosts(posts.map(post => 
+      post.id === postId 
+        ? { ...post, isLocked: false, lockReason: undefined }
+        : post
+    ));
   };
 
   const handleLockComments = (postId: string, reason: string) => {
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          areCommentsLocked: true,
-          lockReason: reason,
-          lockDate: new Date(),
-          lockedBy: mockCurrentUser.name
-        };
-      }
-      return post;
-    }));
-
-    // Notify the post author
-    const post = posts.find(p => p.id === postId);
-    if (post) {
-      toast({
-        title: "Comments locked",
-        description: `Comments for "${post.title}" have been locked. The author has been notified.`,
-      });
-    }
-  };
-
-  const handleUnlockPost = (postId: string) => {
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          isLocked: false,
-          lockReason: undefined,
-          lockDate: undefined,
-          lockedBy: undefined
-        };
-      }
-      return post;
-    }));
-
+    setPosts(posts.map(post => 
+      post.id === postId 
+        ? { ...post, commentsLocked: true, commentsLockReason: reason }
+        : post
+    ));
+    
     toast({
-      title: "Post unlocked",
-      description: "The post has been unlocked successfully.",
+      title: "Comments Locked",
+      description: "Comments have been locked and the author has been notified.",
     });
   };
 
   const handleUnlockComments = (postId: string) => {
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          areCommentsLocked: false,
-          lockReason: undefined,
-          lockDate: undefined,
-          lockedBy: undefined
-        };
-      }
-      return post;
-    }));
-
-    toast({
-      title: "Comments unlocked", 
-      description: "Comments for this post have been unlocked successfully.",
-    });
+    setPosts(posts.map(post => 
+      post.id === postId 
+        ? { ...post, commentsLocked: false, commentsLockReason: undefined }
+        : post
+    ));
   };
 
-  const handleLeaveCommunity = () => {
-    // Check if current user is the last moderator
-    const moderatorCount = community.isModeratedBy ? 1 : 0; // Simplified check
+  const handleCreatePost = (title: string, content: string, tags: string[]) => {
+    const newPost = {
+      id: String(posts.length + 1),
+      title,
+      content,
+      author: "You", // In a real app, this would be the current user
+      timestamp: new Date(),
+      likes: 0,
+      comments: 0,
+      isLiked: false,
+      isPinned: false,
+      isLocked: false,
+      commentsLocked: false,
+      tags
+    };
     
-    if (moderatorCount === 1 && mockCurrentUser.isModerator) {
-      setShowSuccessionDialog(true);
-    } else {
-      // Proceed with leaving normally
-      setCommunity({ ...community, joined: false });
-      toast({
-        title: "Left community",
-        description: `You have left ${community.name}.`,
-      });
-    }
-  };
-
-  const handleSelectNewModerator = (userId: string) => {
-    const newModerator = members.find(m => m.id === userId);
+    setPosts([newPost, ...posts]);
+    setShowCreatePost(false);
     
-    if (newModerator) {
-      // Update community to reflect new moderator
-      setCommunity({ 
-        ...community, 
-        joined: false,
-        isModeratedBy: userId 
-      });
-      
-      toast({
-        title: "New moderator appointed",
-        description: `${newModerator.name} is now the moderator of ${community.name}. You have left the community.`,
-      });
-    }
-  };
-
-  const handleBanUser = (userId: string) => {
-    setMembers(members.map(member => {
-      if (member.id === userId) {
-        return {
-          ...member,
-          isBanned: true
-        };
-      }
-      return member;
-    }));
-
     toast({
-      title: "User banned",
-      description: "The user has been banned from this community.",
-      variant: "destructive"
-    });
-  };
-
-  const handleUnbanUser = (userId: string) => {
-    setMembers(members.map(member => {
-      if (member.id === userId) {
-        return {
-          ...member,
-          isBanned: false
-        };
-      }
-      return member;
-    }));
-
-    toast({
-      title: "User unbanned",
-      description: "The user has been unbanned from this community.",
+      title: "Post Created",
+      description: "Your post has been published successfully!",
     });
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-social-primary">{community.name}</h1>
-          <div className="flex items-center gap-2 text-social-muted">
-            <Users className="h-4 w-4" />
-            <span>{community.members.toLocaleString()} members</span>
-            {mockCurrentUser.isModerator && (
-              <Badge variant="outline" className="ml-2 bg-social-accent/50">You're a moderator</Badge>
+    <div className="container mx-auto px-4 py-6 max-w-4xl">
+      <div className="mb-6">
+        <Link to="/communities">
+          <Button variant="ghost" className="mb-4">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Communities
+          </Button>
+        </Link>
+        
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold mb-2">{community.name}</h1>
+            <p className="text-gray-600 mb-4">{community.description}</p>
+            
+            <div className="flex flex-wrap items-center gap-4 mb-4">
+              <div className="flex items-center gap-1 text-sm text-gray-500">
+                <Users className="h-4 w-4" />
+                <span>{community.memberCount.toLocaleString()} members</span>
+              </div>
+              <div className="flex items-center gap-1 text-sm text-gray-500">
+                <MessageSquare className="h-4 w-4" />
+                <span>{community.postCount} posts</span>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-2 mb-4">
+              {community.tags.map((tag) => (
+                <Badge key={tag} variant="secondary" className="bg-social-accent/50">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-2">
+            {!community.isJoined ? (
+              <Button onClick={handleJoinCommunity}>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Join Community
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => setShowCreatePost(true)}
+                className="bg-social-primary hover:bg-social-primary/90"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create Post
+              </Button>
+            )}
+            
+            {community.isModerator && (
+              <Button variant="outline">
+                <Settings className="h-4 w-4 mr-2" />
+                Manage
+              </Button>
             )}
           </div>
-          <p className="mt-2 text-social-muted">{community.description}</p>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {community.tags.map(tag => (
-              <Badge key={tag} variant="secondary" className="bg-social-accent/50">{tag}</Badge>
-            ))}
-          </div>
-        </div>
-        <div className="flex gap-2">
-          {mockCurrentUser.isModerator && (
-            <Button 
-              variant="outline" 
-              className="border-social-primary text-social-primary"
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Community Settings
-            </Button>
-          )}
-          <Button
-            variant={community.joined ? "outline" : "default"}
-            className={community.joined 
-              ? "border-social-primary text-social-primary" 
-              : "bg-social-primary hover:bg-social-secondary"}
-            onClick={community.joined ? handleLeaveCommunity : undefined}
-          >
-            {community.joined ? "Leave" : "Join"} Community
-          </Button>
         </div>
       </div>
 
-      <Tabs defaultValue="discussions">
-        <TabsList>
-          <TabsTrigger value="discussions">Discussions</TabsTrigger>
-          {mockCurrentUser.isModerator && (
-            <TabsTrigger value="moderation" className="flex items-center gap-1">
-              <Shield className="h-4 w-4" />
-              Moderation
-            </TabsTrigger>
-          )}
-        </TabsList>
-
-        <TabsContent value="discussions" className="mt-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Community Posts</h2>
-            <CreatePostForm 
-              communityId={community.id} 
-              onPostCreated={handlePostCreated} 
-            />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="lg:col-span-3">
+          {/* Navigation Tabs */}
+          <div className="flex gap-2 mb-6">
+            <Button
+              variant={activeTab === "posts" ? "default" : "outline"}
+              onClick={() => setActiveTab("posts")}
+              className="flex items-center gap-2"
+            >
+              <MessageSquare className="h-4 w-4" />
+              Posts
+            </Button>
+            {community.isModerator && (
+              <Button
+                variant={activeTab === "moderator" ? "default" : "outline"}
+                onClick={() => setActiveTab("moderator")}
+                className="flex items-center gap-2"
+              >
+                <Shield className="h-4 w-4" />
+                Moderator
+              </Button>
+            )}
           </div>
 
-          {posts.map(post => (
-            <CommunityPost
-              key={post.id}
-              post={post}
-              currentUser={mockCurrentUser}
-              onLike={handleLikePost}
-              onReply={handleCreateReply}
-              onLikeReply={handleLikeReply}
-              onReport={handleReportPost}
-              onReportReply={handleReportReply}
-              onLockPost={mockCurrentUser.isModerator ? handleLockPost : undefined}
-              onLockComments={mockCurrentUser.isModerator ? handleLockComments : undefined}
-              onUnlockPost={mockCurrentUser.isModerator ? handleUnlockPost : undefined}
-              onUnlockComments={mockCurrentUser.isModerator ? handleUnlockComments : undefined}
-            />
-          ))}
-        </TabsContent>
+          {activeTab === "posts" && (
+            <>
+              {showCreatePost && (
+                <div className="mb-6">
+                  <CreatePostForm
+                    onSubmit={handleCreatePost}
+                    onCancel={() => setShowCreatePost(false)}
+                    availableTags={community.tags}
+                  />
+                </div>
+              )}
 
-        {mockCurrentUser.isModerator && (
-          <TabsContent value="moderation" className="mt-6">
-            <ModeratorPanel 
-              communityId={community.id}
-              reports={reports}
-              members={members}
+              <div className="space-y-4">
+                {posts.map((post) => (
+                  <CommunityPost
+                    key={post.id}
+                    post={post}
+                    onLike={handleLike}
+                    onComment={handleComment}
+                    onPin={handlePin}
+                    onLock={handleLock}
+                    onUnlock={handleUnlock}
+                    onLockComments={handleLockComments}
+                    onUnlockComments={handleUnlockComments}
+                    isModerator={community.isModerator}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+          {activeTab === "moderator" && community.isModerator && (
+            <ModeratorPanel
+              community={community}
               posts={posts}
-              onResolveReport={handleResolveReport}
-              onLockPost={handleLockPost}
-              onLockComments={handleLockComments}
-              onUnlockPost={handleUnlockPost}
-              onUnlockComments={handleUnlockComments}
-              onBanUser={handleBanUser}
-              onUnbanUser={handleUnbanUser}
+              onUpdatePost={(postId, updates) => {
+                setPosts(posts.map(post => 
+                  post.id === postId ? { ...post, ...updates } : post
+                ));
+              }}
             />
-          </TabsContent>
-        )}
-      </Tabs>
+          )}
+        </div>
 
-      <ModeratorSuccessionDialog
-        isOpen={showSuccessionDialog}
-        onClose={() => setShowSuccessionDialog(false)}
-        members={members}
-        onSelectNewModerator={handleSelectNewModerator}
-        communityName={community.name}
-      />
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Community Stats */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Community Stats</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Members</span>
+                <span className="font-semibold">{community.memberCount.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Posts</span>
+                <span className="font-semibold">{community.postCount}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600">Active Today</span>
+                <span className="font-semibold text-green-600">
+                  <TrendingUp className="h-4 w-4 inline mr-1" />
+                  234
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Moderators */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Moderators</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {community.moderators.map((moderator, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-social-primary" />
+                    <span className="text-sm">{moderator}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Community Rules */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Community Rules</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {community.rules.map((rule, index) => (
+                  <div key={index} className="text-sm">
+                    <span className="font-medium text-social-primary">{index + 1}. </span>
+                    <span className="text-gray-700">{rule}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };

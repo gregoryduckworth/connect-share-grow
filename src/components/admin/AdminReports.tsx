@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Check, Eye, AlertTriangle, Lock } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
+import ReportDetailsDialog from "./ReportDetailsDialog";
 
 interface Report {
   id: string;
@@ -20,6 +21,8 @@ interface Report {
 
 const AdminReports = () => {
   const { toast } = useToast();
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [reports, setReports] = useState<Report[]>([
     {
       id: "report-1",
@@ -52,6 +55,11 @@ const AdminReports = () => {
       status: "pending"
     },
   ]);
+
+  const handleViewContent = (report: Report) => {
+    setSelectedReport(report);
+    setDetailsDialogOpen(true);
+  };
 
   const handleResolve = (id: string) => {
     const report = reports.find(r => r.id === id);
@@ -99,72 +107,85 @@ const AdminReports = () => {
   const pendingReports = reports.filter(r => r.status === "pending");
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Reports</h2>
-        <Badge variant="outline" className="bg-social-accent/50">
-          {pendingReports.length} Pending
-        </Badge>
-      </div>
-      
-      {pendingReports.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <p className="text-social-muted">No pending reports</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {pendingReports.map((report) => (
-            <Card key={report.id}>
-              <CardHeader className="bg-muted/50">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                  <CardTitle className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-destructive" />
-                    {report.contentType === "post" && "Post Report"}
-                    {report.contentType === "reply" && "Reply Report"}
-                    {report.contentType === "user" && "User Report"}
-                  </CardTitle>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="outline" className="bg-social-background">
-                      Reported {new Date(report.createdAt).toLocaleDateString()}
-                    </Badge>
-                    <Badge variant="destructive">
-                      {report.reason}
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-6 space-y-4">
-                <div className="p-3 rounded-md bg-muted/50 border">
-                  <p className="text-sm">{report.contentPreview}</p>
-                </div>
-                
-                <div className="flex flex-wrap gap-2 justify-end mt-4">
-                  <Button variant="outline">
-                    <Eye className="h-4 w-4 mr-2" /> View Content
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="border-orange-400 text-orange-500 hover:bg-orange-50"
-                    onClick={() => handleLockContent(report.id)}
-                  >
-                    <Lock className="h-4 w-4 mr-2" /> Lock Content
-                  </Button>
-                  <Button 
-                    variant="default"
-                    className="bg-green-500 hover:bg-green-600"
-                    onClick={() => handleResolve(report.id)}
-                  >
-                    <Check className="h-4 w-4 mr-2" /> Mark Resolved
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+    <>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold">Reports</h2>
+          <Badge variant="outline" className="bg-social-accent/50">
+            {pendingReports.length} Pending
+          </Badge>
         </div>
-      )}
-    </div>
+        
+        {pendingReports.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <p className="text-social-muted">No pending reports</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {pendingReports.map((report) => (
+              <Card key={report.id}>
+                <CardHeader className="bg-muted/50">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                    <CardTitle className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
+                      {report.contentType === "post" && "Post Report"}
+                      {report.contentType === "reply" && "Reply Report"}
+                      {report.contentType === "user" && "User Report"}
+                    </CardTitle>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline" className="bg-social-background">
+                        Reported {new Date(report.createdAt).toLocaleDateString()}
+                      </Badge>
+                      <Badge variant="destructive">
+                        {report.reason}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-6 space-y-4">
+                  <div className="p-3 rounded-md bg-muted/50 border">
+                    <p className="text-sm">{report.contentPreview}</p>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2 justify-end mt-4">
+                    <Button 
+                      variant="outline"
+                      onClick={() => handleViewContent(report)}
+                    >
+                      <Eye className="h-4 w-4 mr-2" /> View Content
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="border-orange-400 text-orange-500 hover:bg-orange-50"
+                      onClick={() => handleLockContent(report.id)}
+                    >
+                      <Lock className="h-4 w-4 mr-2" /> Lock Content
+                    </Button>
+                    <Button 
+                      variant="default"
+                      className="bg-green-500 hover:bg-green-600"
+                      onClick={() => handleResolve(report.id)}
+                    >
+                      <Check className="h-4 w-4 mr-2" /> Mark Resolved
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <ReportDetailsDialog
+        isOpen={detailsDialogOpen}
+        onClose={() => setDetailsDialogOpen(false)}
+        report={selectedReport}
+        onResolve={handleResolve}
+        onLockContent={handleLockContent}
+      />
+    </>
   );
 };
 

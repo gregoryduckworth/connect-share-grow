@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import UserMenu from "../layout/UserMenu";
 
 interface AdminSidebarProps {
   onCloseMobile?: () => void;
@@ -14,6 +15,7 @@ const navItems = [
   { icon: BarChart3, label: "Dashboard", path: "/admin" },
   { icon: Users, label: "Users", path: "/admin/users" },
   { icon: Flag, label: "Communities", path: "/admin/communities" },
+  { icon: BarChart3, label: "Analytics", path: "/admin/analytics" },
   { icon: Gavel, label: "Roles & Permissions", path: "/admin/roles" },
   { icon: History, label: "Audit Logs", path: "/admin/logs" },
   { icon: Settings, label: "Settings", path: "/admin/settings" },
@@ -21,6 +23,12 @@ const navItems = [
 
 const AdminSidebar = ({ onCloseMobile }: AdminSidebarProps) => {
   const isMobile = useIsMobile();
+  
+  // Mock admin user data
+  const adminUser = {
+    name: "Admin User",
+    email: "admin@example.com",
+  };
   
   return (
     <div className="h-screen flex flex-col bg-white border-r">
@@ -69,15 +77,7 @@ const AdminSidebar = ({ onCloseMobile }: AdminSidebarProps) => {
       </nav>
       
       <div className="p-4 border-t">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-social-primary flex items-center justify-center text-white">
-            <User size={18} />
-          </div>
-          <div>
-            <p className="text-sm font-medium">Admin User</p>
-            <p className="text-xs text-social-muted">admin@example.com</p>
-          </div>
-        </div>
+        <UserMenu user={adminUser} />
       </div>
     </div>
   );
