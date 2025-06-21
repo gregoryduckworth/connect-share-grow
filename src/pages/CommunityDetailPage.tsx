@@ -319,7 +319,7 @@ const CommunityDetailPage = () => {
                 />
                 
                 {/* Reply Section */}
-                {community.isMember && !post.comments Locked && (
+                {community.isMember && !post.commentsLocked && (
                   <Card className="ml-8">
                     <CardContent className="pt-4">
                       <div className="flex gap-3">
