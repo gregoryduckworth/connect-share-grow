@@ -5,12 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Users, TrendingUp, Star } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 const DiscoverPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
 
   // Mock trending communities
-  const trendingCommunities = [
+  const [communities, setCommunities] = useState([
     {
       id: 1,
       name: "Photography Enthusiasts",
@@ -18,7 +21,8 @@ const DiscoverPage = () => {
       members: 15420,
       posts: 892,
       tags: ["Photography", "Art", "Creative"],
-      growth: "+12%"
+      growth: "+12%",
+      joined: false
     },
     {
       id: 2,
@@ -27,7 +31,8 @@ const DiscoverPage = () => {
       members: 8930,
       posts: 1247,
       tags: ["Programming", "JavaScript", "React"],
-      growth: "+8%"
+      growth: "+8%",
+      joined: true
     },
     {
       id: 3,
@@ -36,7 +41,8 @@ const DiscoverPage = () => {
       members: 12580,
       posts: 567,
       tags: ["Cooking", "Recipes", "Food"],
-      growth: "+15%"
+      growth: "+15%",
+      joined: false
     },
     {
       id: 4,
@@ -45,9 +51,10 @@ const DiscoverPage = () => {
       members: 7652,
       posts: 432,
       tags: ["Fitness", "Health", "Motivation"],
-      growth: "+6%"
+      growth: "+6%",
+      joined: false
     }
-  ];
+  ]);
 
   // Mock popular topics
   const popularTopics = [
@@ -61,11 +68,31 @@ const DiscoverPage = () => {
     { name: "CSS Grid", posts: 87 }
   ];
 
-  const filteredCommunities = trendingCommunities.filter(community =>
+  const filteredCommunities = communities.filter(community =>
     community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
     community.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  const handleJoinCommunity = (communityId: number) => {
+    setCommunities(communities.map(community => 
+      community.id === communityId 
+        ? { 
+            ...community, 
+            joined: !community.joined,
+            members: community.joined ? community.members - 1 : community.members + 1
+          }
+        : community
+    ));
+
+    const community = communities.find(c => c.id === communityId);
+    if (community) {
+      toast({
+        title: community.joined ? "Left Community" : "Joined Community",
+        description: `You have ${community.joined ? 'left' : 'joined'} ${community.name}`,
+      });
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -102,10 +129,15 @@ const DiscoverPage = () => {
                 {filteredCommunities.map((community) => (
                   <div key={community.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="font-semibold text-lg text-social-primary">
-                          {community.name}
-                        </h3>
+                      <div className="flex-1">
+                        <Link
+                          to={`/community/${community.id}`}
+                          className="hover:text-social-primary transition-colors"
+                        >
+                          <h3 className="font-semibold text-lg text-social-primary">
+                            {community.name}
+                          </h3>
+                        </Link>
                         <p className="text-social-muted text-sm">{community.description}</p>
                       </div>
                       <Badge className="bg-green-100 text-green-700">
@@ -131,7 +163,20 @@ const DiscoverPage = () => {
                           </Badge>
                         ))}
                       </div>
-                      <Button size="sm">Join Community</Button>
+                      <div className="flex gap-2">
+                        <Link to={`/community/${community.id}`}>
+                          <Button variant="outline" size="sm">
+                            Browse
+                          </Button>
+                        </Link>
+                        <Button 
+                          size="sm" 
+                          variant={community.joined ? "outline" : "default"}
+                          onClick={() => handleJoinCommunity(community.id)}
+                        >
+                          {community.joined ? "Leave" : "Join"} Community
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}

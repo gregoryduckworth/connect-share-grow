@@ -1,82 +1,115 @@
 
-import { NavLink } from "react-router-dom";
-import { Shield, Users, Flag, History, User, Settings, Gavel, BarChart3 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { 
+  BarChart3, 
+  Users, 
+  MessageSquare, 
+  Settings, 
+  Shield,
+  FileText,
+  TrendingUp,
+  Bell
+} from "lucide-react";
+import AdminNotificationBell from "./AdminNotificationBell";
 import UserMenu from "../layout/UserMenu";
 
-interface AdminSidebarProps {
-  onCloseMobile?: () => void;
-}
-
-const navItems = [
-  { icon: BarChart3, label: "Dashboard", path: "/admin" },
-  { icon: Users, label: "Users", path: "/admin/users" },
-  { icon: Flag, label: "Communities", path: "/admin/communities" },
-  { icon: BarChart3, label: "Analytics", path: "/admin/analytics" },
-  { icon: Gavel, label: "Roles & Permissions", path: "/admin/roles" },
-  { icon: History, label: "Audit Logs", path: "/admin/logs" },
-  { icon: Settings, label: "Settings", path: "/admin/settings" },
-];
-
-const AdminSidebar = ({ onCloseMobile }: AdminSidebarProps) => {
-  const isMobile = useIsMobile();
+const AdminSidebar = () => {
+  const location = useLocation();
   
   // Mock admin user data
   const adminUser = {
     name: "Admin User",
-    email: "admin@example.com",
+    email: "admin@example.com"
   };
-  
+
+  const navItems = [
+    {
+      name: "Dashboard",
+      href: "/admin",
+      icon: BarChart3,
+      badge: null
+    },
+    {
+      name: "Analytics", 
+      href: "/admin/analytics",
+      icon: TrendingUp,
+      badge: null
+    },
+    {
+      name: "Users",
+      href: "/admin/users", 
+      icon: Users,
+      badge: null
+    },
+    {
+      name: "Communities",
+      href: "/admin/communities",
+      icon: MessageSquare,
+      badge: 2
+    },
+    {
+      name: "Reports", 
+      href: "/admin/reports",
+      icon: Shield,
+      badge: 5
+    },
+    {
+      name: "Audit Logs",
+      href: "/admin/logs",
+      icon: FileText,
+      badge: null
+    },
+    {
+      name: "Settings",
+      href: "/admin/settings",
+      icon: Settings,
+      badge: null
+    }
+  ];
+
   return (
-    <div className="h-screen flex flex-col bg-white border-r">
-      <div className="p-4 border-b flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Shield className="h-6 w-6 text-social-primary" />
-          <div>
-            <h2 className="font-bold text-social-primary">Admin Panel</h2>
-            <p className="text-xs text-social-muted">Manage your platform</p>
-          </div>
-        </div>
-        
-        {isMobile && (
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onCloseMobile}
-            className="md:hidden"
-            aria-label="Close sidebar"
-          >
-            <X size={20} />
-          </Button>
-        )}
+    <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-full">
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200">
+        <h2 className="text-xl font-bold text-social-primary">Admin Panel</h2>
       </div>
-      
-      <nav className="flex-1 p-2 overflow-y-auto">
-        <ul className="space-y-1">
-          {navItems.map((item) => (
-            <li key={item.path}>
-              <NavLink
-                to={item.path}
-                onClick={isMobile ? onCloseMobile : undefined}
-                className={({ isActive }) => cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+
+      {/* Navigation */}
+      <nav className="flex-1 p-4 space-y-2">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.href;
+          
+          return (
+            <Link key={item.name} to={item.href}>
+              <Button
+                variant={isActive ? "default" : "ghost"}
+                className={`w-full justify-start gap-3 ${
                   isActive 
-                    ? "bg-social-primary text-white font-medium" 
-                    : "hover:bg-social-background text-foreground"
-                )}
+                    ? "bg-social-primary text-white" 
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
               >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </NavLink>
-            </li>
-          ))}
-        </ul>
+                <Icon className="h-4 w-4" />
+                <span className="flex-1 text-left">{item.name}</span>
+                {item.badge && (
+                  <Badge className="bg-red-500 text-white text-xs">
+                    {item.badge}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
+          );
+        })}
       </nav>
-      
-      <div className="p-4 border-t">
+
+      {/* Top Bar for Admin */}
+      <div className="p-4 border-t border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <AdminNotificationBell />
+        </div>
         <UserMenu user={adminUser} />
       </div>
     </div>

@@ -4,8 +4,17 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
-import { Heart, MessageSquare, Pin, Lock, Unlock, User } from "lucide-react";
+import { Heart, MessageSquare, Pin, Lock, Unlock, User, ChevronDown, ChevronUp } from "lucide-react";
 import LockPostDialog from "./LockPostDialog";
+
+interface Reply {
+  id: string;
+  author: string;
+  content: string;
+  timestamp: Date;
+  likes: number;
+  isLiked: boolean;
+}
 
 interface PostData {
   id: string;
@@ -22,6 +31,7 @@ interface PostData {
   tags: string[];
   lockReason?: string;
   commentsLockReason?: string;
+  replies?: Reply[];
 }
 
 interface CommunityPostProps {
@@ -49,6 +59,7 @@ const CommunityPost = ({
 }: CommunityPostProps) => {
   const [showLockDialog, setShowLockDialog] = useState(false);
   const [lockType, setLockType] = useState<"post" | "comments">("post");
+  const [showReplies, setShowReplies] = useState(false);
 
   const handleLockClick = (type: "post" | "comments") => {
     setLockType(type);
@@ -92,7 +103,7 @@ const CommunityPost = ({
             </div>
             
             {isModerator && (
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 {onPin && (
                   <Button
                     variant="outline"
@@ -190,7 +201,7 @@ const CommunityPost = ({
             ))}
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 mb-4">
             <Button
               variant="ghost"
               size="sm"
@@ -207,14 +218,52 @@ const CommunityPost = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onComment(post.id)}
+              onClick={() => setShowReplies(!showReplies)}
               className="flex items-center gap-2 text-social-muted"
-              disabled={post.commentsLocked}
             >
               <MessageSquare className="h-4 w-4" />
               {post.comments}
+              {post.replies && post.replies.length > 0 && (
+                showReplies ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+              )}
             </Button>
           </div>
+
+          {/* Replies Section */}
+          {showReplies && post.replies && post.replies.length > 0 && (
+            <div className="border-t pt-4 space-y-3">
+              <h4 className="font-medium text-sm text-social-muted">Replies</h4>
+              {post.replies.map((reply) => (
+                <div key={reply.id} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
+                  <Avatar className="h-8 w-8 bg-social-primary text-white">
+                    <div className="flex h-full w-full items-center justify-center">
+                      <User className="h-4 w-4" />
+                    </div>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-medium text-sm">{reply.author}</p>
+                      <span className="text-xs text-gray-500">
+                        {reply.timestamp.toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700 mb-2">{reply.content}</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={`flex items-center gap-1 text-xs ${
+                        reply.isLiked ? "text-red-500" : "text-gray-500"
+                      }`}
+                      disabled={post.commentsLocked}
+                    >
+                      <Heart className={`h-3 w-3 ${reply.isLiked ? "fill-current" : ""}`} />
+                      {reply.likes}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -222,6 +271,7 @@ const CommunityPost = ({
         isOpen={showLockDialog}
         onClose={() => setShowLockDialog(false)}
         onConfirm={handleLockConfirm}
+        postTitle={post.title}
         contentType={lockType}
       />
     </>

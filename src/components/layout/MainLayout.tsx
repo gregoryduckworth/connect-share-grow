@@ -3,9 +3,16 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import NotificationBell from "./NotificationBell";
+import UserMenu from "./UserMenu";
 
 const MainLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Mock user data
+  const user = {
+    name: "John Doe",
+    email: "john.doe@example.com"
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -40,7 +47,10 @@ const MainLayout = () => {
               </svg>
             </button>
             <div className="flex-1" />
-            <NotificationBell />
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              <UserMenu user={user} />
+            </div>
           </div>
 
           {/* Page content */}

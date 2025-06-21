@@ -19,10 +19,10 @@ interface LockPostDialogProps {
   onClose: () => void;
   onConfirm: (reason: string) => void;
   postTitle: string;
-  type: "post" | "comments";
+  contentType: "post" | "comments";
 }
 
-const LockPostDialog = ({ isOpen, onClose, onConfirm, postTitle, type }: LockPostDialogProps) => {
+const LockPostDialog = ({ isOpen, onClose, onConfirm, postTitle, contentType }: LockPostDialogProps) => {
   const [reason, setReason] = useState("");
   const { toast } = useToast();
 
@@ -51,11 +51,11 @@ const LockPostDialog = ({ isOpen, onClose, onConfirm, postTitle, type }: LockPos
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {type === "post" ? <Lock className="h-5 w-5" /> : <Ban className="h-5 w-5" />}
-            Lock {type === "post" ? "Post" : "Comments"}
+            {contentType === "post" ? <Lock className="h-5 w-5" /> : <Ban className="h-5 w-5" />}
+            Lock {contentType === "post" ? "Post" : "Comments"}
           </DialogTitle>
           <DialogDescription>
-            You are about to lock {type === "post" ? "the post" : "comments for"}: "{postTitle}". 
+            You are about to lock {contentType === "post" ? "the post" : "comments for"}: "{postTitle}". 
             The author will be notified of this action.
           </DialogDescription>
         </DialogHeader>
@@ -65,7 +65,7 @@ const LockPostDialog = ({ isOpen, onClose, onConfirm, postTitle, type }: LockPos
             <Label htmlFor="reason">Reason for locking *</Label>
             <Textarea
               id="reason"
-              placeholder={`Please provide a reason for locking this ${type}...`}
+              placeholder={`Please provide a reason for locking this ${contentType}...`}
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={4}
@@ -81,8 +81,8 @@ const LockPostDialog = ({ isOpen, onClose, onConfirm, postTitle, type }: LockPos
             Cancel
           </Button>
           <Button onClick={handleConfirm} variant="destructive">
-            {type === "post" ? <Lock className="h-4 w-4 mr-2" /> : <Ban className="h-4 w-4 mr-2" />}
-            Lock {type === "post" ? "Post" : "Comments"}
+            {contentType === "post" ? <Lock className="h-4 w-4 mr-2" /> : <Ban className="h-4 w-4 mr-2" />}
+            Lock {contentType === "post" ? "Post" : "Comments"}
           </Button>
         </DialogFooter>
       </DialogContent>

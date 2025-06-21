@@ -7,12 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Search, Filter, RotateCcw } from "lucide-react";
 import { adminLogs } from "@/lib/admin-logger";
+import AdminTablePagination from "./AdminTablePagination";
 
 const AdminAuditLogs = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterBy, setFilterBy] = useState("all");
   const [actionFilter, setActionFilter] = useState("all");
   const [targetTypeFilter, setTargetTypeFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const actionTypes = useMemo(() => {
     const types = Array.from(new Set(adminLogs.map(log => log.action)));
@@ -51,10 +54,17 @@ const AdminAuditLogs = () => {
     return filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   }, [searchQuery, actionFilter, targetTypeFilter]);
 
+  const totalPages = Math.ceil(filteredLogs.length / pageSize);
+  const paginatedLogs = filteredLogs.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   const clearFilters = () => {
     setSearchQuery("");
     setActionFilter("all");
     setTargetTypeFilter("all");
+    setCurrentPage(1);
   };
 
   const getBadgeColor = (action: string) => {
@@ -118,7 +128,7 @@ const AdminAuditLogs = () => {
 
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Filter className="h-4 w-4" />
-        <span>Showing {filteredLogs.length} of {adminLogs.length} log entries</span>
+        <span>Showing {paginatedLogs.length} of {filteredLogs.length} log entries</span>
       </div>
       
       <Card>
@@ -138,18 +148,23 @@ const AdminAuditLogs = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredLogs.map((log, index) => (
+                {paginatedLogs.map((log, index) => (
                   <tr key={index} className="border-b hover:bg-muted/20">
                     <td className="p-4 whitespace-nowrap text-sm">
-                      {log.timestamp.toLocaleDateString()} {log.timestamp.toLocaleTimeString()}
+                      <div className="hidden md:block">
+                        {log.timestamp.toLocaleDateString()} {log.timestamp.toLocaleTimeString()}
+                      </div>
+                      <div className="md:hidden text-xs">
+                        {log.timestamp.toLocaleDateString()}
+                      </div>
                     </td>
                     <td className="p-4">
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 text-xs">
                         {log.adminId}
                       </Badge>
                     </td>
                     <td className="p-4">
-                      <Badge className={getBadgeColor(log.action)}>
+                      <Badge className={`${getBadgeColor(log.action)} text-xs`}>
                         {formatActionText(log.action)}
                       </Badge>
                     </td>
@@ -159,7 +174,7 @@ const AdminAuditLogs = () => {
                       </div>
                     </td>
                     <td className="p-4 hidden md:table-cell">
-                      <Badge variant="outline">
+                      <Badge variant="outline" className="text-xs">
                         {log.targetType}: {log.targetId}
                       </Badge>
                     </td>
@@ -169,10 +184,24 @@ const AdminAuditLogs = () => {
             </table>
           </div>
           
-          {filteredLogs.length === 0 && (
+          {paginatedLogs.length === 0 && (
             <div className="text-center p-8">
               <p className="text-social-muted">No logs found matching your search criteria.</p>
             </div>
+          )}
+
+          {filteredLogs.length > 0 && (
+            <AdminTablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={filteredLogs.length}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              }}
+            />
           )}
         </CardContent>
       </Card>

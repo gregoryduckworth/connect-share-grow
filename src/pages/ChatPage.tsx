@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import ChatInterface from "@/components/chat/ChatInterface";
 
 interface Chat {
   id: string;
@@ -38,8 +39,9 @@ const ChatPage = () => {
   const [newChatDialogOpen, setNewChatDialogOpen] = useState(false);
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
   const [groupName, setGroupName] = useState("");
+  const currentUser = "current-user";
 
-  // Mock friends data - only friends can be messaged
+  // Mock friends data
   const friends: Friend[] = [
     {
       id: "friend-1",
@@ -101,10 +103,6 @@ const ChatPage = () => {
     chat.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredFriends = friends.filter(friend =>
-    friend.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   const handleStartIndividualChat = (friendId: string) => {
     const friend = friends.find(f => f.id === friendId);
     if (!friend) return;
@@ -163,6 +161,8 @@ const ChatPage = () => {
       setSelectedFriends(selectedFriends.filter(id => id !== friendId));
     }
   };
+
+  const selectedChatData = chats.find(chat => chat.id === selectedChat);
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -329,31 +329,14 @@ const ChatPage = () => {
         {/* Chat Window */}
         <div className="lg:col-span-2">
           <Card className="h-full">
-            {selectedChat ? (
-              <div className="h-full flex flex-col">
-                <CardHeader className="border-b">
-                  <CardTitle className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8 bg-social-primary text-white">
-                      <div className="flex h-full w-full items-center justify-center">
-                        {chats.find(c => c.id === selectedChat)?.type === "group" ? (
-                          <Users className="h-4 w-4" />
-                        ) : (
-                          <User className="h-4 w-4" />
-                        )}
-                      </div>
-                    </Avatar>
-                    {chats.find(c => c.id === selectedChat)?.name}
-                  </CardTitle>
-                </CardHeader>
-                
-                <CardContent className="flex-1 p-4">
-                  <div className="text-center text-gray-500">
-                    <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                    <p>Chat interface would be implemented here</p>
-                    <p className="text-sm">Messages, typing indicators, file sharing, etc.</p>
-                  </div>
-                </CardContent>
-              </div>
+            {selectedChatData ? (
+              <ChatInterface
+                chatId={selectedChatData.id}
+                chatName={selectedChatData.name}
+                chatType={selectedChatData.type}
+                participants={selectedChatData.participants}
+                currentUser={currentUser}
+              />
             ) : (
               <CardContent className="h-full flex items-center justify-center">
                 <div className="text-center text-gray-500">
