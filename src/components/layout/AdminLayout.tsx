@@ -4,6 +4,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminNotificationBell from "@/components/admin/AdminNotificationBell";
+import UserMenu from "./UserMenu";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +15,12 @@ const AdminLayout = () => {
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const isMobile = useIsMobile();
+
+  // Mock admin user data
+  const adminUser = {
+    name: "Admin User",
+    email: "admin@example.com"
+  };
 
   // Auto-close sidebar on mobile when component mounts
   useState(() => {
@@ -39,16 +47,24 @@ const AdminLayout = () => {
       </div>
       
       <div className="flex-1 flex flex-col">
-        <header className="sticky top-0 z-10 bg-white border-b h-16 flex items-center px-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="mr-4" 
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            {sidebarOpen && isMobile ? <X /> : <Menu />}
-          </Button>
-          <h1 className="text-xl font-semibold text-social-primary">Admin Dashboard</h1>
+        <header className="sticky top-0 z-10 bg-white border-b h-16 flex items-center justify-between px-4">
+          <div className="flex items-center">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="mr-4" 
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+            >
+              {sidebarOpen && isMobile ? <X /> : <Menu />}
+            </Button>
+            <h1 className="text-xl font-semibold text-social-primary">Admin Dashboard</h1>
+          </div>
+          
+          {/* Admin notifications and profile in top right */}
+          <div className="flex items-center gap-2">
+            <AdminNotificationBell />
+            <UserMenu user={adminUser} />
+          </div>
         </header>
         
         <main className="container mx-auto p-4 flex-1">

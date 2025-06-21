@@ -10,12 +10,17 @@ import {
   Shield,
   FileText,
   TrendingUp,
-  Bell
+  Bell,
+  X
 } from "lucide-react";
 import AdminNotificationBell from "./AdminNotificationBell";
 import UserMenu from "../layout/UserMenu";
 
-const AdminSidebar = () => {
+interface AdminSidebarProps {
+  onCloseMobile?: () => void;
+}
+
+const AdminSidebar = ({ onCloseMobile }: AdminSidebarProps) => {
   const location = useLocation();
   
   // Mock admin user data
@@ -23,6 +28,18 @@ const AdminSidebar = () => {
     name: "Admin User",
     email: "admin@example.com"
   };
+
+  // Mock counts for sidebar badges
+  const getCounts = () => {
+    return {
+      communities: 2, // pending approvals
+      reports: 5, // pending reports
+      users: 847, // total users
+      logs: 15 // recent audit logs
+    };
+  };
+
+  const counts = getCounts();
 
   const navItems = [
     {
@@ -47,13 +64,13 @@ const AdminSidebar = () => {
       name: "Communities",
       href: "/admin/communities",
       icon: MessageSquare,
-      badge: 2
+      badge: counts.communities
     },
     {
       name: "Reports", 
       href: "/admin/reports",
       icon: Shield,
-      badge: 5
+      badge: counts.reports
     },
     {
       name: "Audit Logs",
@@ -72,8 +89,18 @@ const AdminSidebar = () => {
   return (
     <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <h2 className="text-xl font-bold text-social-primary">Admin Panel</h2>
+        {onCloseMobile && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onCloseMobile}
+            className="lg:hidden"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {/* Navigation */}
@@ -83,7 +110,7 @@ const AdminSidebar = () => {
           const isActive = location.pathname === item.href;
           
           return (
-            <Link key={item.name} to={item.href}>
+            <Link key={item.name} to={item.href} onClick={onCloseMobile}>
               <Button
                 variant={isActive ? "default" : "ghost"}
                 className={`w-full justify-start gap-3 ${
@@ -105,8 +132,8 @@ const AdminSidebar = () => {
         })}
       </nav>
 
-      {/* Top Bar for Admin */}
-      <div className="p-4 border-t border-gray-200">
+      {/* Top Bar for Admin - moved to top right will be handled in AdminLayout */}
+      <div className="p-4 border-t border-gray-200 lg:hidden">
         <div className="flex items-center justify-between mb-4">
           <AdminNotificationBell />
         </div>
