@@ -11,8 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { AlertTriangle, User, MessageSquare, FileText, Lock, Check } from "lucide-react";
+import { AlertTriangle, User, MessageSquare, FileText, Lock, Check, Ban, UserX } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface Report {
   id: string;
@@ -41,6 +44,8 @@ const ReportDetailsDialog = ({
   onLockContent 
 }: ReportDetailsDialogProps) => {
   const { toast } = useToast();
+  const [warnReason, setWarnReason] = useState("");
+  const [suspendReason, setSuspendReason] = useState("");
 
   if (!report) return null;
 
@@ -51,6 +56,59 @@ const ReportDetailsDialog = ({
 
   const handleLockContent = () => {
     onLockContent(report.id);
+    onClose();
+  };
+
+  const handleWarnUser = () => {
+    if (!warnReason.trim()) {
+      toast({
+        title: "Warning Required",
+        description: "Please provide a reason for the warning.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "User Warned",
+      description: `Warning sent to user with reason: ${warnReason}`,
+    });
+    
+    logAdminAction({
+      action: "user_warned",
+      details: `Warned user for report ${report.id}: ${warnReason}`,
+      targetId: report.contentId,
+      targetType: "user"
+    });
+    
+    setWarnReason("");
+    onClose();
+  };
+
+  const handleSuspendUser = () => {
+    if (!suspendReason.trim()) {
+      toast({
+        title: "Suspension Reason Required",
+        description: "Please provide a reason for the suspension.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "User Suspended",
+      description: `User suspended with reason: ${suspendReason}`,
+      variant: "destructive",
+    });
+    
+    logAdminAction({
+      action: "user_suspended",
+      details: `Suspended user for report ${report.id}: ${suspendReason}`,
+      targetId: report.contentId,
+      targetType: "user"
+    });
+    
+    setSuspendReason("");
     onClose();
   };
 
@@ -246,6 +304,54 @@ const ReportDetailsDialog = ({
               )}
             </CardContent>
           </Card>
+
+          {/* User Actions (only for user reports) */}
+          {report.contentType === "user" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <UserX className="h-5 w-5" />
+                  User Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="warnReason">Warning Reason</Label>
+                  <Input
+                    id="warnReason"
+                    placeholder="Enter reason for warning..."
+                    value={warnReason}
+                    onChange={(e) => setWarnReason(e.target.value)}
+                  />
+                  <Button 
+                    className="mt-2 bg-orange-500 hover:bg-orange-600"
+                    onClick={handleWarnUser}
+                  >
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    Send Warning
+                  </Button>
+                </div>
+                
+                <div>
+                  <Label htmlFor="suspendReason">Suspension Reason</Label>
+                  <Input
+                    i
+                    placeholder="Enter reason for suspension..."
+                    value={suspendReason}
+                    onChange={(e) => setSuspendReason(e.target.value)}
+                  />
+                  <Button 
+                    className="mt-2"
+                    variant="destructive"
+                    onClick={handleSuspendUser}
+                  >
+                    <Ban className="h-4 w-4 mr-2" />
+                    Suspend User
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <DialogFooter className="flex gap-2">

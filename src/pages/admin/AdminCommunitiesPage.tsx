@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   Table, TableBody, TableCell, TableHead, 
@@ -6,13 +7,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Dialog, DialogContent, DialogDescription, 
   DialogHeader, DialogTitle, DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, Users, Settings, UserPlus, Check, MessageSquare } from "lucide-react";
+import { Search, Users, Settings, UserPlus, Check, MessageSquare, Plus, X } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 
 interface Community {
@@ -25,6 +27,7 @@ interface Community {
   status: "active" | "pending" | "archived";
   createdBy: string;
   moderators: string[];
+  rules: string[];
 }
 
 interface CommunityMember {
@@ -38,6 +41,8 @@ const AdminCommunitiesPage = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
+  const [editingRules, setEditingRules] = useState(false);
+  const [tempRules, setTempRules] = useState<string[]>([]);
   const [communities, setCommunities] = useState<Community[]>([
     {
       id: "comm-1",
@@ -48,7 +53,13 @@ const AdminCommunitiesPage = () => {
       createdAt: new Date(2023, 1, 15),
       status: "active",
       createdBy: "John Doe",
-      moderators: ["John Doe", "Jane Smith"]
+      moderators: ["John Doe", "Jane Smith"],
+      rules: [
+        "Be respectful to all members",
+        "No spam or self-promotion without approval",
+        "Share constructive feedback on others' work",
+        "Use appropriate tags for your posts"
+      ]
     },
     {
       id: "comm-2",
@@ -59,7 +70,13 @@ const AdminCommunitiesPage = () => {
       createdAt: new Date(2023, 2, 10),
       status: "active",
       createdBy: "Robert Johnson",
-      moderators: ["Robert Johnson"]
+      moderators: ["Robert Johnson"],
+      rules: [
+        "Keep discussions tech-related",
+        "Provide sources for claims",
+        "No personal attacks or flame wars",
+        "Help newcomers learn"
+      ]
     },
     {
       id: "comm-3",
@@ -70,7 +87,12 @@ const AdminCommunitiesPage = () => {
       createdAt: new Date(2023, 3, 5),
       status: "active",
       createdBy: "Lisa Brown",
-      moderators: ["Lisa Brown", "Michael Wilson"]
+      moderators: ["Lisa Brown", "Michael Wilson"],
+      rules: [
+        "No spoilers without warnings",
+        "Respect different reading preferences",
+        "Provide book details when making recommendations"
+      ]
     },
     {
       id: "comm-4",
@@ -81,7 +103,12 @@ const AdminCommunitiesPage = () => {
       createdAt: new Date(2023, 4, 20),
       status: "pending",
       createdBy: "Jane Smith",
-      moderators: ["Jane Smith"]
+      moderators: ["Jane Smith"],
+      rules: [
+        "Share authentic travel experiences",
+        "Include photos when possible",
+        "Respect local cultures and customs"
+      ]
     },
   ]);
   
@@ -142,6 +169,74 @@ const AdminCommunitiesPage = () => {
     }
   };
 
+  const handleApproveCommunity = (communityId: string) => {
+    setCommunities(communities.map(community => 
+      community.id === communityId ? { ...community, status: "active" } : community
+    ));
+    
+    const community = communities.find(c => c.id === communityId);
+    
+    if (community) {
+      toast({
+        title: "Community Approved",
+        description: `${community.name} has been approved and is now active.`,
+      });
+      
+      logAdminAction({
+        action: "community_approved",
+        details: `Approved community: ${community.name}`,
+        targetId: community.id,
+        targetType: "community"
+      });
+    }
+  };
+
+  const handleEditRules = () => {
+    if (selectedCommunity) {
+      setTempRules([...selectedCommunity.rules]);
+      setEditingRules(true);
+    }
+  };
+
+  const handleSaveRules = () => {
+    if (selectedCommunity) {
+      setCommunities(communities.map(community => 
+        community.id === selectedCommunity.id 
+          ? { ...community, rules: tempRules }
+          : community
+      ));
+      
+      setSelectedCommunity({ ...selectedCommunity, rules: tempRules });
+      setEditingRules(false);
+      
+      toast({
+        title: "Rules Updated",
+        description: `Community rules for ${selectedCommunity.name} have been updated.`,
+      });
+      
+      logAdminAction({
+        action: "community_rules_updated",
+        details: `Updated rules for community: ${selectedCommunity.name}`,
+        targetId: selectedCommunity.id,
+        targetType: "community"
+      });
+    }
+  };
+
+  const handleAddRule = () => {
+    setTempRules([...tempRules, ""]);
+  };
+
+  const handleRemoveRule = (index: number) => {
+    setTempRules(tempRules.filter((_, i) => i !== index));
+  };
+
+  const handleRuleChange = (index: number, value: string) => {
+    const newRules = [...tempRules];
+    newRules[index] = value;
+    setTempRules(newRules);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -200,6 +295,16 @@ const AdminCommunitiesPage = () => {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
+                    {community.status === "pending" && (
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        className="text-xs bg-green-500 hover:bg-green-600"
+                        onClick={() => handleApproveCommunity(community.id)}
+                      >
+                        <Check className="h-3 w-3 mr-1" /> Approve
+                      </Button>
+                    )}
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button 
@@ -211,36 +316,100 @@ const AdminCommunitiesPage = () => {
                           <Settings className="h-3 w-3 mr-1" /> Manage
                         </Button>
                       </DialogTrigger>
-                      <DialogContent>
+                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>Manage Community</DialogTitle>
                           <DialogDescription>
                             View and update details for {community.name}.
                           </DialogDescription>
                         </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div>
-                            <h3 className="font-semibold mb-1">Community Name</h3>
-                            <p>{community.name}</p>
-                          </div>
-                          <div>
-                            <h3 className="font-semibold mb-1">Description</h3>
-                            <p className="text-sm">{community.description}</p>
-                          </div>
-                          <div>
-                            <h3 className="font-semibold mb-1">Created By</h3>
-                            <p>{community.createdBy}</p>
-                          </div>
-                          <div>
-                            <h3 className="font-semibold mb-1">Moderators</h3>
-                            <div className="flex flex-wrap gap-2">
-                              {community.moderators.map((mod, i) => (
-                                <Badge key={i} variant="secondary">{mod}</Badge>
-                              ))}
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Left Column - Basic Info */}
+                          <div className="space-y-4">
+                            <div>
+                              <h3 className="font-semibold mb-1">Community Name</h3>
+                              <p>{community.name}</p>
+                            </div>
+                            <div>
+                              <h3 className="font-semibold mb-1">Description</h3>
+                              <p className="text-sm">{community.description}</p>
+                            </div>
+                            <div>
+                              <h3 className="font-semibold mb-1">Created By</h3>
+                              <p>{community.createdBy}</p>
+                            </div>
+                            <div>
+                              <h3 className="font-semibold mb-1">Moderators</h3>
+                              <div className="flex flex-wrap gap-2">
+                                {community.moderators.map((mod, i) => (
+                                  <Badge key={i} variant="secondary">{mod}</Badge>
+                                ))}
+                              </div>
                             </div>
                           </div>
+
+                          {/* Right Column - Rules */}
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h3 className="font-semibold">Community Rules</h3>
+                              {!editingRules && (
+                                <Button variant="outline" size="sm" onClick={handleEditRules}>
+                                  Edit Rules
+                                </Button>
+                              )}
+                            </div>
+                            
+                            {editingRules ? (
+                              <div className="space-y-3">
+                                {tempRules.map((rule, index) => (
+                                  <div key={index} className="flex gap-2">
+                                    <Textarea
+                                      value={rule}
+                                      onChange={(e) => handleRuleChange(index, e.target.value)}
+                                      placeholder={`Rule ${index + 1}...`}
+                                      className="min-h-[60px]"
+                                    />
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleRemoveRule(index)}
+                                      className="mt-1"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                ))}
+                                <div className="flex gap-2">
+                                  <Button variant="outline" size="sm" onClick={handleAddRule}>
+                                    <Plus className="h-4 w-4 mr-1" /> Add Rule
+                                  </Button>
+                                  <Button size="sm" onClick={handleSaveRules}>
+                                    <Check className="h-4 w-4 mr-1" /> Save Rules
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={() => setEditingRules(false)}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <ol className="space-y-2 text-sm">
+                                {community.rules.map((rule, index) => (
+                                  <li key={index} className="flex">
+                                    <span className="font-medium text-social-primary mr-2">{index + 1}.</span>
+                                    <span>{rule}</span>
+                                  </li>
+                                ))}
+                              </ol>
+                            )}
+                          </div>
                         </div>
-                        <DialogFooter>
+
+                        <DialogFooter className="mt-6">
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button variant="default">

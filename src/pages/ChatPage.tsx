@@ -1,358 +1,382 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { User, Send, Video, Search, MessageCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar } from "@/components/ui/avatar";
+import { 
+  Dialog, DialogContent, DialogDescription, 
+  DialogHeader, DialogTitle, DialogTrigger,
+  DialogFooter 
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { MessageSquare, Plus, Users, User, Send } from "lucide-react";
 
-interface Friend {
-  id: number;
+interface Chat {
+  id: string;
   name: string;
-  avatar?: string;
+  type: "individual" | "group";
+  participants: string[];
   lastMessage: string;
-  time: string;
-  unread: number;
+  lastMessageTime: Date;
+  unreadCount: number;
 }
 
-interface ChatMessage {
-  id: number;
-  senderId: number;
-  text: string;
-  time: string;
+interface Message {
+  id: string;
+  sender: string;
+  content: string;
+  timestamp: Date;
 }
 
 const ChatPage = () => {
-  const [friends, setFriends] = useState<Friend[]>([
-    {
-      id: 1,
-      name: "Alex Johnson",
-      avatar: undefined,
-      lastMessage: "Are we still meeting today?",
-      time: "10:42 AM",
-      unread: 2,
-    },
-    {
-      id: 2,
-      name: "Morgan Smith",
-      avatar: undefined,
-      lastMessage: "I found that book you mentioned!",
-      time: "Yesterday",
-      unread: 0,
-    },
-    {
-      id: 3,
-      name: "Taylor Wilson",
-      avatar: undefined,
-      lastMessage: "Thanks for the recommendations!",
-      time: "2 days ago",
-      unread: 0,
-    },
-  ]);
-
-  const [selectedFriend, setSelectedFriend] = useState<Friend | null>(friends[0]);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 1,
-      senderId: 1,
-      text: "Hey there! How's your project coming along?",
-      time: "10:30 AM",
-    },
-    {
-      id: 2,
-      senderId: 0, // User's ID
-      text: "It's going well! I've almost finished the design phase.",
-      time: "10:32 AM",
-    },
-    {
-      id: 3,
-      senderId: 1,
-      text: "That's great news! Would you like to meet up today to discuss it?",
-      time: "10:35 AM",
-    },
-    {
-      id: 4,
-      senderId: 1,
-      text: "I'm free around 3 PM if that works for you.",
-      time: "10:36 AM",
-    },
-    {
-      id: 5,
-      senderId: 0,
-      text: "3 PM works for me. Should we meet at the usual cafe?",
-      time: "10:38 AM",
-    },
-    {
-      id: 6,
-      senderId: 1,
-      text: "Perfect! Yes, the cafe sounds good. Are we still meeting today?",
-      time: "10:42 AM",
-    },
-  ]);
-
+  const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isVideoCallActive, setIsVideoCallActive] = useState(false);
+  const [showNewChatDialog, setShowNewChatDialog] = useState(false);
+  const [newChatName, setNewChatName] = useState("");
+  const [newChatType, setNewChatType] = useState<"individual" | "group">("individual");
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+
+  // Mock data
+  const [chats, setChats] = useState<Chat[]>([
+    {
+      id: "1",
+      name: "John Doe",
+      type: "individual",
+      participants: ["John Doe"],
+      lastMessage: "Hey, how's the photography project going?",
+      lastMessageTime: new Date(2024, 5, 20, 14, 30),
+      unreadCount: 2
+    },
+    {
+      id: "2",
+      name: "Photography Team",
+      type: "group",
+      participants: ["Sarah Johnson", "Mike Chen", "Alex Rivera"],
+      lastMessage: "Sarah: Let's meet tomorrow at 3 PM",
+      lastMessageTime: new Date(2024, 5, 20, 12, 15),
+      unreadCount: 0
+    },
+    {
+      id: "3",
+      name: "Jane Smith",
+      type: "individual",
+      participants: ["Jane Smith"],
+      lastMessage: "Thanks for the help with the community setup!",
+      lastMessageTime: new Date(2024, 5, 19, 16, 45),
+      unreadCount: 1
+    }
+  ]);
+
+  const [messages, setMessages] = useState<Record<string, Message[]>>({
+    "1": [
+      {
+        id: "1",
+        sender: "John Doe",
+        content: "Hey, how's the photography project going?",
+        timestamp: new Date(2024, 5, 20, 14, 30)
+      },
+      {
+        id: "2",
+        sender: "John Doe",
+        content: "I saw your latest shots on the community page, they're amazing!",
+        timestamp: new Date(2024, 5, 20, 14, 31)
+      }
+    ],
+    "2": [
+      {
+        id: "1",
+        sender: "Sarah Johnson",
+        content: "Let's meet tomorrow at 3 PM",
+        timestamp: new Date(2024, 5, 20, 12, 15)
+      }
+    ],
+    "3": [
+      {
+        id: "1",
+        sender: "Jane Smith",
+        content: "Thanks for the help with the community setup!",
+        timestamp: new Date(2024, 5, 19, 16, 45)
+      }
+    ]
+  });
+
+  // Mock available users for creating new chats
+  const availableUsers = [
+    "Sarah Johnson", "Mike Chen", "Alex Rivera", "Robert Wilson", 
+    "Lisa Brown", "David Kim", "Emma Thompson", "James Miller"
+  ];
+
+  const selectedChatData = chats.find(chat => chat.id === selectedChat);
+  const chatMessages = selectedChat ? messages[selectedChat] || [] : [];
 
   const handleSendMessage = () => {
-    if (!newMessage.trim() || !selectedFriend) return;
-    
-    const newMsg: ChatMessage = {
-      id: messages.length + 1,
-      senderId: 0, // User's ID
-      text: newMessage,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    if (!newMessage.trim() || !selectedChat) return;
+
+    const message: Message = {
+      id: Date.now().toString(),
+      sender: "You",
+      content: newMessage,
+      timestamp: new Date()
     };
-    
-    setMessages([...messages, newMsg]);
+
+    setMessages(prev => ({
+      ...prev,
+      [selectedChat]: [...(prev[selectedChat] || []), message]
+    }));
+
+    // Update last message in chat list
+    setChats(prev => prev.map(chat => 
+      chat.id === selectedChat 
+        ? { ...chat, lastMessage: `You: ${newMessage}`, lastMessageTime: new Date() }
+        : chat
+    ));
+
     setNewMessage("");
+  };
+
+  const handleCreateChat = () => {
+    if (!newChatName.trim() || selectedUsers.length === 0) return;
+
+    const newChat: Chat = {
+      id: Date.now().toString(),
+      name: newChatType === "group" ? newChatName : selectedUsers[0],
+      type: newChatType,
+      participants: selectedUsers,
+      lastMessage: "Chat created",
+      lastMessageTime: new Date(),
+      unreadCount: 0
+    };
+
+    setChats([newChat, ...chats]);
+    setMessages(prev => ({ ...prev, [newChat.id]: [] }));
     
-    // Simulate reply after 1 second
-    setTimeout(() => {
-      const replyMsg: ChatMessage = {
-        id: messages.length + 2,
-        senderId: selectedFriend.id,
-        text: "Thanks for letting me know!",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      
-      setMessages(prevMessages => [...prevMessages, replyMsg]);
-    }, 1000);
+    // Reset form
+    setNewChatName("");
+    setSelectedUsers([]);
+    setShowNewChatDialog(false);
   };
 
-  const filteredFriends = friends.filter(friend => 
-    friend.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const startVideoCall = () => {
-    setIsVideoCallActive(true);
-  };
-
-  const endVideoCall = () => {
-    setIsVideoCallActive(false);
+  const handleUserSelection = (user: string, checked: boolean) => {
+    if (checked) {
+      setSelectedUsers([...selectedUsers, user]);
+    } else {
+      setSelectedUsers(selectedUsers.filter(u => u !== user));
+    }
   };
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col animate-fade-in">
-      <h1 className="text-3xl font-bold text-social-primary mb-4">Chat</h1>
-
-      <div className="flex flex-1 gap-4 h-full">
-        {/* Friends List */}
-        <Card className="w-full md:w-1/3 flex flex-col h-full">
-          <CardHeader className="pb-2">
-            <CardTitle>Friends</CardTitle>
-            <div className="relative mt-2">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search friends..."
-                className="pl-8"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-hidden p-0">
-            <ScrollArea className="h-full pr-4">
-              <div className="space-y-1 p-4">
-                {filteredFriends.map((friend) => (
-                  <div
-                    key={friend.id}
-                    className={cn(
-                      "flex items-center gap-3 p-3 rounded-md cursor-pointer",
-                      selectedFriend?.id === friend.id
-                        ? "bg-social-primary text-white"
-                        : "hover:bg-social-background"
-                    )}
-                    onClick={() => {
-                      setSelectedFriend(friend);
-                      // Mark messages as read when opening chat
-                      setFriends(friends.map(f => 
-                        f.id === friend.id ? { ...f, unread: 0 } : f
-                      ));
-                    }}
-                  >
-                    <Avatar>
-                      <AvatarFallback className={cn(
-                        selectedFriend?.id === friend.id
-                          ? "bg-white text-social-primary"
-                          : "bg-social-primary text-white"
-                      )}>
-                        {friend.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-center">
-                        <h4 className={cn(
-                          "font-medium truncate",
-                          selectedFriend?.id !== friend.id && friend.unread > 0 && "font-bold"
-                        )}>
-                          {friend.name}
-                        </h4>
-                        <span className="text-xs">
-                          {friend.time}
-                        </span>
-                      </div>
-                      <p className={cn(
-                        "text-sm truncate",
-                        selectedFriend?.id === friend.id
-                          ? "text-white/90"
-                          : "text-gray-500",
-                        friend.unread > 0 && "font-semibold"
-                      )}>
-                        {friend.lastMessage}
-                      </p>
-                    </div>
-                    {friend.unread > 0 && (
-                      <div className="min-w-[1.5rem] h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs">
-                        {friend.unread}
-                      </div>
-                    )}
-                  </div>
-                ))}
+    <div className="h-[calc(100vh-8rem)] flex">
+      {/* Chat List */}
+      <div className="w-1/3 border-r bg-card">
+        <div className="p-4 border-b">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Messages</h2>
+            <Dialog open={showNewChatDialog} onOpenChange={setShowNewChatDialog}>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Chat
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Start New Chat</DialogTitle>
+                  <DialogDescription>
+                    Create a new individual chat or group conversation.
+                  </DialogDescription>
+                </DialogHeader>
                 
-                {filteredFriends.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-social-muted">No friends found matching your search.</p>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-        
-        {/* Chat Area */}
-        <Card className="flex-1 flex flex-col h-full">
-          {selectedFriend ? (
-            <>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarFallback className="bg-social-primary text-white">
-                      {selectedFriend.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <CardTitle>{selectedFriend.name}</CardTitle>
-                    <p className="text-xs text-gray-500">Online</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="border-social-primary text-social-primary"
-                    onClick={startVideoCall}
-                  >
-                    <Video className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              
-              {isVideoCallActive ? (
-                <div className="flex-1 bg-gray-900 flex flex-col items-center justify-center relative">
-                  <div className="text-white text-center">
-                    <h3 className="text-xl font-bold mb-2">Video Call with {selectedFriend.name}</h3>
-                    <p className="text-gray-300 mb-4">Connected</p>
-                    
-                    {/* Large video placeholder */}
-                    <div className="w-full max-w-2xl h-80 bg-gray-800 rounded-lg mb-6 flex items-center justify-center">
-                      <Avatar className="w-32 h-32">
-                        <AvatarFallback className="text-4xl bg-social-primary">
-                          {selectedFriend.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                    
-                    {/* Small self-view video */}
-                    <div className="absolute bottom-20 right-8 w-48 h-32 bg-gray-700 rounded-lg border-2 border-white flex items-center justify-center">
-                      <Avatar className="w-16 h-16">
-                        <AvatarFallback className="text-2xl bg-social-secondary">
-                          <User />
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                    
-                    <Button 
-                      variant="destructive"
-                      onClick={endVideoCall}
-                      className="mt-4"
-                    >
-                      End Call
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <CardContent className="flex-1 overflow-hidden p-0">
-                    <ScrollArea className="h-full p-4">
-                      <div className="space-y-4">
-                        {messages.map((message) => (
-                          <div
-                            key={message.id}
-                            className={cn(
-                              "flex",
-                              message.senderId === 0 ? "justify-end" : "justify-start"
-                            )}
-                          >
-                            <div
-                              className={cn(
-                                "max-w-[70%] rounded-lg px-4 py-2",
-                                message.senderId === 0
-                                  ? "bg-social-primary text-white"
-                                  : "bg-gray-100"
-                              )}
-                            >
-                              <p>{message.text}</p>
-                              <span className={cn(
-                                "text-xs block text-right mt-1",
-                                message.senderId === 0 ? "text-white/70" : "text-gray-500"
-                              )}>
-                                {message.time}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </CardContent>
-                  
-                  <div className="p-4 border-t">
-                    <form 
-                      className="flex items-center gap-2"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }}
-                    >
-                      <Input
-                        placeholder="Type a message..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        className="flex-1"
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="individual"
+                        checked={newChatType === "individual"}
+                        onCheckedChange={() => setNewChatType("individual")}
                       />
-                      <Button 
-                        type="submit" 
-                        size="icon"
-                        className="bg-social-primary hover:bg-social-secondary"
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
-                    </form>
+                      <Label htmlFor="individual">Individual</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="group"
+                        checked={newChatType === "group"}
+                        onCheckedChange={() => setNewChatType("group")}
+                      />
+                      <Label htmlFor="group">Group</Label>
+                    </div>
                   </div>
-                </>
-              )}
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full">
-              <MessageCircle className="h-12 w-12 text-social-muted mb-4" />
-              <h3 className="text-xl font-medium mb-2">No chat selected</h3>
-              <p className="text-social-muted">Choose a friend to start chatting</p>
+
+                  {newChatType === "group" && (
+                    <div>
+                      <Label htmlFor="chatName">Group Name</Label>
+                      <Input
+                        id="chatName"
+                        placeholder="Enter group name..."
+                        value={newChatName}
+                        onChange={(e) => setNewChatName(e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <Label>Select {newChatType === "group" ? "Participants" : "User"}</Label>
+                    <div className="max-h-48 overflow-y-auto border rounded-md p-2 space-y-2">
+                      {availableUsers.map(user => (
+                        <div key={user} className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={selectedUsers.includes(user)}
+                            onCheckedChange={(checked) => handleUserSelection(user, checked as boolean)}
+                            disabled={newChatType === "individual" && selectedUsers.length >= 1 && !selectedUsers.includes(user)}
+                          />
+                          <Label className="text-sm">{user}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowNewChatDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleCreateChat}
+                    disabled={selectedUsers.length === 0 || (newChatType === "group" && !newChatName.trim())}
+                  >
+                    Create Chat
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+
+        <div className="overflow-y-auto">
+          {chats.map((chat) => (
+            <div
+              key={chat.id}
+              className={`p-4 border-b cursor-pointer hover:bg-muted/50 ${
+                selectedChat === chat.id ? "bg-social-accent/20 border-l-4 border-l-social-primary" : ""
+              }`}
+              onClick={() => setSelectedChat(chat.id)}
+            >
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10 bg-social-primary text-white">
+                  <div className="flex h-full w-full items-center justify-center">
+                    {chat.type === "group" ? (
+                      <Users className="h-5 w-5" />
+                    ) : (
+                      <User className="h-5 w-5" />
+                    )}
+                  </div>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium truncate">{chat.name}</h3>
+                    {chat.unreadCount > 0 && (
+                      <Badge className="bg-social-primary text-xs">
+                        {chat.unreadCount}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {chat.lastMessage}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {chat.lastMessageTime.toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
             </div>
-          )}
-        </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {selectedChatData ? (
+          <>
+            {/* Chat Header */}
+            <div className="p-4 border-b bg-card">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10 bg-social-primary text-white">
+                  <div className="flex h-full w-full items-center justify-center">
+                    {selectedChatData.type === "group" ? (
+                      <Users className="h-5 w-5" />
+                    ) : (
+                      <User className="h-5 w-5" />
+                    )}
+                  </div>
+                </Avatar>
+                <div>
+                  <h3 className="font-semibold">{selectedChatData.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedChatData.type === "group" 
+                      ? `${selectedChatData.participants.length} members`
+                      : "Active now"
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {chatMessages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.sender === "You" ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-[70%] rounded-lg p-3 ${
+                      message.sender === "You"
+                        ? "bg-social-primary text-white"
+                        : "bg-muted"
+                    }`}
+                  >
+                    {selectedChatData.type === "group" && message.sender !== "You" && (
+                      <p className="text-xs font-semibold mb-1">{message.sender}</p>
+                    )}
+                    <p className="text-sm">{message.content}</p>
+                    <p className={`text-xs mt-1 ${
+                      message.sender === "You" ? "text-white/70" : "text-muted-foreground"
+                    }`}>
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Message Input */}
+            <div className="p-4 border-t bg-card">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Type a message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                />
+                <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Select a chat to start messaging</h3>
+              <p className="text-muted-foreground">
+                Choose from your existing conversations or start a new one.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

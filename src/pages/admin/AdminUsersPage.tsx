@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   Table, TableBody, TableCell, TableHead, 
@@ -11,6 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
+import { 
+  AlertDialog, AlertDialogAction, AlertDialogCancel, 
+  AlertDialogContent, AlertDialogDescription, 
+  AlertDialogFooter, AlertDialogHeader, 
+  AlertDialogTitle, AlertDialogTrigger 
+} from "@/components/ui/alert-dialog";
 import { Shield, Search, User, Check } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import UserProfileDialog from "@/components/admin/UserProfileDialog";
@@ -23,11 +30,14 @@ interface AppUser {
   role: "user" | "moderator" | "admin";
   status: "active" | "suspended" | "banned";
   communities?: string[];
+  suspensionReason?: string;
+  suspendedAt?: Date;
 }
 
 const AdminUsersPage = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentUser] = useState("admin@example.com"); // Mock current admin user
   const [users, setUsers] = useState<AppUser[]>([
     {
       id: "user-1",
@@ -63,7 +73,9 @@ const AdminUsersPage = () => {
       joinDate: new Date(2023, 3, 5),
       role: "user",
       status: "suspended",
-      communities: []
+      communities: [],
+      suspensionReason: "Repeated violation of community guidelines and inappropriate behavior",
+      suspendedAt: new Date(2024, 5, 10)
     },
     {
       id: "user-5",
@@ -101,6 +113,8 @@ const AdminUsersPage = () => {
       });
     }
   };
+
+  const isCurrentUser = (userEmail: string) => userEmail === currentUser;
 
   return (
     <div className="space-y-6">
@@ -143,20 +157,53 @@ const AdminUsersPage = () => {
                 <TableCell className="hidden md:table-cell">{user.email}</TableCell>
                 <TableCell className="hidden md:table-cell">{user.joinDate.toLocaleDateString()}</TableCell>
                 <TableCell>
-                  <Select 
-                    defaultValue={user.role} 
-                    onValueChange={(value) => handleRoleChange(user.id, value)}
-                    disabled={user.role === "admin"}
-                  >
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="moderator">Moderator</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {isCurrentUser(user.email) ? (
+                    <Badge className="bg-social-primary">
+                      {user.role === "admin" && <Shield className="h-3 w-3 mr-1" />}
+                      {user.role} (You)
+                    </Badge>
+                  ) : (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <div>
+                          <Select 
+                            defaultValue={user.role} 
+                            onValueChange={(value) => {}} // Handled by AlertDialog
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="user">User</SelectItem>
+                              <SelectItem value="moderator">Moderator</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirm Role Change</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to change {user.name}'s role? This action will update their permissions across the platform.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => {
+                            // This would normally get the new role from the dialog context
+                            // For now, we'll cycle through roles as an example
+                            const roleOrder = ["user", "moderator", "admin"];
+                            const currentIndex = roleOrder.indexOf(user.role);
+                            const newRole = roleOrder[(currentIndex + 1) % roleOrder.length];
+                            handleRoleChange(user.id, newRole);
+                          }}>
+                            <Check className="h-4 w-4 mr-1" /> Confirm Change
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </TableCell>
                 <TableCell>
                   <Badge className={

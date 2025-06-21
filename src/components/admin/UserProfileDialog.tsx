@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Calendar, MessageSquare, Users, Shield } from "lucide-react";
+import { User, Calendar, MessageSquare, Users, Shield, AlertTriangle } from "lucide-react";
 
 interface UserProfileDialogProps {
   user: {
@@ -22,6 +22,8 @@ interface UserProfileDialogProps {
     role: "user" | "moderator" | "admin";
     status: "active" | "suspended" | "banned";
     communities?: string[];
+    suspensionReason?: string;
+    suspendedAt?: Date;
   };
   children: React.ReactNode;
 }
@@ -100,6 +102,35 @@ const UserProfileDialog = ({ user, children }: UserProfileDialogProps) => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Suspension Details */}
+          {user.status === "suspended" && user.suspensionReason && (
+            <Card className="border-orange-200">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2 text-orange-700">
+                  <AlertTriangle className="h-5 w-5" />
+                  Suspension Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="font-medium">Suspension Reason:</span>
+                  <span className="text-orange-700">{user.suspensionReason}</span>
+                </div>
+                {user.suspendedAt && (
+                  <div className="flex justify-between">
+                    <span className="font-medium">Suspended Date:</span>
+                    <span>{user.suspendedAt.toLocaleDateString()}</span>
+                  </div>
+                )}
+                <div className="p-3 bg-orange-50 rounded-md">
+                  <p className="text-sm text-orange-800">
+                    This user is currently suspended and cannot access the platform.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Activity Stats */}
           <Card>
