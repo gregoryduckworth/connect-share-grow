@@ -24,6 +24,7 @@ interface UserProfileDialogProps {
     communities?: string[];
     suspensionReason?: string;
     suspendedAt?: Date;
+    suspendedBy?: string;
   };
   children: React.ReactNode;
 }
@@ -121,6 +122,12 @@ const UserProfileDialog = ({ user, children }: UserProfileDialogProps) => {
                   <div className="flex justify-between">
                     <span className="font-medium">Suspended Date:</span>
                     <span>{user.suspendedAt.toLocaleDateString()}</span>
+                  </div>
+                )}
+                {user.suspendedBy && (
+                  <div className="flex justify-between">
+                    <span className="font-medium">Suspended By:</span>
+                    <span className="font-semibold text-red-600">{user.suspendedBy}</span>
                   </div>
                 )}
                 <div className="p-3 bg-orange-50 rounded-md">

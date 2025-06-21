@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -46,6 +45,7 @@ const ReportDetailsDialog = ({
   const { toast } = useToast();
   const [warnReason, setWarnReason] = useState("");
   const [suspendReason, setSuspendReason] = useState("");
+  const [currentAdmin] = useState("admin@example.com"); // Mock current admin
 
   if (!report) return null;
 
@@ -76,7 +76,7 @@ const ReportDetailsDialog = ({
     
     logAdminAction({
       action: "user_warned",
-      details: `Warned user for report ${report.id}: ${warnReason}`,
+      details: `Warned user for report ${report.id}: ${warnReason} (Admin: ${currentAdmin})`,
       targetId: report.contentId,
       targetType: "user"
     });
@@ -103,7 +103,7 @@ const ReportDetailsDialog = ({
     
     logAdminAction({
       action: "user_suspended",
-      details: `Suspended user for report ${report.id}: ${suspendReason}`,
+      details: `Suspended user for report ${report.id}: ${suspendReason} (Admin: ${currentAdmin})`,
       targetId: report.contentId,
       targetType: "user"
     });
@@ -138,7 +138,6 @@ const ReportDetailsDialog = ({
     }
   };
 
-  // Mock detailed content based on type
   const getDetailedContent = () => {
     switch (report.contentType) {
       case "post":
@@ -335,7 +334,7 @@ const ReportDetailsDialog = ({
                 <div>
                   <Label htmlFor="suspendReason">Suspension Reason</Label>
                   <Input
-                    i
+                    id="suspendReason"
                     placeholder="Enter reason for suspension..."
                     value={suspendReason}
                     onChange={(e) => setSuspendReason(e.target.value)}

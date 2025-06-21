@@ -1,55 +1,53 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import NotificationBell from "./NotificationBell";
 
 const MainLayout = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const isMobile = useIsMobile();
-
-  // Auto-close sidebar on mobile when component mounts
-  useEffect(() => {
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
-  }, [isMobile]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex w-full bg-social-background">
-      <div 
-        className={`${sidebarOpen ? "fixed inset-0 z-40 bg-black/50 md:hidden" : "hidden"}`} 
-        onClick={() => setSidebarOpen(false)}
-      />
-      
-      <div 
-        className={`${
-          sidebarOpen 
-            ? "fixed inset-y-0 left-0 z-50 w-64 transform translate-x-0" 
-            : "fixed inset-y-0 left-0 z-50 w-64 transform -translate-x-full"
-        } transition-transform duration-200 ease-in-out md:relative md:translate-x-0`}
-      >
-        <Sidebar onCloseMobile={() => setSidebarOpen(false)} />
-      </div>
-      
-      <div className="flex-1 flex flex-col">
-        <header className="h-16 flex items-center px-4 border-b bg-white sticky top-0 z-10">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="mr-4" 
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-          >
-            {sidebarOpen && isMobile ? <X /> : <Menu />}
-          </Button>
-          <h1 className="text-xl font-semibold text-social-primary">ConnectSphere</h1>
-        </header>
-        <main className="flex-1 p-4 overflow-auto">
-          <Outlet />
-        </main>
+    <div className="min-h-screen bg-background">
+      <div className="flex h-screen">
+        {/* Mobile sidebar backdrop */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar */}
+        <div className={`
+          fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out
+          lg:relative lg:translate-x-0 lg:z-0
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}>
+          <Sidebar onCloseMobile={() => setSidebarOpen(false)} />
+        </div>
+
+        {/* Main content */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Top bar */}
+          <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 text-gray-600 hover:text-gray-900"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <div className="flex-1" />
+            <NotificationBell />
+          </div>
+
+          {/* Page content */}
+          <div className="flex-1 overflow-auto">
+            <Outlet />
+          </div>
+        </div>
       </div>
     </div>
   );

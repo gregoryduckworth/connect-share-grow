@@ -1,257 +1,201 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Search, User } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-
-interface Community {
-  id: number;
-  name: string;
-  description: string;
-  members: number;
-  tags: string[];
-  joined: boolean;
-}
-
-interface Person {
-  id: number;
-  name: string;
-  interests: string[];
-  mutualFriends: number;
-  isFriend: boolean;
-}
+import { Badge } from "@/components/ui/badge";
+import { Search, Users, TrendingUp, Star } from "lucide-react";
 
 const DiscoverPage = () => {
-  const { toast } = useToast();
-  const [communities, setCommunities] = useState<Community[]>([
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Mock trending communities
+  const trendingCommunities = [
     {
       id: 1,
       name: "Photography Enthusiasts",
-      description: "Share your best shots and photography tips.",
-      members: 2453,
+      description: "Share your best shots and learn new techniques",
+      members: 15420,
+      posts: 892,
       tags: ["Photography", "Art", "Creative"],
-      joined: false,
+      growth: "+12%"
     },
     {
       id: 2,
-      name: "Travel Adventures",
-      description: "Share travel stories and find travel companions.",
-      members: 3872,
-      tags: ["Travel", "Adventure", "Culture"],
-      joined: false,
+      name: "Web Development",
+      description: "Discussion about modern web technologies",
+      members: 8930,
+      posts: 1247,
+      tags: ["Programming", "JavaScript", "React"],
+      growth: "+8%"
     },
     {
       id: 3,
-      name: "Home Cooking",
-      description: "Exchange recipes and cooking tips for homemade meals.",
-      members: 4156,
-      tags: ["Cooking", "Food", "Recipes"],
-      joined: false,
-    },
-  ]);
-  
-  const [people, setPeople] = useState<Person[]>([
-    {
-      id: 1,
-      name: "Jordan Lee",
-      interests: ["Photography", "Hiking", "Technology"],
-      mutualFriends: 4,
-      isFriend: false,
+      name: "Cooking Adventures",
+      description: "Recipes, tips, and culinary discussions",
+      members: 12580,
+      posts: 567,
+      tags: ["Cooking", "Recipes", "Food"],
+      growth: "+15%"
     },
     {
-      id: 2,
-      name: "Casey Williams",
-      interests: ["Music", "Film", "Art"],
-      mutualFriends: 2,
-      isFriend: false,
-    },
-    {
-      id: 3,
-      name: "Riley Garcia",
-      interests: ["Gaming", "Programming", "Books"],
-      mutualFriends: 3,
-      isFriend: false,
-    },
-  ]);
+      id: 4,
+      name: "Fitness Journey",
+      description: "Motivation and tips for staying healthy",
+      members: 7652,
+      posts: 432,
+      tags: ["Fitness", "Health", "Motivation"],
+      growth: "+6%"
+    }
+  ];
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterBy, setFilterBy] = useState("all");
-  
-  const toggleJoinCommunity = (id: number) => {
-    setCommunities(communities.map(community => 
-      community.id === id 
-        ? { ...community, joined: !community.joined } 
-        : community
-    ));
-    
-    const community = communities.find(c => c.id === id);
-    if (community) {
-      toast({
-        title: community.joined ? "Left community" : "Joined community",
-        description: community.joined 
-          ? `You have left the ${community.name} community` 
-          : `You have joined the ${community.name} community`,
-      });
-    }
-  };
-  
-  const toggleFriendRequest = (id: number) => {
-    setPeople(people.map(person => 
-      person.id === id 
-        ? { ...person, isFriend: !person.isFriend } 
-        : person
-    ));
-    
-    const person = people.find(p => p.id === id);
-    if (person) {
-      toast({
-        title: person.isFriend ? "Friend request canceled" : "Friend request sent",
-        description: person.isFriend 
-          ? `You have canceled your friend request to ${person.name}` 
-          : `You have sent a friend request to ${person.name}`,
-      });
-    }
-  };
-  
-  const filteredCommunities = communities.filter(community => 
-    community.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  // Mock popular topics
+  const popularTopics = [
+    { name: "React Hooks", posts: 234 },
+    { name: "Street Photography", posts: 189 },
+    { name: "Meal Prep", posts: 156 },
+    { name: "Home Workouts", posts: 143 },
+    { name: "JavaScript Tips", posts: 128 },
+    { name: "Portrait Photography", posts: 112 },
+    { name: "Healthy Recipes", posts: 98 },
+    { name: "CSS Grid", posts: 87 }
+  ];
+
+  const filteredCommunities = trendingCommunities.filter(community =>
+    community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
     community.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-  
-  const filteredPeople = people.filter(person => 
-    person.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    person.interests.some(interest => interest.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-social-primary">Discover</h1>
-          <p className="text-social-muted">Find new communities and people based on your interests</p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <Select value={filterBy} onValueChange={setFilterBy}>
-            <SelectTrigger className="w-full sm:w-40">
-              <SelectValue placeholder="Filter by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="communities">Communities</SelectItem>
-              <SelectItem value="people">People</SelectItem>
-            </SelectContent>
-          </Select>
+    <div className="container mx-auto px-4 py-6">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-social-primary mb-2">Discover</h1>
+        <p className="text-social-muted mb-6">
+          Find new communities and topics that interest you
+        </p>
+        
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search communities, topics, or tags..."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </div>
 
-      {/* Recommended Communities Section */}
-      {(filterBy === "all" || filterBy === "communities") && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-social-secondary">Recommended Communities</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredCommunities.map(community => (
-              <Card key={community.id} className="hover-scale">
-                <CardHeader>
-                  <CardTitle>{community.name}</CardTitle>
-                  <CardDescription className="flex items-center gap-1">
-                    <Users className="h-4 w-4" /> {community.members.toLocaleString()} members
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm">{community.description}</p>
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {community.tags.map(tag => (
-                      <Badge key={tag} variant="secondary" className="bg-social-accent/50">{tag}</Badge>
-                    ))}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Trending Communities */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Trending Communities
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {filteredCommunities.map((community) => (
+                  <div key={community.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="font-semibold text-lg text-social-primary">
+                          {community.name}
+                        </h3>
+                        <p className="text-social-muted text-sm">{community.description}</p>
+                      </div>
+                      <Badge className="bg-green-100 text-green-700">
+                        {community.growth}
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 mb-3 text-sm text-social-muted">
+                      <div className="flex items-center gap-1">
+                        <Users className="h-4 w-4" />
+                        <span>{community.members.toLocaleString()} members</span>
+                      </div>
+                      <div>
+                        <span>{community.posts} posts</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap gap-2">
+                        {community.tags.map((tag, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                      <Button size="sm">Join Community</Button>
+                    </div>
                   </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    variant={community.joined ? "outline" : "default"}
-                    className={community.joined 
-                      ? "border-social-primary text-social-primary" 
-                      : "bg-social-primary hover:bg-social-secondary"}
-                    onClick={() => toggleJoinCommunity(community.id)}
-                  >
-                    {community.joined ? "Leave" : "Join"} Community
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-            
-            {filteredCommunities.length === 0 && (
-              <div className="col-span-full text-center p-8">
-                <p className="text-social-muted">No communities found matching your search.</p>
+                ))}
               </div>
-            )}
-          </div>
+            </CardContent>
+          </Card>
         </div>
-      )}
 
-      {/* People You Might Know Section */}
-      {(filterBy === "all" || filterBy === "people") && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-social-secondary">People You Might Know</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredPeople.map(person => (
-              <Card key={person.id} className="hover-scale">
-                <CardHeader className="flex flex-row items-center gap-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-social-primary text-white">
-                      {person.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <CardTitle className="text-lg">{person.name}</CardTitle>
-                    <CardDescription>
-                      {person.mutualFriends} mutual {person.mutualFriends === 1 ? "friend" : "friends"}
-                    </CardDescription>
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Popular Topics */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5" />
+                Popular Topics
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {popularTopics.map((topic, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <span className="font-medium text-social-foreground">
+                      #{topic.name}
+                    </span>
+                    <span className="text-sm text-social-muted">
+                      {topic.posts} posts
+                    </span>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <h4 className="text-sm font-medium mb-2">Interests</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {person.interests.map(interest => (
-                      <Badge key={interest} variant="secondary" className="bg-social-accent/50">{interest}</Badge>
-                    ))}
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    variant={person.isFriend ? "outline" : "default"}
-                    className={person.isFriend 
-                      ? "border-social-primary text-social-primary" 
-                      : "bg-social-primary hover:bg-social-secondary w-full"}
-                    onClick={() => toggleFriendRequest(person.id)}
-                  >
-                    {person.isFriend ? "Cancel Request" : "Add Friend"}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-            
-            {filteredPeople.length === 0 && (
-              <div className="col-span-full text-center p-8">
-                <p className="text-social-muted">No people found matching your search.</p>
+                ))}
               </div>
-            )}
-          </div>
+            </CardContent>
+          </Card>
+
+          {/* Community Categories */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Browse Categories</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {[
+                  "Technology",
+                  "Arts & Creativity", 
+                  "Health & Fitness",
+                  "Food & Cooking",
+                  "Travel",
+                  "Education",
+                  "Gaming",
+                  "Music"
+                ].map((category, index) => (
+                  <Button
+                    key={index}
+                    variant="ghost"
+                    className="w-full justify-start text-left"
+                  >
+                    {category}
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      )}
+      </div>
     </div>
   );
 };

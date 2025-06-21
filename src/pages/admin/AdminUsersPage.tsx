@@ -21,6 +21,7 @@ import {
 import { Shield, Search, User, Check } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import UserProfileDialog from "@/components/admin/UserProfileDialog";
+import AdminTablePagination from "@/components/admin/AdminTablePagination";
 
 interface AppUser {
   id: string;
@@ -32,12 +33,16 @@ interface AppUser {
   communities?: string[];
   suspensionReason?: string;
   suspendedAt?: Date;
+  suspendedBy?: string;
 }
 
 const AdminUsersPage = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentUser] = useState("admin@example.com"); // Mock current admin user
+  const [currentUser] = useState("admin@example.com");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  
   const [users, setUsers] = useState<AppUser[]>([
     {
       id: "user-1",
@@ -75,7 +80,8 @@ const AdminUsersPage = () => {
       status: "suspended",
       communities: [],
       suspensionReason: "Repeated violation of community guidelines and inappropriate behavior",
-      suspendedAt: new Date(2024, 5, 10)
+      suspendedAt: new Date(2024, 5, 10),
+      suspendedBy: "admin@example.com"
     },
     {
       id: "user-5",
@@ -91,6 +97,12 @@ const AdminUsersPage = () => {
   const filteredUsers = users.filter(user => 
     user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredUsers.length / pageSize);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
 
   const handleRoleChange = (userId: string, newRole: string) => {
@@ -144,7 +156,7 @@ const AdminUsersPage = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers.map((user) => (
+            {paginatedUsers.map((user) => (
               <TableRow key={user.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -191,8 +203,6 @@ const AdminUsersPage = () => {
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
                           <AlertDialogAction onClick={() => {
-                            // This would normally get the new role from the dialog context
-                            // For now, we'll cycle through roles as an example
                             const roleOrder = ["user", "moderator", "admin"];
                             const currentIndex = roleOrder.indexOf(user.role);
                             const newRole = roleOrder[(currentIndex + 1) % roleOrder.length];
@@ -230,10 +240,24 @@ const AdminUsersPage = () => {
           </TableBody>
         </Table>
         
-        {filteredUsers.length === 0 && (
+        {paginatedUsers.length === 0 && (
           <div className="text-center p-8">
             <p className="text-social-muted">No users found matching your search.</p>
           </div>
+        )}
+        
+        {filteredUsers.length > 0 && (
+          <AdminTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={filteredUsers.length}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
+          />
         )}
       </div>
     </div>
