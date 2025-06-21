@@ -6,15 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Edit, Save, User } from "lucide-react";
+import { Edit, Save, User, Upload } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface UserProfile {
   name: string;
-  age: string;
+  dateOfBirth: string;
   email: string;
   bio: string;
   interests: string[];
+  avatarUrl?: string;
 }
 
 const ProfilePage = () => {
@@ -22,13 +23,26 @@ const ProfilePage = () => {
   const [editMode, setEditMode] = useState(false);
   const [profile, setProfile] = useState<UserProfile>({
     name: "Sarah Johnson",
-    age: "28",
+    dateOfBirth: "1996-03-15",
     email: "sarah.j@example.com",
     bio: "Software developer passionate about UX design and hiking on weekends.",
     interests: ["Technology", "Hiking", "Photography", "Reading"],
+    avatarUrl: undefined
   });
 
   const [editedProfile, setEditedProfile] = useState<UserProfile>({...profile});
+
+  // Calculate age from date of birth
+  const calculateAge = (dateOfBirth: string) => {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
 
   const handleEdit = () => {
     setEditMode(true);
@@ -49,16 +63,56 @@ const ProfilePage = () => {
     setEditedProfile(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setEditedProfile(prev => ({ ...prev, avatarUrl: result }));
+        toast({
+          title: "Avatar Updated",
+          description: "Your profile picture has been updated.",
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in p-6">
       <h1 className="text-3xl font-bold text-social-primary">My Profile</h1>
 
       <Card className="border-social-primary/20">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-social-primary rounded-full flex items-center justify-center text-white">
-                <User size={32} />
+              <div className="relative">
+                <div className="w-16 h-16 bg-social-primary rounded-full flex items-center justify-center text-white overflow-hidden">
+                  {(editMode ? editedProfile.avatarUrl : profile.avatarUrl) ? (
+                    <img 
+                      src={editMode ? editedProfile.avatarUrl : profile.avatarUrl} 
+                      alt={profile.name} 
+                      className="w-full h-full object-cover" 
+                    />
+                  ) : (
+                    <User size={32} />
+                  )}
+                </div>
+                {editMode && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
+                    <label htmlFor="avatar-upload" className="cursor-pointer text-white">
+                      <Upload size={20} />
+                    </label>
+                    <Input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      className="hidden"
+                    />
+                  </div>
+                )}
               </div>
               <div>
                 <CardTitle className="text-xl">{profile.name}</CardTitle>
@@ -90,11 +144,12 @@ const ProfilePage = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="age">Age</Label>
+                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
                   <Input 
-                    id="age" 
-                    name="age" 
-                    value={editedProfile.age} 
+                    id="dateOfBirth" 
+                    name="dateOfBirth" 
+                    type="date"
+                    value={editedProfile.dateOfBirth} 
                     onChange={handleChange} 
                   />
                 </div>
@@ -128,7 +183,7 @@ const ProfilePage = () => {
                 </div>
                 <div>
                   <h3 className="font-medium text-sm text-gray-500">Age</h3>
-                  <p>{profile.age}</p>
+                  <p>{calculateAge(profile.dateOfBirth)} years old</p>
                 </div>
               </div>
               <div>

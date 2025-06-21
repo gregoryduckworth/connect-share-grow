@@ -1,262 +1,218 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { Shield, Users, Save, Plus } from "lucide-react";
-import { logAdminAction } from "@/lib/admin-logger";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
+import { UserCheck, Users, Shield, Settings, Eye, Edit } from "lucide-react";
 
-interface Permission {
+interface Role {
   id: string;
   name: string;
   description: string;
-  enabled: boolean;
-  locked?: boolean; // Add locked property for system roles
+  permissions: string[];
+  userCount: number;
+  createdAt: Date;
 }
 
-interface RolePermissions {
-  [key: string]: Permission[];
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  assignedAt: Date;
 }
 
 const AdminRolesPage = () => {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("system-roles");
-  
-  const [rolePermissions, setRolePermissions] = useState<RolePermissions>({
-    "admin": [
-      { id: "perm-1", name: "manage_users", description: "Create, update, and delete users", enabled: true, locked: true },
-      { id: "perm-2", name: "manage_communities", description: "Create, update, and delete communities", enabled: true, locked: true },
-      { id: "perm-3", name: "manage_content", description: "Moderate all content across the platform", enabled: true, locked: true },
-      { id: "perm-4", name: "manage_roles", description: "Assign roles to users", enabled: true, locked: true },
-      { id: "perm-5", name: "view_analytics", description: "Access analytics and reports", enabled: true, locked: true },
-    ],
-    "moderator": [
-      { id: "perm-1", name: "manage_users", description: "Create, update, and delete users", enabled: false, locked: true },
-      { id: "perm-2", name: "manage_communities", description: "Create, update, and delete communities", enabled: false, locked: true },
-      { id: "perm-3", name: "manage_content", description: "Moderate all content across the platform", enabled: true, locked: true },
-      { id: "perm-4", name: "manage_roles", description: "Assign roles to users", enabled: false, locked: true },
-      { id: "perm-5", name: "view_analytics", description: "Access analytics and reports", enabled: true, locked: true },
-    ],
-    "community_moderator": [
-      { id: "perm-1", name: "manage_users", description: "Create, update, and delete users", enabled: false },
-      { id: "perm-2", name: "manage_communities", description: "Create, update, and delete communities", enabled: false },
-      { id: "perm-3", name: "manage_content", description: "Moderate content within assigned communities", enabled: true },
-      { id: "perm-4", name: "manage_roles", description: "Assign roles to users", enabled: false },
-      { id: "perm-5", name: "view_analytics", description: "Access analytics and reports", enabled: false },
-    ],
-    "user": [
-      { id: "perm-1", name: "manage_users", description: "Create, update, and delete users", enabled: false, locked: true },
-      { id: "perm-2", name: "manage_communities", description: "Create, update, and delete communities", enabled: false, locked: true },
-      { id: "perm-3", name: "manage_content", description: "Moderate content across the platform", enabled: false, locked: true },
-      { id: "perm-4", name: "manage_roles", description: "Assign roles to users", enabled: false, locked: true },
-      { id: "perm-5", name: "view_analytics", description: "Access analytics and reports", enabled: false, locked: true },
-    ],
-  });
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const handlePermissionToggle = (role: string, permId: string) => {
-    setRolePermissions({
-      ...rolePermissions,
-      [role]: rolePermissions[role].map(perm => 
-        perm.id === permId ? { ...perm, enabled: !perm.enabled } : perm
-      )
-    });
-  };
+  // Mock roles data
+  const [roles] = useState<Role[]>([
+    {
+      id: "admin",
+      name: "Administrator",
+      description: "Full system access with all permissions",
+      permissions: [
+        "manage_users",
+        "manage_communities",
+        "manage_reports",
+        "manage_settings",
+        "view_analytics",
+        "manage_roles"
+      ],
+      userCount: 3,
+      createdAt: new Date(2023, 0, 1)
+    },
+    {
+      id: "moderator",
+      name: "Moderator",
+      description: "Can moderate communities and handle user reports",
+      permissions: [
+        "moderate_communities",
+        "manage_reports",
+        "suspend_users",
+        "view_user_profiles"
+      ],
+      userCount: 12,
+      createdAt: new Date(2023, 1, 15)
+    },
+    {
+      id: "user",
+      name: "Regular User",
+      description: "Standard user with basic permissions",
+      permissions: [
+        "create_posts",
+        "join_communities",
+        "send_messages",
+        "edit_profile"
+      ],
+      userCount: 832,
+      createdAt: new Date(2023, 0, 1)
+    }
+  ]);
 
-  const handleSavePermissions = (role: string) => {
-    toast({
-      title: "Permissions Updated",
-      description: `Permissions for ${role} role have been updated.`,
-    });
-    
-    logAdminAction({
-      action: "permissions_updated",
-      details: `Updated permissions for role: ${role}`,
-      targetId: role,
-      targetType: "role"
-    });
+  // Mock users with roles
+  const [users] = useState<User[]>([
+    {
+      id: "1",
+      name: "Admin User",
+      email: "admin@example.com",
+      role: "Administrator",
+      assignedAt: new Date(2023, 0, 1)
+    },
+    {
+      id: "2",
+      name: "Sarah Johnson",
+      email: "sarah@example.com",
+      role: "Moderator", 
+      assignedAt: new Date(2023, 2, 10)
+    },
+    {
+      id: "3",
+      name: "Mike Chen",
+      email: "mike@example.com",
+      role: "Moderator",
+      assignedAt: new Date(2023, 3, 5)
+    }
+  ]);
+
+  const filteredRoles = roles.filter(role =>
+    role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    role.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const getRoleColor = (roleName: string) => {
+    switch (roleName.toLowerCase()) {
+      case "administrator":
+        return "bg-red-500";
+      case "moderator":
+        return "bg-orange-500";
+      default:
+        return "bg-blue-500";
+    }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 p-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-2xl font-semibold">Roles & Permissions</h2>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" /> Create Custom Role
+        <Button className="bg-social-primary hover:bg-social-secondary">
+          <UserCheck className="h-4 w-4 mr-2" />
+          Create Role
         </Button>
       </div>
-      
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="system-roles">System Roles</TabsTrigger>
-          <TabsTrigger value="community-roles">Community Roles</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="system-roles" className="space-y-4 mt-4">
-          {/* Admin Role */}
-          <Card>
-            <CardHeader className="bg-muted/50">
+
+      {/* Search */}
+      <div className="relative">
+        <Input
+          placeholder="Search roles..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      {/* Roles Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredRoles.map((role) => (
+          <Card key={role.id}>
+            <CardHeader>
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5 text-social-primary" />
-                  <CardTitle>Admin</CardTitle>
-                </div>
-                <Badge className="bg-social-primary">System Role - Fixed</Badge>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  {role.name}
+                </CardTitle>
+                <Badge className={getRoleColor(role.name)}>
+                  {role.userCount} users
+                </Badge>
               </div>
-              <CardDescription>
-                Full access to manage the entire platform - permissions cannot be modified
-              </CardDescription>
             </CardHeader>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                {rolePermissions["admin"].map((perm) => (
-                  <div key={perm.id} className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{perm.name}</p>
-                      <p className="text-sm text-muted-foreground">{perm.description}</p>
-                    </div>
-                    <Switch 
-                      checked={perm.enabled} 
-                      onCheckedChange={() => handlePermissionToggle("admin", perm.id)}
-                      disabled={perm.locked}
-                    />
-                  </div>
-                ))}
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600">{role.description}</p>
+              
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm">Permissions:</h4>
+                <div className="flex flex-wrap gap-1">
+                  {role.permissions.slice(0, 3).map((permission) => (
+                    <Badge key={permission} variant="secondary" className="text-xs">
+                      {permission.replace('_', ' ')}
+                    </Badge>
+                  ))}
+                  {role.permissions.length > 3 && (
+                    <Badge variant="secondary" className="text-xs">
+                      +{role.permissions.length - 3} more
+                    </Badge>
+                  )}
+                </div>
               </div>
-              <div className="mt-6 flex justify-end">
-                <Button disabled>
-                  <Save className="h-4 w-4 mr-2" /> Cannot Modify System Role
+
+              <div className="flex gap-2 pt-4">
+                <Button variant="outline" size="sm" className="flex-1">
+                  <Eye className="h-4 w-4 mr-1" />
+                  View
+                </Button>
+                <Button variant="outline" size="sm" className="flex-1">
+                  <Edit className="h-4 w-4 mr-1" />
+                  Edit
                 </Button>
               </div>
             </CardContent>
           </Card>
-          
-          {/* Moderator Role */}
-          <Card>
-            <CardHeader className="bg-muted/50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5 text-social-secondary" />
-                  <CardTitle>Moderator</CardTitle>
-                </div>
-                <Badge className="bg-social-secondary">System Role - Fixed</Badge>
-              </div>
-              <CardDescription>
-                Platform-wide moderation capabilities - permissions cannot be modified
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                {rolePermissions["moderator"].map((perm) => (
-                  <div key={perm.id} className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{perm.name}</p>
-                      <p className="text-sm text-muted-foreground">{perm.description}</p>
-                    </div>
-                    <Switch 
-                      checked={perm.enabled} 
-                      onCheckedChange={() => handlePermissionToggle("moderator", perm.id)}
-                      disabled={perm.locked}
-                    />
+        ))}
+      </div>
+
+      {/* Recent Role Assignments */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Role Assignments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {users.slice(0, 5).map((user) => (
+              <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-social-primary rounded-full flex items-center justify-center text-white">
+                    <Users className="h-4 w-4" />
                   </div>
-                ))}
-              </div>
-              <div className="mt-6 flex justify-end">
-                <Button disabled>
-                  <Save className="h-4 w-4 mr-2" /> Cannot Modify System Role
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* User Role */}
-          <Card>
-            <CardHeader className="bg-muted/50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Users className="h-5 w-5" />
-                  <CardTitle>User</CardTitle>
-                </div>
-                <Badge variant="outline">Default Role - Fixed</Badge>
-              </div>
-              <CardDescription>
-                Basic platform access for regular users - permissions cannot be modified
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                {rolePermissions["user"].map((perm) => (
-                  <div key={perm.id} className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{perm.name}</p>
-                      <p className="text-sm text-muted-foreground">{perm.description}</p>
-                    </div>
-                    <Switch 
-                      checked={perm.enabled} 
-                      onCheckedChange={() => handlePermissionToggle("user", perm.id)}
-                      disabled={perm.locked}
-                    />
+                  <div>
+                    <p className="font-medium text-sm">{user.name}</p>
+                    <p className="text-xs text-gray-500">{user.email}</p>
                   </div>
-                ))}
-              </div>
-              <div className="mt-6 flex justify-end">
-                <Button disabled>
-                  <Save className="h-4 w-4 mr-2" /> Cannot Modify System Role
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="community-roles" className="space-y-4 mt-4">
-          {/* Community Moderator Role */}
-          <Card>
-            <CardHeader className="bg-muted/50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5 text-social-accent" />
-                  <CardTitle>Community Moderator</CardTitle>
                 </div>
-                <Badge className="bg-social-accent">Community Role</Badge>
+                <div className="text-right">
+                  <Badge className={getRoleColor(user.role)}>
+                    {user.role}
+                  </Badge>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {user.assignedAt.toLocaleDateString()}
+                  </p>
+                </div>
               </div>
-              <CardDescription>
-                Moderation capabilities within assigned communities
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                {rolePermissions["community_moderator"].map((perm) => (
-                  <div key={perm.id} className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{perm.name}</p>
-                      <p className="text-sm text-muted-foreground">{perm.description}</p>
-                    </div>
-                    <Switch 
-                      checked={perm.enabled} 
-                      onCheckedChange={() => handlePermissionToggle("community_moderator", perm.id)}
-                      disabled={perm.locked}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 flex justify-end">
-                <Button onClick={() => handleSavePermissions("community_moderator")}>
-                  <Save className="h-4 w-4 mr-2" /> Save Changes
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <div className="text-center p-6">
-            <Button variant="outline" className="mr-2">
-              <Plus className="h-4 w-4 mr-2" /> Create Custom Community Role
-            </Button>
+            ))}
           </div>
-        </TabsContent>
-      </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };

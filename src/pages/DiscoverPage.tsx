@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Users, TrendingUp, Star } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Link } from "react-router-dom";
 
 const DiscoverPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Mock trending communities
@@ -21,6 +22,7 @@ const DiscoverPage = () => {
       members: 15420,
       posts: 892,
       tags: ["Photography", "Art", "Creative"],
+      category: "Arts & Creativity",
       growth: "+12%",
       joined: false
     },
@@ -31,6 +33,7 @@ const DiscoverPage = () => {
       members: 8930,
       posts: 1247,
       tags: ["Programming", "JavaScript", "React"],
+      category: "Technology",
       growth: "+8%",
       joined: true
     },
@@ -41,6 +44,7 @@ const DiscoverPage = () => {
       members: 12580,
       posts: 567,
       tags: ["Cooking", "Recipes", "Food"],
+      category: "Food & Cooking",
       growth: "+15%",
       joined: false
     },
@@ -51,6 +55,7 @@ const DiscoverPage = () => {
       members: 7652,
       posts: 432,
       tags: ["Fitness", "Health", "Motivation"],
+      category: "Health & Fitness",
       growth: "+6%",
       joined: false
     }
@@ -68,11 +73,26 @@ const DiscoverPage = () => {
     { name: "CSS Grid", posts: 87 }
   ];
 
-  const filteredCommunities = communities.filter(community =>
-    community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    community.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const categories = [
+    "Technology",
+    "Arts & Creativity", 
+    "Health & Fitness",
+    "Food & Cooking",
+    "Travel",
+    "Education",
+    "Gaming",
+    "Music"
+  ];
+
+  const filteredCommunities = communities.filter(community => {
+    const matchesSearch = community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      community.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesCategory = !selectedCategory || community.category === selectedCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
 
   const handleJoinCommunity = (communityId: number) => {
     setCommunities(communities.map(community => 
@@ -94,6 +114,10 @@ const DiscoverPage = () => {
     }
   };
 
+  const handleCategoryClick = (category: string) => {
+    setSelectedCategory(selectedCategory === category ? null : category);
+  };
+
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="mb-8">
@@ -102,7 +126,7 @@ const DiscoverPage = () => {
           Find new communities and topics that interest you
         </p>
         
-        <div className="relative max-w-md">
+        <div className="relative max-w-md mb-4">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search communities, topics, or tags..."
@@ -111,6 +135,18 @@ const DiscoverPage = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+
+        {selectedCategory && (
+          <div className="mb-4">
+            <Badge 
+              variant="secondary" 
+              className="cursor-pointer"
+              onClick={() => setSelectedCategory(null)}
+            >
+              {selectedCategory} ✕
+            </Badge>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -218,20 +254,12 @@ const DiscoverPage = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {[
-                  "Technology",
-                  "Arts & Creativity", 
-                  "Health & Fitness",
-                  "Food & Cooking",
-                  "Travel",
-                  "Education",
-                  "Gaming",
-                  "Music"
-                ].map((category, index) => (
+                {categories.map((category, index) => (
                   <Button
                     key={index}
-                    variant="ghost"
+                    variant={selectedCategory === category ? "default" : "ghost"}
                     className="w-full justify-start text-left"
+                    onClick={() => handleCategoryClick(category)}
                   >
                     {category}
                   </Button>

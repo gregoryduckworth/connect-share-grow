@@ -10,11 +10,9 @@ import {
   Shield,
   FileText,
   TrendingUp,
-  Bell,
+  UserCheck,
   X
 } from "lucide-react";
-import AdminNotificationBell from "./AdminNotificationBell";
-import UserMenu from "../layout/UserMenu";
 
 interface AdminSidebarProps {
   onCloseMobile?: () => void;
@@ -22,14 +20,8 @@ interface AdminSidebarProps {
 
 const AdminSidebar = ({ onCloseMobile }: AdminSidebarProps) => {
   const location = useLocation();
-  
-  // Mock admin user data
-  const adminUser = {
-    name: "Admin User",
-    email: "admin@example.com"
-  };
 
-  // Mock counts for sidebar badges
+  // Mock counts for sidebar badges - these should match actual data
   const getCounts = () => {
     return {
       communities: 2, // pending approvals
@@ -71,6 +63,12 @@ const AdminSidebar = ({ onCloseMobile }: AdminSidebarProps) => {
       href: "/admin/reports",
       icon: Shield,
       badge: counts.reports
+    },
+    {
+      name: "Roles & Permissions",
+      href: "/admin/roles",
+      icon: UserCheck,
+      badge: null
     },
     {
       name: "Audit Logs",
@@ -131,14 +129,6 @@ const AdminSidebar = ({ onCloseMobile }: AdminSidebarProps) => {
           );
         })}
       </nav>
-
-      {/* Top Bar for Admin - moved to top right will be handled in AdminLayout */}
-      <div className="p-4 border-t border-gray-200 lg:hidden">
-        <div className="flex items-center justify-between mb-4">
-          <AdminNotificationBell />
-        </div>
-        <UserMenu user={adminUser} />
-      </div>
     </div>
   );
 };

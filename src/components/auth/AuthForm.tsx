@@ -1,399 +1,312 @@
 
 import { useState } from "react";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Mail, AlertCircle } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Eye, EyeOff, Mail, Lock, User, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 
-const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-});
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
-const registerSchema = z.object({
-  firstName: z.string().min(2, { message: "First name must be at least 2 characters" }),
-  lastName: z.string().min(2, { message: "Last name must be at least 2 characters" }),
-  email: z.string().email({ message: "Please enter a valid email" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-});
+interface RegisterFormData {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  dateOfBirth: string;
+}
 
-const resetSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email" }),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
-type RegisterFormData = z.infer<typeof registerSchema>;
-type ResetFormData = z.infer<typeof resetSchema>;
-
-type AuthFormProps = {
-  mode: "login" | "register" | "reset";
-  onModeChange: (mode: "login" | "register" | "reset") => void;
-};
-
-const AuthForm = ({ mode, onModeChange }: AuthFormProps) => {
-  const { toast } = useToast();
+const AuthForm = () => {
   const navigate = useNavigate();
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  // Login form
-  const loginForm = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+  const { toast } = useToast();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loginForm, setLoginForm] = useState<LoginFormData>({
+    email: "",
+    password: ""
   });
-
-  // Register form
-  const registerForm = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      password: "",
-    },
+  const [registerForm, setRegisterForm] = useState<RegisterFormData>({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    dateOfBirth: ""
   });
+  const [errors, setErrors] = useState<string[]>([]);
 
-  // Reset password form
-  const resetForm = useForm<ResetFormData>({
-    resolver: zodResolver(resetSchema),
-    defaultValues: {
-      email: "",
-    },
-  });
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors([]);
 
-  const handleLogin = async (data: LoginFormData) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Simulate login success
-      console.log("Login with:", data);
-      
-      // Show success message
+    if (!loginForm.email || !loginForm.password) {
+      setErrors(["Please fill in all fields"]);
+      return;
+    }
+
+    // Mock authentication - in a real app, this would be an API call
+    if (loginForm.email === "admin@example.com" && loginForm.password === "password123") {
       toast({
-        title: "Login successful",
-        description: "Welcome back to ConnectSphere!",
+        title: "Welcome back!",
+        description: "You have successfully logged in as an admin.",
       });
-      
-      // Redirect to home
+      navigate("/admin");
+    } else if (loginForm.email === "user@example.com" && loginForm.password === "password123") {
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully logged in.",
+      });
       navigate("/");
-    } catch (err) {
-      setError("Invalid email or password. Please try again.");
-    } finally {
-      setLoading(false);
+    } else {
+      setErrors(["Invalid email or password"]);
     }
   };
 
-  const handleRegister = async (data: RegisterFormData) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Simulate registration
-      console.log("Register with:", data);
+  const handleRegisterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors([]);
+
+    const newErrors: string[] = [];
+
+    if (!registerForm.name || !registerForm.email || !registerForm.password || !registerForm.confirmPassword || !registerForm.dateOfBirth) {
+      newErrors.push("Please fill in all fields");
+    }
+
+    if (registerForm.password !== registerForm.confirmPassword) {
+      newErrors.push("Passwords do not match");
+    }
+
+    if (registerForm.password.length < 6) {
+      newErrors.push("Password must be at least 6 characters long");
+    }
+
+    // Validate date of birth (user must be at least 13 years old)
+    if (registerForm.dateOfBirth) {
+      const birthDate = new Date(registerForm.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
       
-      // Show success message and move to step 2
-      toast({
-        title: "Registration started",
-        description: "Please complete your profile setup.",
-      });
-      
-      navigate("/register/profile", { 
-        state: { 
-          userData: data 
-        }
-      });
-    } catch (err) {
-      setError("Registration failed. Please try again.");
-    } finally {
-      setLoading(false);
+      let actualAge = age;
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        actualAge--;
+      }
+
+      if (actualAge < 13) {
+        newErrors.push("You must be at least 13 years old to register");
+      }
     }
-  };
 
-  const handleReset = async (data: ResetFormData) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Simulate password reset email
-      console.log("Reset password for:", data);
-      
-      // Show success message
-      toast({
-        title: "Reset email sent",
-        description: "Check your inbox for password reset instructions.",
-      });
-      
-      // Navigate back to login
-      onModeChange("login");
-    } catch (err) {
-      setError("Failed to send reset email. Please try again.");
-    } finally {
-      setLoading(false);
+    if (newErrors.length > 0) {
+      setErrors(newErrors);
+      return;
     }
-  };
 
-  const renderForm = () => {
-    switch (mode) {
-      case "login":
-        return (
-          <Form {...loginForm}>
-            <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
-              <FormField
-                control={loginForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="your.email@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={loginForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              <div className="flex justify-end">
-                <Button
-                  variant="link"
-                  className="text-social-primary p-0"
-                  type="button"
-                  onClick={() => onModeChange("reset")}
-                >
-                  Forgot password?
-                </Button>
-              </div>
-              <Button
-                type="submit"
-                className="w-full bg-social-primary hover:bg-social-secondary"
-                disabled={loading}
-              >
-                {loading ? "Logging in..." : "Log in"}
-              </Button>
-              <div className="text-center">
-                <span className="text-sm text-social-muted">Don't have an account? </span>
-                <Button
-                  variant="link"
-                  className="text-social-primary p-0"
-                  type="button"
-                  onClick={() => onModeChange("register")}
-                >
-                  Sign up
-                </Button>
-              </div>
-            </form>
-          </Form>
-        );
-
-      case "register":
-        return (
-          <Form {...registerForm}>
-            <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={registerForm.control}
-                  name="firstName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>First Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="John" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={registerForm.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Last Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={registerForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="your.email@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={registerForm.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              
-              <Button
-                type="submit"
-                className="w-full bg-social-primary hover:bg-social-secondary"
-                disabled={loading}
-              >
-                {loading ? "Creating account..." : "Create account"}
-              </Button>
-              
-              <div className="text-center">
-                <span className="text-sm text-social-muted">Already have an account? </span>
-                <Button
-                  variant="link"
-                  className="text-social-primary p-0"
-                  type="button"
-                  onClick={() => onModeChange("login")}
-                >
-                  Log in
-                </Button>
-              </div>
-            </form>
-          </Form>
-        );
-
-      case "reset":
-        return (
-          <Form {...resetForm}>
-            <form onSubmit={resetForm.handleSubmit(handleReset)} className="space-y-4">
-              <div className="flex flex-col items-center mb-4">
-                <div className="p-3 rounded-full bg-purple-100">
-                  <Mail className="h-6 w-6 text-social-primary" />
-                </div>
-                <p className="text-sm text-center mt-2 text-social-muted">
-                  Enter your email address and we'll send you a link to reset your password.
-                </p>
-              </div>
-              
-              <FormField
-                control={resetForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="your.email@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              
-              <Button
-                type="submit"
-                className="w-full bg-social-primary hover:bg-social-secondary"
-                disabled={loading}
-              >
-                {loading ? "Sending..." : "Send reset link"}
-              </Button>
-              
-              <div className="text-center">
-                <span className="text-sm text-social-muted">Remember your password? </span>
-                <Button
-                  variant="link"
-                  className="text-social-primary p-0"
-                  type="button"
-                  onClick={() => onModeChange("login")}
-                >
-                  Log in
-                </Button>
-              </div>
-            </form>
-          </Form>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  const getTitle = () => {
-    switch (mode) {
-      case "login": return "Welcome back";
-      case "register": return "Create an account";
-      case "reset": return "Reset password";
-      default: return "";
-    }
-  };
-
-  const getDescription = () => {
-    switch (mode) {
-      case "login": return "Enter your credentials to access your account";
-      case "register": return "Fill in your details to get started";
-      case "reset": return "We'll send you a link to reset your password";
-      default: return "";
-    }
+    // Mock registration success
+    toast({
+      title: "Account created!",
+      description: "Welcome to ConnectSphere! You can now start exploring communities.",
+    });
+    navigate("/");
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-lg">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">{getTitle()}</CardTitle>
-        <CardDescription className="text-center">{getDescription()}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {renderForm()}
-      </CardContent>
-    </Card>
+    <div className="min-h-screen flex items-center justify-center bg-social-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-social-primary">ConnectSphere</CardTitle>
+          <CardDescription>Join communities and connect with like-minded people</CardDescription>
+        </CardHeader>
+        
+        <CardContent>
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="register">Register</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login">
+              <form onSubmit={handleLoginSubmit} className="space-y-4">
+                {errors.length > 0 && (
+                  <Alert variant="destructive">
+                    <AlertDescription>
+                      <ul className="list-disc list-inside">
+                        {errors.map((error, index) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                <div className="space-y-2">
+                  <Label htmlFor="login-email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="login-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      className="pl-10"
+                      value={loginForm.email}
+                      onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="login-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      className="pl-10 pr-10"
+                      value={loginForm.password}
+                      onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                
+                <Button type="submit" className="w-full bg-social-primary hover:bg-social-secondary">
+                  Sign In
+                </Button>
+              </form>
+            </TabsContent>
+            
+            <TabsContent value="register">
+              <form onSubmit={handleRegisterSubmit} className="space-y-4">
+                {errors.length > 0 && (
+                  <Alert variant="destructive">
+                    <AlertDescription>
+                      <ul className="list-disc list-inside">
+                        {errors.map((error, index) => (
+                          <li key={index}>{error}</li>
+                        ))}
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                <div className="space-y-2">
+                  <Label htmlFor="register-name">Full Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="register-name"
+                      type="text"
+                      placeholder="Enter your full name"
+                      className="pl-10"
+                      value={registerForm.name}
+                      onChange={(e) => setRegisterForm({...registerForm, name: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="register-dob">Date of Birth</Label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="register-dob"
+                      type="date"
+                      className="pl-10"
+                      value={registerForm.dateOfBirth}
+                      onChange={(e) => setRegisterForm({...registerForm, dateOfBirth: e.target.value})}
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="register-email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="register-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      className="pl-10"
+                      value={registerForm.email}
+                      onChange={(e) => setRegisterForm({...registerForm, email: e.target.value})}
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="register-password">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="register-password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a password"
+                      className="pl-10 pr-10"
+                      value={registerForm.password}
+                      onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="register-confirm-password">Confirm Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="register-confirm-password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm your password"
+                      className="pl-10 pr-10"
+                      value={registerForm.confirmPassword}
+                      onChange={(e) => setRegisterForm({...registerForm, confirmPassword: e.target.value})}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                
+                <Button type="submit" className="w-full bg-social-primary hover:bg-social-secondary">
+                  Create Account
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+        
+        <CardFooter className="text-center">
+          <div className="w-full">
+            <p className="text-sm text-social-muted mb-2">Demo Credentials:</p>
+            <p className="text-xs text-social-muted">Admin: admin@example.com / password123</p>
+            <p className="text-xs text-social-muted">User: user@example.com / password123</p>
+          </div>
+        </CardFooter>
+      </Card>
+    </div>
   );
 };
 

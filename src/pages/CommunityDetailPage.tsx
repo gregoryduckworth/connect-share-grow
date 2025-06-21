@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, MessageSquare, Plus, Settings, ChevronRight, Home } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Users, MessageSquare, Plus, Settings, ChevronRight, Home, Send } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,8 +15,16 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import CommunityPost from "@/components/community/CommunityPost";
-import CreatePostForm from "@/components/community/CreatePostForm";
-import ModeratorPanel from "@/components/community/ModeratorPanel";
+import { useToast } from "@/components/ui/use-toast";
+
+interface Reply {
+  id: string;
+  author: string;
+  content: string;
+  timestamp: Date;
+  likes: number;
+  isLiked: boolean;
+}
 
 interface PostData {
   id: string;
@@ -31,20 +41,15 @@ interface PostData {
   tags: string[];
   lockReason?: string;
   commentsLockReason?: string;
-  replies?: Array<{
-    id: string;
-    author: string;
-    content: string;
-    timestamp: Date;
-    likes: number;
-    isLiked: boolean;
-  }>;
+  replies?: Reply[];
 }
 
 const CommunityDetailPage = () => {
   const { communityId } = useParams();
+  const { toast } = useToast();
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showModPanel, setShowModPanel] = useState(false);
+  const [newReply, setNewReply] = useState("");
   
   // Mock data - in a real app, this would come from an API
   const community = {
@@ -126,31 +131,6 @@ const CommunityDetailPage = () => {
           isLiked: false
         }
       ]
-    },
-    {
-      id: "3",
-      title: "Camera Gear Recommendations",
-      content: "Looking for advice on upgrading my camera setup for wildlife photography...",
-      author: "Alex Rivera",
-      timestamp: new Date(2024, 5, 13, 16, 45),
-      likes: 31,
-      comments: 18,
-      isLiked: false,
-      isPinned: false,
-      isLocked: true,
-      commentsLocked: false,
-      tags: ["Gear", "Wildlife", "Advice"],
-      lockReason: "Post contains outdated information and may mislead new photographers",
-      replies: [
-        {
-          id: "reply-4",
-          author: "David Kim",
-          content: "For wildlife, I'd recommend starting with a good telephoto lens...",
-          timestamp: new Date(2024, 5, 13, 17, 10),
-          likes: 12,
-          isLiked: true
-        }
-      ]
     }
   ]);
 
@@ -208,24 +188,33 @@ const CommunityDetailPage = () => {
     ));
   };
 
-  const handleCreatePost = (title: string, content: string, tags: string[]) => {
-    const newPost: PostData = {
-      id: Date.now().toString(),
-      title,
-      content,
-      author: "Current User",
-      timestamp: new Date(),
-      likes: 0,
-      comments: 0,
-      isLiked: false,
-      isPinned: false,
-      isLocked: false,
-      commentsLocked: false,
-      tags
-    };
-    
-    setPosts([newPost, ...posts]);
-    setShowCreatePost(false);
+  const handleSubmitReply = (postId: string) => {
+    if (newReply.trim()) {
+      const reply: Reply = {
+        id: `reply-${Date.now()}`,
+        author: "Current User",
+        content: newReply,
+        timestamp: new Date(),
+        likes: 0,
+        isLiked: false
+      };
+
+      setPosts(posts.map(post => 
+        post.id === postId 
+          ? { 
+              ...post, 
+              replies: [...(post.replies || []), reply],
+              comments: post.comments + 1
+            }
+          : post
+      ));
+
+      setNewReply("");
+      toast({
+        title: "Reply posted",
+        description: "Your reply has been added to the discussion.",
+      });
+    }
   };
 
   return (
@@ -247,7 +236,7 @@ const CommunityDetailPage = () => {
             </BreadcrumbSeparator>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/communities">Communities</Link>
+                <Link to="/discover">Discover</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>
@@ -313,32 +302,46 @@ const CommunityDetailPage = () => {
             </div>
           </div>
 
-          {/* Create Post Form */}
-          {showCreatePost && (
-            <div className="mb-6">
-              <CreatePostForm
-                onSubmit={handleCreatePost}
-                onCancel={() => setShowCreatePost(false)}
-                availableTags={community.tags}
-              />
-            </div>
-          )}
-
           {/* Posts */}
           <div className="space-y-4">
             {posts.map((post) => (
-              <CommunityPost
-                key={post.id}
-                post={post}
-                onLike={handleLikePost}
-                onComment={handleCommentPost}
-                onPin={community.isModerator ? handlePinPost : undefined}
-                onLock={community.isModerator ? handleLockPost : undefined}
-                onUnlock={community.isModerator ? handleUnlockPost : undefined}
-                onLockComments={community.isModerator ? handleLockComments : undefined}
-                onUnlockComments={community.isModerator ? handleUnlockComments : undefined}
-                isModerator={community.isModerator}
-              />
+              <div key={post.id} className="space-y-4">
+                <CommunityPost
+                  post={post}
+                  onLike={handleLikePost}
+                  onComment={handleCommentPost}
+                  onPin={community.isModerator ? handlePinPost : undefined}
+                  onLock={community.isModerator ? handleLockPost : undefined}
+                  onUnlock={community.isModerator ? handleUnlockPost : undefined}
+                  onLockComments={community.isModerator ? handleLockComments : undefined}
+                  onUnlockComments={community.isModerator ? handleUnlockComments : undefined}
+                  isModerator={community.isModerator}
+                />
+                
+                {/* Reply Section */}
+                {community.isMember && !post.comments Locked && (
+                  <Card className="ml-8">
+                    <CardContent className="pt-4">
+                      <div className="flex gap-3">
+                        <Textarea
+                          placeholder="Write a reply..."
+                          value={newReply}
+                          onChange={(e) => setNewReply(e.target.value)}
+                          className="flex-1"
+                          rows={3}
+                        />
+                        <Button 
+                          onClick={() => handleSubmitReply(post.id)}
+                          disabled={!newReply.trim()}
+                          className="self-end"
+                        >
+                          <Send className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -388,20 +391,6 @@ const CommunityDetailPage = () => {
           </Card>
         </div>
       </div>
-
-      {/* Moderator Panel */}
-      {showModPanel && (
-        <ModeratorPanel
-          isOpen={showModPanel}
-          onClose={() => setShowModPanel(false)}
-          posts={posts.map(post => ({
-            id: post.id,
-            title: post.title,
-            isLocked: post.isLocked,
-            areCommentsLocked: post.commentsLocked
-          }))}
-        />
-      )}
     </div>
   );
 };

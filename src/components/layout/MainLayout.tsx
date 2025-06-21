@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import UserMenu from "./UserMenu";
+import NotificationBell from "./NotificationBell";
 
 const MainLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -47,6 +48,7 @@ const MainLayout = () => {
             </button>
             <div className="flex-1" />
             <div className="flex items-center gap-2">
+              <NotificationBell />
               <UserMenu user={user} />
             </div>
           </div>

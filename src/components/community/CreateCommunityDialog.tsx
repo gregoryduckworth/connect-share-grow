@@ -1,152 +1,186 @@
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { 
-  Dialog, DialogContent, DialogDescription, 
-  DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
-const formSchema = z.object({
-  name: z.string().min(3, { message: "Community name must be at least 3 characters." }).max(50),
-  description: z.string().min(20, { message: "Description must be at least 20 characters." }).max(500),
-  tags: z.array(z.string()).default([])
-});
+interface CreateCommunityDialogProps {
+  trigger: React.ReactNode;
+}
 
-type FormValues = z.infer<typeof formSchema>;
-
-const CreateCommunityDialog = () => {
-  const [open, setOpen] = useState(false);
+const CreateCommunityDialog = ({ trigger }: CreateCommunityDialogProps) => {
   const { toast } = useToast();
-  
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      tags: [],
-    }
-  });
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [tagInput, setTagInput] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
 
-  const onSubmit = (data: FormValues) => {
-    // Here we would submit the community for admin approval
-    console.log("Community submitted for approval:", data);
+  const categories = [
+    "Technology",
+    "Arts & Creativity",
+    "Health & Fitness", 
+    "Food & Cooking",
+    "Travel",
+    "Education",
+    "Gaming",
+    "Music",
+    "Photography",
+    "Sports",
+    "Business",
+    "Science"
+  ];
+
+  const handleTagInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "," || e.key === "Enter") {
+      e.preventDefault();
+      const tag = tagInput.trim();
+      if (tag && !tags.includes(tag) && tags.length < 5) {
+        setTags([...tags, tag]);
+        setTagInput("");
+      }
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
+    if (!name.trim() || !description.trim() || !category) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Mock community creation
     toast({
-      title: "Community submitted for approval",
-      description: "Your community request has been submitted to the admin team for review.",
+      title: "Community created!",
+      description: `${name} has been submitted for approval.`,
     });
-    
+
+    // Reset form
+    setName("");
+    setDescription("");
+    setCategory("");
+    setTags([]);
+    setTagInput("");
     setOpen(false);
-    form.reset();
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-social-primary hover:bg-social-secondary">
-          <Plus className="h-4 w-4 mr-2" /> Create Community
-        </Button>
+        {trigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create a New Community</DialogTitle>
+          <DialogTitle>Create New Community</DialogTitle>
           <DialogDescription>
-            Create a community around your interests. Your request will be reviewed by an admin.
+            Create a space for people with shared interests to connect and discuss.
           </DialogDescription>
         </DialogHeader>
         
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Community Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Photography Enthusiasts" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Choose a clear, descriptive name for your community.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="community-name">Community Name *</Label>
+            <Input
+              id="community-name"
+              placeholder="Enter community name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
             />
-            
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Share your best shots, photography tips, and camera recommendations."
-                      className="min-h-[100px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Explain what your community is about and who should join.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="community-description">Description *</Label>
+            <Textarea
+              id="community-description"
+              placeholder="Describe what your community is about"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              required
             />
-            
-            <FormField
-              control={form.control}
-              name="tags"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tags (comma separated)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Photography, Art, Creative" 
-                      value={typeof field.value === 'string' ? field.value : Array.isArray(field.value) ? field.value.join(',') : ''}
-                      onChange={(e) => {
-                        const tagsArray = e.target.value.split(',').map(tag => tag.trim()).filter(Boolean);
-                        field.onChange(tagsArray);
-                      }}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Add tags to help others find your community.
-                  </FormDescription>
-                  
-                  {field.value && Array.isArray(field.value) && field.value.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {field.value.map((tag, index) => (
-                        <Badge key={index} variant="secondary" className="bg-social-accent/50">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                  
-                  <FormMessage />
-                </FormItem>
-              )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="community-category">Category *</Label>
+            <Select value={category} onValueChange={setCategory} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="community-tags">Tags (up to 5)</Label>
+            <Input
+              id="community-tags"
+              placeholder="Type tags and press comma or enter"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={handleTagInput}
             />
-            
-            <DialogFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button type="submit" className="bg-social-primary hover:bg-social-secondary">Submit for Approval</Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {tags.map((tag, index) => (
+                <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => removeTag(tag)}
+                    className="ml-1 hover:text-red-500"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-social-primary hover:bg-social-secondary">
+              Create Community
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
