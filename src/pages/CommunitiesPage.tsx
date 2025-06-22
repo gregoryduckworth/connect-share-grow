@@ -1,236 +1,256 @@
+
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Search, Video } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Users, MessageSquare, Plus, Search, ArrowUpDown } from "lucide-react";
+import { Link } from "react-router-dom";
 import CreateCommunityDialog from "@/components/community/CreateCommunityDialog";
 
 interface Community {
-  id: number;
+  id: string;
   name: string;
   description: string;
-  members: number;
+  memberCount: number;
+  postCount: number;
+  category: string;
   tags: string[];
-  joined: boolean;
+  isJoined: boolean;
+  lastActivity: Date;
 }
 
 const CommunitiesPage = () => {
-  const { toast } = useToast();
-  const [communities, setCommunities] = useState<Community[]>([
-    {
-      id: 1,
-      name: "Web Developers",
-      description: "A community for all web developers to share knowledge, tips, and career advice.",
-      members: 5721,
-      tags: ["Technology", "Coding", "Web Dev"],
-      joined: false,
-    },
-    {
-      id: 3,
-      name: "Fitness & Wellness",
-      description: "Get fit together! Share workout routines, nutrition tips, and motivation.",
-      members: 3189,
-      tags: ["Health", "Fitness", "Wellbeing"],
-      joined: true,
-    },
-    {
-      id: 1,
-      name: "Photography Enthusiasts",
-      description: "Share your best shots, photography tips, and camera recommendations.",
-      members: 2453,
-      tags: ["Photography", "Art", "Creative"],
-      joined: false,
-    },
-    {
-      id: 4,
-      name: "Book Club",
-      description: "Monthly book discussions, recommendations, and literary analysis.",
-      members: 1276,
-      tags: ["Reading", "Literature", "Discussion"],
-      joined: false,
-    },
-  ].sort((a, b) => b.members - a.members)); // Sort by member count descending
-
   const [searchQuery, setSearchQuery] = useState("");
-  
-  const toggleJoin = (id: number) => {
-    setCommunities(communities.map(community => 
-      community.id === id 
-        ? { ...community, joined: !community.joined } 
-        : community
-    ));
-    
-    const community = communities.find(c => c.id === id);
-    if (community) {
-      toast({
-        title: community.joined ? "Left community" : "Joined community",
-        description: community.joined 
-          ? `You have left the ${community.name} community` 
-          : `You have joined the ${community.name} community`,
-      });
-    }
+  const [sortBy, setSortBy] = useState("members");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+  const [communities] = useState<Community[]>([
+    {
+      id: "1",
+      name: "Photography Enthusiasts",
+      description: "A place for photographers to share their work and discuss techniques",
+      memberCount: 1250,
+      postCount: 423,
+      category: "Art & Design",
+      tags: ["Photography", "Art", "Camera"],
+      isJoined: true,
+      lastActivity: new Date(2024, 5, 20)
+    },
+    {
+      id: "2",
+      name: "Web Development",
+      description: "Discussion about modern web development practices and technologies",
+      memberCount: 2100,
+      postCount: 867,
+      category: "Technology",
+      tags: ["JavaScript", "React", "Node.js"],
+      isJoined: false,
+      lastActivity: new Date(2024, 5, 21)
+    },
+    {
+      id: "3",
+      name: "Book Club",
+      description: "Monthly book discussions and reading recommendations",
+      memberCount: 890,
+      postCount: 234,
+      category: "Literature",
+      tags: ["Books", "Reading", "Discussion"],
+      isJoined: true,
+      lastActivity: new Date(2024, 5, 19)
+    },
+    {
+      id: "4",
+      name: "Fitness & Health",
+      description: "Workout routines, nutrition tips, and health discussions",
+      memberCount: 1567,
+      postCount: 542,
+      category: "Health & Fitness",
+      tags: ["Fitness", "Health", "Nutrition"],
+      isJoined: false,
+      lastActivity: new Date(2024, 5, 22)
+    },
+  ]);
+
+  const sortCommunities = (communities: Community[]) => {
+    return [...communities].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case "members":
+          comparison = a.memberCount - b.memberCount;
+          break;
+        case "posts":
+          comparison = a.postCount - b.postCount;
+          break;
+        case "activity":
+          comparison = a.lastActivity.getTime() - b.lastActivity.getTime();
+          break;
+        case "name":
+          comparison = a.name.localeCompare(b.name);
+          break;
+        default:
+          comparison = 0;
+      }
+      
+      return sortOrder === "desc" ? -comparison : comparison;
+    });
   };
-  
-  const filteredCommunities = communities.filter(community => 
-    community.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    community.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+
+  const filteredCommunities = sortCommunities(
+    communities.filter(community =>
+      community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      community.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+    )
+  );
+
+  const joinedCommunities = filteredCommunities.filter(c => c.isJoined);
+  const availableCommunities = filteredCommunities.filter(c => !c.isJoined);
+
+  const toggleSortOrder = () => {
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  };
+
+  const CommunityCard = ({ community }: { community: Community }) => (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <CardTitle className="text-lg">
+              <Link 
+                to={`/community/${community.id}`}
+                className="hover:text-social-primary transition-colors"
+              >
+                {community.name}
+              </Link>
+            </CardTitle>
+            <p className="text-sm text-social-muted mt-1">{community.description}</p>
+          </div>
+          <Badge variant="secondary" className="ml-2">
+            {community.category}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-4 text-sm text-social-muted">
+            <div className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span>{community.memberCount.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <MessageSquare className="h-4 w-4" />
+              <span>{community.postCount}</span>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant={community.isJoined ? "outline" : "default"}
+          >
+            {community.isJoined ? "Joined" : "Join"}
+          </Button>
+        </div>
+        
+        <div className="flex flex-wrap gap-1">
+          {community.tags.map((tag, index) => (
+            <Badge key={index} variant="outline" className="text-xs">
+              {tag}
+            </Badge>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-social-primary">Communities</h1>
-          <p className="text-social-muted">Connect with people who share your interests</p>
+    <div className="container mx-auto px-4 py-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+        <h1 className="text-3xl font-bold text-social-primary">Communities</h1>
+        <Button onClick={() => setShowCreateDialog(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Community
+        </Button>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="mb-6 space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search communities..."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search communities..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        
+        <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Sort by:</span>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="members">Members</SelectItem>
+                <SelectItem value="posts">Posts</SelectItem>
+                <SelectItem value="activity">Activity</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleSortOrder}
+              className="flex items-center gap-1"
+            >
+              <ArrowUpDown className="h-4 w-4" />
+              {sortOrder === "desc" ? "High to Low" : "Low to High"}
+            </Button>
           </div>
-          <CreateCommunityDialog />
         </div>
       </div>
 
-      <Tabs defaultValue="discover">
-        <TabsList className="mb-4">
+      <Tabs defaultValue="all" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="all">All Communities</TabsTrigger>
+          <TabsTrigger value="joined">My Communities ({joinedCommunities.length})</TabsTrigger>
           <TabsTrigger value="discover">Discover</TabsTrigger>
-          <TabsTrigger value="my-communities">My Communities</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="discover" className="space-y-4">
-          <div className="mb-4">
-            <p className="text-sm text-social-muted">
-              Showing {filteredCommunities.length} communities sorted by member count
-            </p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
-            {filteredCommunities.map(community => (
-              <Card key={community.id} className="hover-scale">
-                <CardHeader>
-                  <Link to={`/community/${community.id}`}>
-                    <CardTitle className="flex items-center gap-2 hover:text-social-primary transition-colors">
-                      {community.name}
-                    </CardTitle>
-                  </Link>
-                  <CardDescription className="flex items-center gap-1">
-                    <Users className="h-4 w-4" /> {community.members.toLocaleString()} members
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm">{community.description}</p>
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {community.tags.map(tag => (
-                      <Badge key={tag} variant="secondary" className="bg-social-accent/50">{tag}</Badge>
-                    ))}
-                  </div>
-                </CardContent>
-                <CardFooter className="flex flex-wrap gap-2">
-                  <Button 
-                    variant={community.joined ? "outline" : "default"}
-                    className={community.joined 
-                      ? "border-social-primary text-social-primary" 
-                      : "bg-social-primary hover:bg-social-secondary"}
-                    onClick={() => toggleJoin(community.id)}
-                  >
-                    {community.joined ? "Leave" : "Join"} Community
-                  </Button>
-                  <Link to={`/community/${community.id}`}>
-                    <Button variant="outline">
-                      View Discussions
-                    </Button>
-                  </Link>
-                  {community.joined && (
-                    <Button variant="outline" className="border-social-primary text-social-primary">
-                      <Video className="h-4 w-4 mr-2" /> Video Chat
-                    </Button>
-                  )}
-                </CardFooter>
-              </Card>
+
+        <TabsContent value="all" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {filteredCommunities.map((community) => (
+              <CommunityCard key={community.id} community={community} />
             ))}
           </div>
-          
-          {filteredCommunities.length === 0 && (
-            <div className="text-center p-8">
-              <p className="text-social-muted">No communities found matching your search.</p>
-            </div>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="my-communities" className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
-            {filteredCommunities.filter(c => c.joined).map(community => (
-              <Card key={community.id} className="hover-scale">
-                <CardHeader>
-                  <Link to={`/community/${community.id}`}>
-                    <CardTitle className="hover:text-social-primary transition-colors">
-                      {community.name}
-                    </CardTitle>
-                  </Link>
-                  <CardDescription className="flex items-center gap-1">
-                    <Users className="h-4 w-4" /> {community.members.toLocaleString()} members
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm">{community.description}</p>
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {community.tags.map(tag => (
-                      <Badge key={tag} variant="secondary" className="bg-social-accent/50">{tag}</Badge>
-                    ))}
-                  </div>
-                </CardContent>
-                <CardFooter className="flex flex-wrap gap-2">
-                  <Button 
-                    variant="outline"
-                    className="border-social-primary text-social-primary"
-                    onClick={() => toggleJoin(community.id)}
-                  >
-                    Leave Community
-                  </Button>
-                  <Link to={`/community/${community.id}`}>
-                    <Button variant="outline">
-                      View Discussions
-                    </Button>
-                  </Link>
-                  <Button variant="outline" className="border-social-primary text-social-primary">
-                    <Video className="h-4 w-4 mr-2" /> Video Chat
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-          
-          {filteredCommunities.filter(c => c.joined).length === 0 && (
-            <div className="text-center p-8">
-              <p className="text-social-muted">You haven't joined any communities yet.</p>
-              <Button className="mt-4 bg-social-primary hover:bg-social-secondary">
-                Discover Communities
-              </Button>
-            </div>
-          )}
         </TabsContent>
 
-        <TabsContent value="pending" className="space-y-4">
-          <div className="text-center p-8">
-            <p className="text-social-muted">You don't have any pending community requests.</p>
-            <p className="text-social-muted mt-1">Create a new community and wait for admin approval.</p>
-            <div className="mt-4">
-              <CreateCommunityDialog />
-            </div>
+        <TabsContent value="joined" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {joinedCommunities.map((community) => (
+              <CommunityCard key={community.id} community={community} />
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="discover" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {availableCommunities.map((community) => (
+              <CommunityCard key={community.id} community={community} />
+            ))}
           </div>
         </TabsContent>
       </Tabs>
+
+      <CreateCommunityDialog 
+        isOpen={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+      />
     </div>
   );
 };

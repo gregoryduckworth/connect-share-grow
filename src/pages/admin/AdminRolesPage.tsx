@@ -3,216 +3,267 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import { UserCheck, Users, Shield, Settings, Eye, Edit } from "lucide-react";
+import { Shield, User, Users, Crown } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+interface RoleUser {
+  id: string;
+  name: string;
+  email: string;
+  joinDate: Date;
+  communities?: string[];
+}
 
 interface Role {
-  id: string;
   name: string;
   description: string;
   permissions: string[];
   userCount: number;
-  createdAt: Date;
-}
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  assignedAt: Date;
+  users: RoleUser[];
+  icon: React.ReactNode;
+  color: string;
 }
 
 const AdminRolesPage = () => {
-  const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // Mock roles data
   const [roles] = useState<Role[]>([
     {
-      id: "admin",
-      name: "Administrator",
-      description: "Full system access with all permissions",
+      name: "Admin",
+      description: "Full system access with all administrative privileges",
       permissions: [
-        "manage_users",
-        "manage_communities",
-        "manage_reports",
-        "manage_settings",
-        "view_analytics",
-        "manage_roles"
+        "Manage all users and communities",
+        "Access admin dashboard and analytics",
+        "Modify system settings",
+        "Handle reports and moderation",
+        "Assign and revoke roles"
       ],
-      userCount: 3,
-      createdAt: new Date(2023, 0, 1)
+      userCount: 2,
+      users: [
+        {
+          id: "admin-1",
+          name: "John Doe",
+          email: "john.doe@example.com",
+          joinDate: new Date(2023, 0, 15),
+          communities: ["Photography", "Tech Talk"]
+        },
+        {
+          id: "admin-2",
+          name: "Sarah Admin",
+          email: "sarah.admin@example.com",
+          joinDate: new Date(2023, 1, 1),
+          communities: ["Photography", "Web Development"]
+        }
+      ],
+      icon: <Crown className="h-5 w-5" />,
+      color: "bg-red-500"
     },
     {
-      id: "moderator",
       name: "Moderator",
-      description: "Can moderate communities and handle user reports",
+      description: "Community moderation and user management capabilities",
       permissions: [
-        "moderate_communities",
-        "manage_reports",
-        "suspend_users",
-        "view_user_profiles"
+        "Moderate community content",
+        "Lock/unlock posts and comments",
+        "Manage community rules",
+        "Handle community reports",
+        "Pin important posts"
       ],
-      userCount: 12,
-      createdAt: new Date(2023, 1, 15)
+      userCount: 5,
+      users: [
+        {
+          id: "mod-1",
+          name: "Jane Smith",
+          email: "jane.smith@example.com",
+          joinDate: new Date(2023, 1, 3),
+          communities: ["Cooking Club", "Travel Adventures"]
+        },
+        {
+          id: "mod-2",
+          name: "Mike Chen",
+          email: "mike.chen@example.com",
+          joinDate: new Date(2023, 2, 10),
+          communities: ["Photography"]
+        },
+        {
+          id: "mod-3",
+          name: "Alex Rivera",
+          email: "alex.rivera@example.com",
+          joinDate: new Date(2023, 3, 15),
+          communities: ["Web Development", "Tech Talk"]
+        },
+        {
+          id: "mod-4",
+          name: "Emma Davis",
+          email: "emma.davis@example.com",
+          joinDate: new Date(2023, 4, 20),
+          communities: ["Book Club"]
+        },
+        {
+          id: "mod-5",
+          name: "Tom Wilson",
+          email: "tom.wilson@example.com",
+          joinDate: new Date(2023, 5, 5),
+          communities: ["Fitness & Health"]
+        }
+      ],
+      icon: <Shield className="h-5 w-5" />,
+      color: "bg-orange-500"
     },
     {
-      id: "user",
-      name: "Regular User",
-      description: "Standard user with basic permissions",
+      name: "User",
+      description: "Standard user with basic community participation rights",
       permissions: [
-        "create_posts",
-        "join_communities",
-        "send_messages",
-        "edit_profile"
+        "Create and edit own posts",
+        "Comment on posts",
+        "Join communities",
+        "Like and share content",
+        "Report inappropriate content"
       ],
-      userCount: 832,
-      createdAt: new Date(2023, 0, 1)
+      userCount: 1247,
+      users: [
+        {
+          id: "user-1",
+          name: "Robert Johnson",
+          email: "robert.j@example.com",
+          joinDate: new Date(2023, 2, 20),
+          communities: ["Book Readers"]
+        },
+        {
+          id: "user-2",
+          name: "Lisa Brown",
+          email: "lisa.b@example.com",
+          joinDate: new Date(2023, 3, 5),
+          communities: []
+        },
+        {
+          id: "user-3",
+          name: "Michael Wilson",
+          email: "michael.w@example.com",
+          joinDate: new Date(2023, 4, 12),
+          communities: ["Gaming", "Tech Talk"]
+        }
+        // In a real app, this would be paginated
+      ],
+      icon: <User className="h-5 w-5" />,
+      color: "bg-blue-500"
     }
   ]);
 
-  // Mock users with roles
-  const [users] = useState<User[]>([
-    {
-      id: "1",
-      name: "Admin User",
-      email: "admin@example.com",
-      role: "Administrator",
-      assignedAt: new Date(2023, 0, 1)
-    },
-    {
-      id: "2",
-      name: "Sarah Johnson",
-      email: "sarah@example.com",
-      role: "Moderator", 
-      assignedAt: new Date(2023, 2, 10)
-    },
-    {
-      id: "3",
-      name: "Mike Chen",
-      email: "mike@example.com",
-      role: "Moderator",
-      assignedAt: new Date(2023, 3, 5)
-    }
-  ]);
+  const RoleCard = ({ role }: { role: Role }) => (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <div className={`p-2 rounded-full ${role.color} text-white`}>
+              {role.icon}
+            </div>
+            {role.name}
+          </CardTitle>
+          <Badge variant="secondary">
+            {role.userCount} {role.userCount === 1 ? 'user' : 'users'}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-social-muted">{role.description}</p>
+        
+        <div>
+          <h4 className="font-medium mb-2">Permissions:</h4>
+          <ul className="space-y-1">
+            {role.permissions.map((permission, index) => (
+              <li key={index} className="text-sm text-social-muted flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-social-primary" />
+                {permission}
+              </li>
+            ))}
+          </ul>
+        </div>
 
-  const filteredRoles = roles.filter(role =>
-    role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    role.description.toLowerCase().includes(searchTerm.toLowerCase())
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="w-full">
+              <Users className="h-4 w-4 mr-2" />
+              View All {role.name}s
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <div className={`p-2 rounded-full ${role.color} text-white`}>
+                  {role.icon}
+                </div>
+                All {role.name}s ({role.userCount})
+              </DialogTitle>
+              <DialogDescription>
+                Users with the {role.name} role and their associated communities
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              {role.users.map((user) => (
+                <Card key={user.id} className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-social-primary flex items-center justify-center text-white">
+                        <User className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{user.name}</p>
+                        <p className="text-sm text-social-muted">{user.email}</p>
+                        <p className="text-xs text-gray-400">
+                          Joined {user.joinDate.toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {user.communities && user.communities.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-sm font-medium mb-1">Communities:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {user.communities.map((community, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {community}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              ))}
+              
+              {role.name === "User" && role.userCount > role.users.length && (
+                <div className="text-center p-4 text-social-muted">
+                  <p>Showing first {role.users.length} users</p>
+                  <p className="text-sm">Total: {role.userCount} users</p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+    </Card>
   );
 
-  const getRoleColor = (roleName: string) => {
-    switch (roleName.toLowerCase()) {
-      case "administrator":
-        return "bg-red-500";
-      case "moderator":
-        return "bg-orange-500";
-      default:
-        return "bg-blue-500";
-    }
-  };
-
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h2 className="text-2xl font-semibold">Roles & Permissions</h2>
-        <Button className="bg-social-primary hover:bg-social-secondary">
-          <UserCheck className="h-4 w-4 mr-2" />
-          Create Role
-        </Button>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-semibold mb-2">Roles & Permissions</h2>
+        <p className="text-social-muted">
+          Manage user roles and view their permissions across the platform
+        </p>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Input
-          placeholder="Search roles..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-
-      {/* Roles Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredRoles.map((role) => (
-          <Card key={role.id}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  {role.name}
-                </CardTitle>
-                <Badge className={getRoleColor(role.name)}>
-                  {role.userCount} users
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600">{role.description}</p>
-              
-              <div className="space-y-2">
-                <h4 className="font-medium text-sm">Permissions:</h4>
-                <div className="flex flex-wrap gap-1">
-                  {role.permissions.slice(0, 3).map((permission) => (
-                    <Badge key={permission} variant="secondary" className="text-xs">
-                      {permission.replace('_', ' ')}
-                    </Badge>
-                  ))}
-                  {role.permissions.length > 3 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{role.permissions.length - 3} more
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" size="sm" className="flex-1">
-                  <Eye className="h-4 w-4 mr-1" />
-                  View
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1">
-                  <Edit className="h-4 w-4 mr-1" />
-                  Edit
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {roles.map((role) => (
+          <RoleCard key={role.name} role={role} />
         ))}
       </div>
-
-      {/* Recent Role Assignments */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Role Assignments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {users.slice(0, 5).map((user) => (
-              <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-social-primary rounded-full flex items-center justify-center text-white">
-                    <Users className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{user.name}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <Badge className={getRoleColor(user.role)}>
-                    {user.role}
-                  </Badge>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {user.assignedAt.toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

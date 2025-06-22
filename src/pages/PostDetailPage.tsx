@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar } from "@/components/ui/avatar";
-import { Heart, MessageSquare, Pin, Lock, User, Send, Home, ChevronRight } from "lucide-react";
+import { Heart, MessageSquare, Pin, Lock, User, Send, Home, ChevronRight, Reply } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -24,6 +24,8 @@ interface Reply {
   timestamp: Date;
   likes: number;
   isLiked: boolean;
+  parentId?: string;
+  replies: Reply[];
 }
 
 interface PostData {
@@ -50,6 +52,8 @@ const PostDetailPage = () => {
   const { communityId, postId } = useParams();
   const { toast } = useToast();
   const [newReply, setNewReply] = useState("");
+  const [replyToId, setReplyToId] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState<{[key: string]: string}>({});
 
   // Mock data - in a real app, this would come from an API
   const [post, setPost] = useState<PostData>({
@@ -74,7 +78,19 @@ const PostDetailPage = () => {
         content: "Great tips! I especially love the advice about using graduated filters. Do you have any specific brand recommendations?",
         timestamp: new Date(2024, 5, 15, 15, 45),
         likes: 5,
-        isLiked: false
+        isLiked: false,
+        replies: [
+          {
+            id: "reply-1-1",
+            author: "Sarah Johnson",
+            content: "I personally use Lee Filters - they're a bit pricey but the quality is excellent. Cokin is also a good budget option!",
+            timestamp: new Date(2024, 5, 15, 16, 15),
+            likes: 3,
+            isLiked: false,
+            parentId: "reply-1",
+            replies: []
+          }
+        ]
       },
       {
         id: "reply-2",
@@ -82,7 +98,8 @@ const PostDetailPage = () => {
         content: "Thanks for sharing! Do you have any recommendations for specific lens filters? I'm just starting out with landscape photography.",
         timestamp: new Date(2024, 5, 15, 16, 20),
         likes: 3,
-        isLiked: true
+        isLiked: true,
+        replies: []
       },
       {
         id: "reply-3",
@@ -90,7 +107,8 @@ const PostDetailPage = () => {
         content: "This is so helpful! I've been struggling with exposure during golden hour. Your tip about bracketing shots is game-changing.",
         timestamp: new Date(2024, 5, 15, 17, 10),
         likes: 2,
-        isLiked: false
+        isLiked: false,
+        replies: []
       }
     ]
   });
@@ -104,44 +122,173 @@ const PostDetailPage = () => {
   };
 
   const handleLikeReply = (replyId: string) => {
+    const updateReplies = (replies: Reply[]): Reply[] => {
+      return replies.map(reply => {
+        if (reply.id === replyId) {
+          return {
+            ...reply,
+            isLiked: !reply.isLiked,
+            likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1
+          };
+        }
+        if (reply.replies.length > 0) {
+          return {
+            ...reply,
+            replies: updateReplies(reply.replies)
+          };
+        }
+        return reply;
+      });
+    };
+
     setPost(prev => ({
       ...prev,
-      replies: prev.replies.map(reply =>
-        reply.id === replyId
-          ? {
-              ...reply,
-              isLiked: !reply.isLiked,
-              likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1
-            }
-          : reply
-      )
+      replies: updateReplies(prev.replies)
     }));
   };
 
-  const handleSubmitReply = () => {
-    if (newReply.trim()) {
-      const reply: Reply = {
-        id: `reply-${Date.now()}`,
-        author: "Current User",
-        content: newReply,
-        timestamp: new Date(),
-        likes: 0,
-        isLiked: false
+  const handleSubmitReply = (parentId?: string) => {
+    const content = parentId ? replyContent[parentId] : newReply;
+    if (!content.trim()) return;
+
+    const newReplyObj: Reply = {
+      id: `reply-${Date.now()}`,
+      author: "Current User",
+      content: content,
+      timestamp: new Date(),
+      likes: 0,
+      isLiked: false,
+      parentId: parentId,
+      replies: []
+    };
+
+    if (parentId) {
+      const addReplyToParent = (replies: Reply[]): Reply[] => {
+        return replies.map(reply => {
+          if (reply.id === parentId) {
+            return {
+              ...reply,
+              replies: [...reply.replies, newReplyObj]
+            };
+          }
+          if (reply.replies.length > 0) {
+            return {
+              ...reply,
+              replies: addReplyToParent(reply.replies)
+            };
+          }
+          return reply;
+        });
       };
 
       setPost(prev => ({
         ...prev,
-        replies: [...prev.replies, reply],
+        replies: addReplyToParent(prev.replies),
         comments: prev.comments + 1
       }));
 
+      setReplyContent(prev => ({ ...prev, [parentId]: "" }));
+      setReplyToId(null);
+    } else {
+      setPost(prev => ({
+        ...prev,
+        replies: [...prev.replies, newReplyObj],
+        comments: prev.comments + 1
+      }));
       setNewReply("");
-      toast({
-        title: "Reply posted",
-        description: "Your reply has been added to the discussion.",
-      });
     }
+
+    toast({
+      title: "Reply posted",
+      description: "Your reply has been added to the discussion.",
+    });
   };
+
+  const ReplyComponent = ({ reply, depth = 0 }: { reply: Reply; depth?: number }) => (
+    <Card className={`${depth > 0 ? 'ml-8' : 'ml-4'} ${depth > 2 ? 'border-l-2 border-gray-200 pl-4' : ''}`}>
+      <CardContent className="pt-4">
+        <div className="flex gap-3">
+          <Avatar className="h-10 w-10 bg-social-primary text-white">
+            <div className="flex h-full w-full items-center justify-center">
+              <User className="h-5 w-5" />
+            </div>
+          </Avatar>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <p className="font-medium">{reply.author}</p>
+              <span className="text-sm text-gray-500">
+                {reply.timestamp.toLocaleDateString()}
+              </span>
+            </div>
+            <p className="text-gray-700 mb-3">{reply.content}</p>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleLikeReply(reply.id)}
+                className={`flex items-center gap-1 text-sm ${
+                  reply.isLiked ? "text-red-500" : "text-gray-500"
+                }`}
+                disabled={post.commentsLocked}
+              >
+                <Heart className={`h-3 w-3 ${reply.isLiked ? "fill-current" : ""}`} />
+                {reply.likes}
+              </Button>
+              
+              {!post.commentsLocked && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setReplyToId(replyToId === reply.id ? null : reply.id)}
+                  className="flex items-center gap-1 text-sm text-gray-500"
+                >
+                  <Reply className="h-3 w-3" />
+                  Reply
+                </Button>
+              )}
+            </div>
+            
+            {/* Reply form for this specific reply */}
+            {replyToId === reply.id && !post.commentsLocked && (
+              <div className="mt-4 flex gap-3">
+                <Avatar className="h-8 w-8 bg-social-primary text-white">
+                  <div className="flex h-full w-full items-center justify-center">
+                    <User className="h-4 w-4" />
+                  </div>
+                </Avatar>
+                <div className="flex-1 flex gap-3">
+                  <Textarea
+                    placeholder={`Reply to ${reply.author}...`}
+                    value={replyContent[reply.id] || ""}
+                    onChange={(e) => setReplyContent(prev => ({ ...prev, [reply.id]: e.target.value }))}
+                    className="flex-1"
+                    rows={2}
+                  />
+                  <Button 
+                    onClick={() => handleSubmitReply(reply.id)}
+                    disabled={!replyContent[reply.id]?.trim()}
+                    size="sm"
+                    className="self-end"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+      
+      {/* Render nested replies */}
+      {reply.replies.length > 0 && (
+        <div className="space-y-2 mt-2">
+          {reply.replies.map((nestedReply) => (
+            <ReplyComponent key={nestedReply.id} reply={nestedReply} depth={depth + 1} />
+          ))}
+        </div>
+      )}
+    </Card>
+  );
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -247,41 +394,10 @@ const PostDetailPage = () => {
           <h2 className="text-xl font-semibold">Replies ({post.replies.length})</h2>
           
           {post.replies.map((reply) => (
-            <Card key={reply.id} className="ml-4">
-              <CardContent className="pt-4">
-                <div className="flex gap-3">
-                  <Avatar className="h-10 w-10 bg-social-primary text-white">
-                    <div className="flex h-full w-full items-center justify-center">
-                      <User className="h-5 w-5" />
-                    </div>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <p className="font-medium">{reply.author}</p>
-                      <span className="text-sm text-gray-500">
-                        {reply.timestamp.toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="text-gray-700 mb-3">{reply.content}</p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleLikeReply(reply.id)}
-                      className={`flex items-center gap-1 text-sm ${
-                        reply.isLiked ? "text-red-500" : "text-gray-500"
-                      }`}
-                      disabled={post.commentsLocked}
-                    >
-                      <Heart className={`h-3 w-3 ${reply.isLiked ? "fill-current" : ""}`} />
-                      {reply.likes}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <ReplyComponent key={reply.id} reply={reply} />
           ))}
 
-          {/* Reply Form */}
+          {/* Main Reply Form */}
           {!post.commentsLocked && (
             <Card className="ml-4">
               <CardContent className="pt-4">
@@ -300,7 +416,7 @@ const PostDetailPage = () => {
                       rows={3}
                     />
                     <Button 
-                      onClick={handleSubmitReply}
+                      onClick={() => handleSubmitReply()}
                       disabled={!newReply.trim()}
                       className="self-end"
                     >

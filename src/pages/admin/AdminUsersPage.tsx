@@ -4,23 +4,14 @@ import {
   Table, TableBody, TableCell, TableHead, 
   TableHeader, TableRow 
 } from "@/components/ui/table";
-import { 
-  Select, SelectContent, SelectItem, 
-  SelectTrigger, SelectValue 
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { 
-  AlertDialog, AlertDialogAction, AlertDialogCancel, 
-  AlertDialogContent, AlertDialogDescription, 
-  AlertDialogFooter, AlertDialogHeader, 
-  AlertDialogTitle, AlertDialogTrigger 
-} from "@/components/ui/alert-dialog";
-import { Shield, Search, User, Check } from "lucide-react";
+import { Shield, Search, User } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import UserProfileDialog from "@/components/admin/UserProfileDialog";
+import RoleChangeDialog from "@/components/admin/RoleChangeDialog";
 import AdminTablePagination from "@/components/admin/AdminTablePagination";
 
 interface AppUser {
@@ -42,6 +33,8 @@ const AdminUsersPage = () => {
   const [currentUser] = useState("admin@example.com");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
+  const [roleChangeDialogOpen, setRoleChangeDialogOpen] = useState(false);
   
   const [users, setUsers] = useState<AppUser[]>([
     {
@@ -126,6 +119,11 @@ const AdminUsersPage = () => {
     }
   };
 
+  const handleChangeRole = (user: AppUser) => {
+    setSelectedUser(user);
+    setRoleChangeDialogOpen(true);
+  };
+
   const isCurrentUser = (userEmail: string) => userEmail === currentUser;
 
   return (
@@ -169,51 +167,15 @@ const AdminUsersPage = () => {
                 <TableCell className="hidden md:table-cell">{user.email}</TableCell>
                 <TableCell className="hidden md:table-cell">{user.joinDate.toLocaleDateString()}</TableCell>
                 <TableCell>
-                  {isCurrentUser(user.email) ? (
-                    <Badge className="bg-social-primary">
-                      {user.role === "admin" && <Shield className="h-3 w-3 mr-1" />}
-                      {user.role} (You)
-                    </Badge>
-                  ) : (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <div>
-                          <Select 
-                            defaultValue={user.role} 
-                            onValueChange={(value) => {}} // Handled by AlertDialog
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="user">User</SelectItem>
-                              <SelectItem value="moderator">Moderator</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Confirm Role Change</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to change {user.name}'s role? This action will update their permissions across the platform.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => {
-                            const roleOrder = ["user", "moderator", "admin"];
-                            const currentIndex = roleOrder.indexOf(user.role);
-                            const newRole = roleOrder[(currentIndex + 1) % roleOrder.length];
-                            handleRoleChange(user.id, newRole);
-                          }}>
-                            <Check className="h-4 w-4 mr-1" /> Confirm Change
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
+                  <Badge className={
+                    user.role === "admin" ? "bg-social-primary" :
+                    user.role === "moderator" ? "bg-social-secondary" :
+                    "bg-slate-400"
+                  }>
+                    {user.role === "admin" && <Shield className="h-3 w-3 mr-1" />}
+                    {user.role}
+                    {isCurrentUser(user.email) && " (You)"}
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   <Badge className={
@@ -225,15 +187,27 @@ const AdminUsersPage = () => {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <UserProfileDialog user={user}>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-xs"
-                    >
-                      View Profile
-                    </Button>
-                  </UserProfileDialog>
+                  <div className="flex justify-end gap-2">
+                    <UserProfileDialog user={user}>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-xs"
+                      >
+                        View Profile
+                      </Button>
+                    </UserProfileDialog>
+                    {!isCurrentUser(user.email) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleChangeRole(user)}
+                        className="text-xs"
+                      >
+                        Change Role
+                      </Button>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -260,6 +234,13 @@ const AdminUsersPage = () => {
           />
         )}
       </div>
+
+      <RoleChangeDialog
+        isOpen={roleChangeDialogOpen}
+        onClose={() => setRoleChangeDialogOpen(false)}
+        user={selectedUser}
+        onConfirm={handleRoleChange}
+      />
     </div>
   );
 };

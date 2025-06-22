@@ -1,65 +1,36 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Edit, Save, User, Upload } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
 
-interface UserProfile {
-  name: string;
-  dateOfBirth: string;
-  email: string;
-  bio: string;
-  interests: string[];
-  avatarUrl?: string;
-}
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useToast } from "@/components/ui/use-toast";
+import { User, Camera, MapPin, Calendar, Users } from "lucide-react";
 
 const ProfilePage = () => {
   const { toast } = useToast();
-  const [editMode, setEditMode] = useState(false);
-  const [profile, setProfile] = useState<UserProfile>({
-    name: "Sarah Johnson",
-    dateOfBirth: "1996-03-15",
-    email: "sarah.j@example.com",
-    bio: "Software developer passionate about UX design and hiking on weekends.",
-    interests: ["Technology", "Hiking", "Photography", "Reading"],
-    avatarUrl: undefined
+  const [isCurrentUser] = useState(true); // Mock current user check
+  const [isEditing, setIsEditing] = useState(false);
+  const [profileData, setProfileData] = useState({
+    name: "John Doe",
+    email: "john.doe@example.com",
+    bio: "Photography enthusiast and community moderator. Love sharing tips and discovering new techniques.",
+    location: "San Francisco, CA",
+    joinDate: new Date(2023, 0, 15),
+    dateOfBirth: new Date(1990, 5, 15),
+    avatar: null as string | null,
+    communities: [
+      { name: "Photography Enthusiasts", role: "Moderator", joinedAt: new Date(2023, 0, 15) },
+      { name: "Street Photography", role: "Member", joinedAt: new Date(2023, 2, 10) },
+      { name: "Landscape Lovers", role: "Member", joinedAt: new Date(2023, 4, 5) }
+    ]
   });
 
-  const [editedProfile, setEditedProfile] = useState<UserProfile>({...profile});
-
-  // Mock joined communities data
-  const [joinedCommunities] = useState([
-    {
-      id: "1",
-      name: "Photography Enthusiasts",
-      memberCount: 1250,
-      role: "Member",
-      joinedAt: new Date(2024, 2, 15)
-    },
-    {
-      id: "2",
-      name: "Web Developers",
-      memberCount: 5721,
-      role: "Moderator",
-      joinedAt: new Date(2024, 1, 8)
-    },
-    {
-      id: "3",
-      name: "Fitness & Wellness",
-      memberCount: 3189,
-      role: "Member",
-      joinedAt: new Date(2024, 0, 22)
-    }
-  ]);
-
-  // Calculate age from date of birth
-  const calculateAge = (dateOfBirth: string) => {
+  const calculateAge = (birthDate: Date) => {
     const today = new Date();
-    const birthDate = new Date(dateOfBirth);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
@@ -68,23 +39,12 @@ const ProfilePage = () => {
     return age;
   };
 
-  const handleEdit = () => {
-    setEditMode(true);
-    setEditedProfile({...profile});
-  };
-
   const handleSave = () => {
-    setProfile({...editedProfile});
-    setEditMode(false);
+    setIsEditing(false);
     toast({
-      title: "Profile updated",
-      description: "Your profile changes have been saved successfully.",
+      title: "Profile Updated",
+      description: "Your profile has been successfully updated.",
     });
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setEditedProfile(prev => ({ ...prev, [name]: value }));
   };
 
   const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,196 +52,172 @@ const ProfilePage = () => {
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setEditedProfile(prev => ({ ...prev, avatarUrl: result }));
-        toast({
-          title: "Avatar Updated",
-          description: "Your profile picture has been updated.",
-        });
+        setProfileData(prev => ({
+          ...prev,
+          avatar: e.target?.result as string
+        }));
       };
       reader.readAsDataURL(file);
+      
+      toast({
+        title: "Avatar Updated",
+        description: "Your profile picture has been updated.",
+      });
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in p-6">
-      <h1 className="text-3xl font-bold text-social-primary">My Profile</h1>
-
-      <Card className="border-social-primary/20">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="w-16 h-16 bg-social-primary rounded-full flex items-center justify-center text-white overflow-hidden">
-                  {(editMode ? editedProfile.avatarUrl : profile.avatarUrl) ? (
-                    <img 
-                      src={editMode ? editedProfile.avatarUrl : profile.avatarUrl} 
-                      alt={profile.name} 
-                      className="w-full h-full object-cover" 
-                    />
-                  ) : (
-                    <User size={32} />
+    <div className="container mx-auto px-4 py-6 max-w-4xl">
+      <div className="grid gap-6">
+        {/* Profile Header */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="flex flex-col items-center">
+                <div className="relative">
+                  <Avatar className="h-24 w-24">
+                    {profileData.avatar ? (
+                      <img src={profileData.avatar} alt="Profile" className="h-full w-full object-cover" />
+                    ) : (
+                      <AvatarFallback className="bg-social-primary text-white text-2xl">
+                        <User className="h-12 w-12" />
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  {isCurrentUser && (
+                    <>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                        id="avatar-upload"
+                      />
+                      <label
+                        htmlFor="avatar-upload"
+                        className="absolute bottom-0 right-0 bg-social-primary text-white p-2 rounded-full cursor-pointer hover:bg-social-primary/80 transition-colors"
+                      >
+                        <Camera className="h-4 w-4" />
+                      </label>
+                    </>
                   )}
                 </div>
-                {editMode && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
-                    <label htmlFor="avatar-upload" className="cursor-pointer text-white">
-                      <Upload size={20} />
-                    </label>
-                    <Input
-                      id="avatar-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarUpload}
-                      className="hidden"
-                    />
+              </div>
+              
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    {isEditing ? (
+                      <Input
+                        value={profileData.name}
+                        onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                        className="text-2xl font-bold mb-2"
+                      />
+                    ) : (
+                      <h1 className="text-2xl font-bold">{profileData.name}</h1>
+                    )}
+                    <p className="text-social-muted">{profileData.email}</p>
                   </div>
-                )}
-              </div>
-              <div>
-                <CardTitle className="text-xl">{profile.name}</CardTitle>
-                <CardDescription>Member since April 2025</CardDescription>
+                  
+                  {isCurrentUser && (
+                    <div className="flex gap-2">
+                      {isEditing ? (
+                        <>
+                          <Button onClick={handleSave}>Save Changes</Button>
+                          <Button variant="outline" onClick={() => setIsEditing(false)}>
+                            Cancel
+                          </Button>
+                        </>
+                      ) : (
+                        <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-social-muted">
+                    <Calendar className="h-4 w-4" />
+                    <span>Age: {calculateAge(profileData.dateOfBirth)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-social-muted">
+                    <MapPin className="h-4 w-4" />
+                    <span>
+                      {isEditing ? (
+                        <Input
+                          value={profileData.location}
+                          onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
+                          placeholder="Your location"
+                        />
+                      ) : (
+                        profileData.location
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-social-muted">
+                    <User className="h-4 w-4" />
+                    <span>Member since {profileData.joinDate.toLocaleDateString()}</span>
+                  </div>
+                </div>
               </div>
             </div>
-            {!editMode ? (
-              <Button onClick={handleEdit} variant="outline" className="border-social-primary text-social-primary">
-                <Edit className="mr-2 h-4 w-4" /> Edit Profile
-              </Button>
+          </CardContent>
+        </Card>
+
+        {/* Bio Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>About</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isEditing ? (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="bio">Bio</Label>
+                  <Textarea
+                    id="bio"
+                    value={profileData.bio}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                    placeholder="Tell us about yourself..."
+                    rows={4}
+                  />
+                </div>
+              </div>
             ) : (
-              <Button onClick={handleSave} className="bg-social-primary hover:bg-social-secondary">
-                <Save className="mr-2 h-4 w-4" /> Save Changes
-              </Button>
+              <p className="text-social-foreground">{profileData.bio}</p>
             )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {editMode ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input 
-                    id="name" 
-                    name="name" 
-                    value={editedProfile.name} 
-                    onChange={handleChange} 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <Input 
-                    id="dateOfBirth" 
-                    name="dateOfBirth" 
-                    type="date"
-                    value={editedProfile.dateOfBirth} 
-                    onChange={handleChange} 
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email (Private)</Label>
-                <Input 
-                  id="email" 
-                  name="email" 
-                  value={editedProfile.email} 
-                  onChange={handleChange} 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Textarea 
-                  id="bio" 
-                  name="bio" 
-                  value={editedProfile.bio} 
-                  onChange={handleChange} 
-                  rows={4}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-medium text-sm text-gray-500">Name</h3>
-                  <p>{profile.name}</p>
-                </div>
-                <div>
-                  <h3 className="font-medium text-sm text-gray-500">Age</h3>
-                  <p>{calculateAge(profile.dateOfBirth)} years old</p>
-                </div>
-              </div>
-              <div>
-                <h3 className="font-medium text-sm text-gray-500">Bio</h3>
-                <p>{profile.bio}</p>
-              </div>
-              <Alert>
-                <AlertDescription className="text-sm">
-                  <span className="font-medium">Email (Private):</span> {profile.email}
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
-        </CardContent>
-        <CardFooter className="border-t pt-4">
-          <div className="w-full">
-            <h3 className="font-medium text-sm text-gray-500 mb-2">Interests</h3>
-            <div className="flex flex-wrap gap-2">
-              {profile.interests.map((interest, index) => (
-                <div key={index} className="px-3 py-1 bg-social-accent text-social-tertiary rounded-full text-sm">
-                  {interest}
-                </div>
-              ))}
-            </div>
-          </div>
-        </CardFooter>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Joined Communities */}
-      <Card>
-        <CardHeader>
-          <CardTitle>My Communities</CardTitle>
-          <CardDescription>Communities you're a member of ({joinedCommunities.length})</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {joinedCommunities.map((community) => (
-              <div key={community.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium">{community.name}</h4>
-                  <Badge variant={community.role === "Moderator" ? "default" : "secondary"}>
-                    {community.role}
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-500 mb-2">
-                  {community.memberCount.toLocaleString()} members
-                </p>
-                <p className="text-xs text-gray-400">
-                  Joined {community.joinedAt.toLocaleDateString()}
-                </p>
+        {/* Communities Section - Only visible to current user */}
+        {isCurrentUser && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                My Communities
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4">
+                {profileData.communities.map((community, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <h4 className="font-medium">{community.name}</h4>
+                      <p className="text-sm text-gray-500">
+                        Joined {community.joinedAt.toLocaleDateString()}
+                      </p>
+                    </div>
+                    <Badge variant={community.role === "Moderator" ? "default" : "secondary"}>
+                      {community.role}
+                    </Badge>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Friend Connections</CardTitle>
-          <CardDescription>You have 24 friends on ConnectSphere</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="w-12 h-12 bg-social-primary/20 rounded-full flex items-center justify-center">
-                <User size={20} className="text-social-primary" />
-              </div>
-            ))}
-            <Button variant="outline" className="h-12 rounded-full border-dashed border-social-muted">
-              View All
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };

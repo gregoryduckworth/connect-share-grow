@@ -1,13 +1,23 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { 
+  Table, TableBody, TableCell, TableHead, 
+  TableHeader, TableRow 
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Eye, Check, X, Search, Users, MessageSquare } from "lucide-react";
+import { 
+  AlertDialog, AlertDialogAction, AlertDialogCancel, 
+  AlertDialogContent, AlertDialogDescription, 
+  AlertDialogFooter, AlertDialogHeader, 
+  AlertDialogTitle, AlertDialogTrigger 
+} from "@/components/ui/alert-dialog";
+import { Search, Users, MessageSquare, Check, X } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import CommunityDetailsDialog from "@/components/admin/CommunityDetailsDialog";
+import AdminTablePagination from "@/components/admin/AdminTablePagination";
 
 interface Community {
   id: string;
@@ -15,108 +25,142 @@ interface Community {
   description: string;
   memberCount: number;
   postCount: number;
-  createdAt: Date;
-  createdBy: string;
-  moderators: string[];
-  status: "active" | "pending" | "suspended";
   category: string;
-  rules: string[];
+  createdAt: Date;
+  status: "active" | "suspended" | "pending";
+  moderators: string[];
 }
 
-interface PendingCommunity {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: Date;
-  createdBy: string;
-  category: string;
-  rules: string[];
-  status: "pending";
+interface PendingCommunity extends Community {
   tags: string[];
   requestedAt: Date;
 }
 
 const AdminCommunitiesPage = () => {
   const { toast } = useToast();
-  const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
-  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-
-  // Mock data for communities
+  const [pageSize, setPageSize] = useState(10);
+  
   const [communities, setCommunities] = useState<Community[]>([
     {
       id: "comm-1",
       name: "Photography Enthusiasts",
-      description: "A community for sharing photography tips, techniques, and showcasing work",
-      memberCount: 1247,
-      postCount: 3891,
-      createdAt: new Date(2024, 0, 15),
-      createdBy: "user-123",
-      moderators: ["mod-1", "mod-2"],
+      description: "A place for photographers to share their work",
+      memberCount: 1250,
+      postCount: 423,
+      category: "Art & Design",
+      createdAt: new Date(2023, 0, 15),
       status: "active",
-      category: "Photography",
-      rules: ["Be respectful", "No spam", "Keep posts relevant to photography"]
+      moderators: ["Sarah Johnson", "Mike Chen"]
     },
     {
-      id: "comm-2", 
-      name: "Cooking Adventures",
-      description: "Share recipes, cooking tips, and culinary experiences",
-      memberCount: 892,
-      postCount: 2156,
-      createdAt: new Date(2024, 1, 3),
-      createdBy: "user-456",
-      moderators: ["mod-3"],
+      id: "comm-2",
+      name: "Web Development",
+      description: "Modern web development practices",
+      memberCount: 2100,
+      postCount: 867,
+      category: "Technology",
+      createdAt: new Date(2023, 1, 20),
       status: "active",
-      category: "Food & Cooking",
-      rules: ["Share original recipes", "No duplicate posts", "Be constructive with feedback"]
+      moderators: ["Alex Rivera"]
+    },
+    {
+      id: "comm-3",
+      name: "Cooking Club",
+      description: "Share recipes and cooking tips",
+      memberCount: 890,
+      postCount: 234,
+      category: "Food & Drink",
+      createdAt: new Date(2023, 2, 10),
+      status: "suspended",
+      moderators: ["Emma Davis"]
     }
   ]);
 
-  // Mock pending communities
   const [pendingCommunities, setPendingCommunities] = useState<PendingCommunity[]>([
     {
       id: "pending-1",
-      name: "Tech Discussions",
-      description: "A place to discuss the latest in technology and innovation",
-      createdAt: new Date(2024, 5, 18),
-      createdBy: "user-101",
-      category: "Technology",
-      rules: ["Stay on topic", "Cite sources when making claims", "No self-promotion"],
+      name: "Cryptocurrency Trading",
+      description: "Discussion about crypto trading strategies",
+      memberCount: 0,
+      postCount: 0,
+      category: "Finance",
+      createdAt: new Date(2024, 5, 15),
       status: "pending",
-      tags: ["Technology", "Innovation"],
-      requestedAt: new Date(2024, 5, 18)
-    },
-    {
-      id: "pending-2", 
-      name: "Book Club Online",
-      description: "Monthly book discussions and reading recommendations",
-      createdAt: new Date(2024, 5, 19),
-      createdBy: "user-202",
-      category: "Literature",
-      rules: ["No spoilers in titles", "Use spoiler tags", "Monthly reading schedule"],
-      status: "pending",
-      tags: ["Books", "Literature"],
-      requestedAt: new Date(2024, 5, 19)
+      moderators: [],
+      tags: ["Crypto", "Trading", "Investment"],
+      requestedAt: new Date(2024, 5, 15)
     }
   ]);
 
-  const handleViewCommunity = (community: Community) => {
-    setSelectedCommunity(community);
-    setDetailsDialogOpen(true);
+  const filteredCommunities = communities.filter(community =>
+    community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    community.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredCommunities.length / pageSize);
+  const paginatedCommunities = filteredCommunities.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const handleSuspendCommunity = (id: string) => {
+    const community = communities.find(c => c.id === id);
+    if (community) {
+      setCommunities(communities.map(c =>
+        c.id === id ? { ...c, status: "suspended" as const } : c
+      ));
+      
+      toast({
+        title: "Community Suspended",
+        description: `${community.name} has been suspended.`,
+        variant: "destructive",
+      });
+      
+      logAdminAction({
+        action: "community_suspended",
+        details: `Suspended community: ${community.name}`,
+        targetId: community.id,
+        targetType: "community"
+      });
+    }
+  };
+
+  const handleActivateCommunity = (id: string) => {
+    const community = communities.find(c => c.id === id);
+    if (community) {
+      setCommunities(communities.map(c =>
+        c.id === id ? { ...c, status: "active" as const } : c
+      ));
+      
+      toast({
+        title: "Community Activated",
+        description: `${community.name} has been activated.`,
+      });
+      
+      logAdminAction({
+        action: "community_activated",
+        details: `Activated community: ${community.name}`,
+        targetId: community.id,
+        targetType: "community"
+      });
+    }
   };
 
   const handleApproveCommunity = (id: string) => {
     const pendingCommunity = pendingCommunities.find(c => c.id === id);
     if (pendingCommunity) {
-      // Convert pending community to active community
       const newCommunity: Community = {
-        ...pendingCommunity,
+        id: pendingCommunity.id,
+        name: pendingCommunity.name,
+        description: pendingCommunity.description,
         memberCount: 1,
         postCount: 0,
-        moderators: [pendingCommunity.createdBy],
-        status: "active"
+        category: pendingCommunity.category,
+        createdAt: new Date(),
+        status: "active",
+        moderators: []
       };
       
       setCommunities([...communities, newCommunity]);
@@ -130,7 +174,7 @@ const AdminCommunitiesPage = () => {
       logAdminAction({
         action: "community_approved",
         details: `Approved community: ${pendingCommunity.name}`,
-        targetId: id,
+        targetId: pendingCommunity.id,
         targetType: "community"
       });
     }
@@ -148,183 +192,240 @@ const AdminCommunitiesPage = () => {
       });
       
       logAdminAction({
-        action: "community_rejected", 
+        action: "community_rejected",
         details: `Rejected community: ${pendingCommunity.name}`,
-        targetId: id,
+        targetId: pendingCommunity.id,
         targetType: "community"
       });
     }
   };
 
-  // Filter and paginate communities
-  const filteredCommunities = communities.filter(community =>
-    community.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    community.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.ceil(filteredCommunities.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedCommunities = filteredCommunities.slice(startIndex, startIndex + itemsPerPage);
-
   return (
-    <>
-      <div className="space-y-6 p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h2 className="text-2xl font-semibold">Manage Communities</h2>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-social-accent/50">
-              {communities.length} Active
-            </Badge>
-            <Badge variant="outline" className="bg-orange-100 text-orange-800">
-              {pendingCommunities.length} Pending
-            </Badge>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h2 className="text-2xl font-semibold">Manage Communities</h2>
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search communities..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
-
-        {/* Pending Communities */}
-        {pendingCommunities.length > 0 && (
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-orange-600">Pending Approval</h3>
-            {pendingCommunities.map((community) => (
-              <Card key={community.id} className="border-orange-200">
-                <CardHeader className="bg-orange-50">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      {community.name}
-                    </CardTitle>
-                    <Badge className="bg-orange-500 text-white">
-                      Pending Approval
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <p className="text-sm text-gray-600 mb-4">{community.description}</p>
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="text-sm text-gray-500">
-                      Created {community.createdAt.toLocaleDateString()} by {community.createdBy}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline"
-                        className="border-red-400 text-red-500 hover:bg-red-50"
-                        onClick={() => handleRejectCommunity(community.id)}
-                      >
-                        <X className="h-4 w-4 mr-2" /> Reject
-                      </Button>
-                      <Button 
-                        variant="default"
-                        className="bg-green-500 hover:bg-green-600"
-                        onClick={() => handleApproveCommunity(community.id)}
-                      >
-                        <Check className="h-4 w-4 mr-2" /> Approve
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Active Communities */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Active Communities</h3>
-          
-          {paginatedCommunities.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <p className="text-social-muted">No communities found</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              {paginatedCommunities.map((community) => (
-                <Card key={community.id}>
-                  <CardHeader>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                      <CardTitle className="flex items-center gap-2">
-                        <Users className="h-4 w-4" />
-                        {community.name}
-                      </CardTitle>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="outline" className="bg-social-background">
-                          {community.memberCount} members
-                        </Badge>
-                        <Badge variant="outline" className="bg-social-background">
-                          {community.postCount} posts
-                        </Badge>
-                        <Badge className={
-                          community.status === "active" ? "bg-green-500" :
-                          community.status === "suspended" ? "bg-red-500" : "bg-orange-500"
-                        }>
-                          {community.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm">{community.description}</p>
-                    
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="text-sm text-gray-500">
-                        Created {community.createdAt.toLocaleDateString()} • {community.moderators.length} moderators
-                      </div>
-                      <Button 
-                        variant="outline"
-                        onClick={() => handleViewCommunity(community)}
-                      >
-                        <Eye className="h-4 w-4 mr-2" /> View Details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-
-              {/* Simple pagination */}
-              {totalPages > 1 && (
-                <div className="flex justify-center gap-2 mt-6">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </Button>
-                  <span className="flex items-center px-4">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
         </div>
       </div>
 
-      <CommunityDetailsDialog
-        isOpen={detailsDialogOpen}
-        onClose={() => setDetailsDialogOpen(false)}
-        community={selectedCommunity}
-      />
-    </>
+      {/* Pending Approvals */}
+      {pendingCommunities.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Pending Community Approvals</h3>
+          <div className="border rounded-md">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Community</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Requested</TableHead> 
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pendingCommunities.map((community) => (
+                  <TableRow key={community.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{community.name}</p>
+                        <p className="text-sm text-gray-500">{community.description}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{community.category}</Badge>
+                    </TableCell>
+                    <TableCell>{community.requestedAt.toLocaleDateString()}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" className="bg-green-500 hover:bg-green-600">
+                              <Check className="h-4 w-4 mr-1" />
+                              Approve
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Approve Community</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to approve "{community.name}"? This will make it publicly available.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleApproveCommunity(community.id)}>
+                                Approve
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="destructive">
+                              <X className="h-4 w-4 mr-1" />
+                              Reject
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Reject Community</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to reject "{community.name}"? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleRejectCommunity(community.id)}>
+                                Reject
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
+
+      {/* All Communities */}
+      <div className="border rounded-md">
+        <Table>
+          <Table Header>
+            <TableRow>
+              <TableHead>Community</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead className="hidden md:table-cell">Members</TableHead>
+              <TableHead className="hidden md:table-cell">Posts</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paginatedCommunities.map((community) => (
+              <TableRow key={community.id}>
+                <TableCell>
+                  <div>
+                    <p className="font-medium">{community.name}</p>
+                    <p className="text-sm text-gray-500">{community.description}</p>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline">{community.category}</Badge>
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4" />
+                    {community.memberCount.toLocaleString()}
+                  </div>
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <div className="flex items-center gap-1">
+                    <MessageSquare className="h-4 w-4" />
+                    {community.postCount}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge className={
+                    community.status === "active" ? "bg-green-500" :
+                    community.status === "suspended" ? "bg-red-500" :
+                    "bg-orange-500"
+                  }>
+                    {community.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <CommunityDetailsDialog community={community}>
+                      <Button variant="outline" size="sm">
+                        View Details
+                      </Button>
+                    </CommunityDetailsDialog>
+                    
+                    {community.status === "active" ? (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" variant="destructive">
+                            Suspend
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Suspend Community</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to suspend "{community.name}"? Members won't be able to post or interact.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleSuspendCommunity(community.id)}>
+                              Suspend
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    ) : (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="sm" className="bg-green-500 hover:bg-green-600">
+                            Activate
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Activate Community</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to activate "{community.name}"? This will restore full functionality.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleActivateCommunity(community.id)}>
+                              Activate
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        
+        {paginatedCommunities.length === 0 && (
+          <div className="text-center p-8">
+            <p className="text-social-muted">No communities found matching your search.</p>
+          </div>
+        )}
+        
+        {filteredCommunities.length > 0 && (
+          <AdminTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={filteredCommunities.length}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            }}
+          />
+        )}
+      </div>
+    </div>
   );
 };
 
