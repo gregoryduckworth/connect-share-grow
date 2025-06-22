@@ -1,18 +1,17 @@
-
 import { useState } from "react";
-import { 
-  Table, TableBody, TableCell, TableHead, 
-  TableHeader, TableRow 
+import {
+  Table, TableBody, TableCell, TableHead,
+  TableHeader, TableRow
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { 
-  AlertDialog, AlertDialogAction, AlertDialogCancel, 
-  AlertDialogContent, AlertDialogDescription, 
-  AlertDialogFooter, AlertDialogHeader, 
-  AlertDialogTitle, AlertDialogTrigger 
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle, AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import { Search, Users, MessageSquare, Check, X } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
@@ -41,7 +40,7 @@ const AdminCommunitiesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  
+
   const [communities, setCommunities] = useState<Community[]>([
     {
       id: "comm-1",
@@ -111,13 +110,13 @@ const AdminCommunitiesPage = () => {
       setCommunities(communities.map(c =>
         c.id === id ? { ...c, status: "suspended" as const } : c
       ));
-      
+
       toast({
         title: "Community Suspended",
         description: `${community.name} has been suspended.`,
         variant: "destructive",
       });
-      
+
       logAdminAction({
         action: "community_suspended",
         details: `Suspended community: ${community.name}`,
@@ -133,12 +132,12 @@ const AdminCommunitiesPage = () => {
       setCommunities(communities.map(c =>
         c.id === id ? { ...c, status: "active" as const } : c
       ));
-      
+
       toast({
         title: "Community Activated",
         description: `${community.name} has been activated.`,
       });
-      
+
       logAdminAction({
         action: "community_activated",
         details: `Activated community: ${community.name}`,
@@ -162,15 +161,15 @@ const AdminCommunitiesPage = () => {
         status: "active",
         moderators: []
       };
-      
+
       setCommunities([...communities, newCommunity]);
       setPendingCommunities(pendingCommunities.filter(c => c.id !== id));
-      
+
       toast({
         title: "Community Approved",
         description: `${pendingCommunity.name} has been approved and is now active.`,
       });
-      
+
       logAdminAction({
         action: "community_approved",
         details: `Approved community: ${pendingCommunity.name}`,
@@ -184,13 +183,13 @@ const AdminCommunitiesPage = () => {
     const pendingCommunity = pendingCommunities.find(c => c.id === id);
     if (pendingCommunity) {
       setPendingCommunities(pendingCommunities.filter(c => c.id !== id));
-      
+
       toast({
         title: "Community Rejected",
         description: `${pendingCommunity.name} has been rejected.`,
         variant: "destructive",
       });
-      
+
       logAdminAction({
         action: "community_rejected",
         details: `Rejected community: ${pendingCommunity.name}`,
