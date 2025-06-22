@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,14 +23,6 @@ const CommunitiesPage = () => {
   const [communities, setCommunities] = useState<Community[]>([
     {
       id: 1,
-      name: "Photography Enthusiasts",
-      description: "Share your best shots, photography tips, and camera recommendations.",
-      members: 2453,
-      tags: ["Photography", "Art", "Creative"],
-      joined: false,
-    },
-    {
-      id: 2,
       name: "Web Developers",
       description: "A community for all web developers to share knowledge, tips, and career advice.",
       members: 5721,
@@ -47,6 +38,14 @@ const CommunitiesPage = () => {
       joined: true,
     },
     {
+      id: 1,
+      name: "Photography Enthusiasts",
+      description: "Share your best shots, photography tips, and camera recommendations.",
+      members: 2453,
+      tags: ["Photography", "Art", "Creative"],
+      joined: false,
+    },
+    {
       id: 4,
       name: "Book Club",
       description: "Monthly book discussions, recommendations, and literary analysis.",
@@ -54,7 +53,7 @@ const CommunitiesPage = () => {
       tags: ["Reading", "Literature", "Discussion"],
       joined: false,
     },
-  ]);
+  ].sort((a, b) => b.members - a.members)); // Sort by member count descending
 
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -111,11 +110,16 @@ const CommunitiesPage = () => {
         </TabsList>
         
         <TabsContent value="discover" className="space-y-4">
+          <div className="mb-4">
+            <p className="text-sm text-social-muted">
+              Showing {filteredCommunities.length} communities sorted by member count
+            </p>
+          </div>
           <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
             {filteredCommunities.map(community => (
               <Card key={community.id} className="hover-scale">
                 <CardHeader>
-                  <Link to={`/communities/${community.id}`}>
+                  <Link to={`/community/${community.id}`}>
                     <CardTitle className="flex items-center gap-2 hover:text-social-primary transition-colors">
                       {community.name}
                     </CardTitle>
@@ -142,7 +146,7 @@ const CommunitiesPage = () => {
                   >
                     {community.joined ? "Leave" : "Join"} Community
                   </Button>
-                  <Link to={`/communities/${community.id}`}>
+                  <Link to={`/community/${community.id}`}>
                     <Button variant="outline">
                       View Discussions
                     </Button>
@@ -169,7 +173,7 @@ const CommunitiesPage = () => {
             {filteredCommunities.filter(c => c.joined).map(community => (
               <Card key={community.id} className="hover-scale">
                 <CardHeader>
-                  <Link to={`/communities/${community.id}`}>
+                  <Link to={`/community/${community.id}`}>
                     <CardTitle className="hover:text-social-primary transition-colors">
                       {community.name}
                     </CardTitle>
@@ -194,7 +198,7 @@ const CommunitiesPage = () => {
                   >
                     Leave Community
                   </Button>
-                  <Link to={`/communities/${community.id}`}>
+                  <Link to={`/community/${community.id}`}>
                     <Button variant="outline">
                       View Discussions
                     </Button>

@@ -7,6 +7,8 @@ import AdminLayout from "@/components/layout/AdminLayout";
 // Pages
 import CommunitiesPage from "@/pages/CommunitiesPage";
 import CommunityDetailPage from "@/pages/CommunityDetailPage";
+import PostDetailPage from "@/pages/PostDetailPage";
+import ModeratePage from "@/pages/ModeratePage";
 import ProfilePage from "@/pages/ProfilePage";
 import ChatPage from "@/pages/ChatPage";
 import DiscoverPage from "@/pages/DiscoverPage";
@@ -53,6 +55,8 @@ function App() {
             <Route index element={<Navigate to="/discover" replace />} />
             <Route path="communities" element={<CommunitiesPage />} />
             <Route path="community/:communityId" element={<CommunityDetailPage />} />
+            <Route path="community/:communityId/post/:postId" element={<PostDetailPage />} />
+            <Route path="community/:communityId/moderate" element={<ModeratePage />} />
             <Route path="discover" element={<DiscoverPage />} />
             <Route path="chat" element={<ChatPage />} />
             <Route path="profile" element={<ProfilePage />} />

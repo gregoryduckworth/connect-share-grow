@@ -1,11 +1,9 @@
-
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Users, MessageSquare, Plus, Settings, ChevronRight, Home, Send } from "lucide-react";
+import { Users, MessageSquare, Plus, Settings, ChevronRight, Home } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,15 +14,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import CommunityPost from "@/components/community/CommunityPost";
 import { useToast } from "@/components/ui/use-toast";
-
-interface Reply {
-  id: string;
-  author: string;
-  content: string;
-  timestamp: Date;
-  likes: number;
-  isLiked: boolean;
-}
 
 interface PostData {
   id: string;
@@ -41,7 +30,6 @@ interface PostData {
   tags: string[];
   lockReason?: string;
   commentsLockReason?: string;
-  replies?: Reply[];
 }
 
 const CommunityDetailPage = () => {
@@ -49,7 +37,6 @@ const CommunityDetailPage = () => {
   const { toast } = useToast();
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showModPanel, setShowModPanel] = useState(false);
-  const [newReply, setNewReply] = useState("");
   
   // Mock data - in a real app, this would come from an API
   const community = {
@@ -88,25 +75,7 @@ const CommunityDetailPage = () => {
       isPinned: true,
       isLocked: false,
       commentsLocked: false,
-      tags: ["Landscape", "Golden Hour", "Tips"],
-      replies: [
-        {
-          id: "reply-1",
-          author: "Alice Cooper",
-          content: "Great tips! I especially love the advice about using graduated filters.",
-          timestamp: new Date(2024, 5, 15, 15, 45),
-          likes: 5,
-          isLiked: false
-        },
-        {
-          id: "reply-2",
-          author: "Bob Wilson",
-          content: "Thanks for sharing! Do you have any recommendations for specific lens filters?",
-          timestamp: new Date(2024, 5, 15, 16, 20),
-          likes: 3,
-          isLiked: true
-        }
-      ]
+      tags: ["Landscape", "Golden Hour", "Tips"]
     },
     {
       id: "2",
@@ -120,17 +89,7 @@ const CommunityDetailPage = () => {
       isPinned: false,
       isLocked: false,
       commentsLocked: false,
-      tags: ["Street Photography", "Ethics", "Discussion"],
-      replies: [
-        {
-          id: "reply-3",
-          author: "Carol Davis",
-          content: "This is such an important topic. I always try to ask permission when possible.",
-          timestamp: new Date(2024, 5, 14, 11, 30),
-          likes: 8,
-          isLiked: false
-        }
-      ]
+      tags: ["Street Photography", "Ethics", "Discussion"]
     }
   ]);
 
@@ -147,7 +106,8 @@ const CommunityDetailPage = () => {
   };
 
   const handleCommentPost = (postId: string) => {
-    console.log(`Comment on post ${postId}`);
+    // Navigate to post detail page
+    window.location.href = `/community/${communityId}/post/${postId}`;
   };
 
   const handlePinPost = (postId: string) => {
@@ -188,35 +148,6 @@ const CommunityDetailPage = () => {
     ));
   };
 
-  const handleSubmitReply = (postId: string) => {
-    if (newReply.trim()) {
-      const reply: Reply = {
-        id: `reply-${Date.now()}`,
-        author: "Current User",
-        content: newReply,
-        timestamp: new Date(),
-        likes: 0,
-        isLiked: false
-      };
-
-      setPosts(posts.map(post => 
-        post.id === postId 
-          ? { 
-              ...post, 
-              replies: [...(post.replies || []), reply],
-              comments: post.comments + 1
-            }
-          : post
-      ));
-
-      setNewReply("");
-      toast({
-        title: "Reply posted",
-        description: "Your reply has been added to the discussion.",
-      });
-    }
-  };
-
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Breadcrumbs */}
@@ -254,7 +185,7 @@ const CommunityDetailPage = () => {
         <div className="lg:col-span-3">
           {/* Community Header */}
           <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
               <div>
                 <h1 className="text-3xl font-bold text-social-primary mb-2">
                   {community.name}
@@ -273,7 +204,7 @@ const CommunityDetailPage = () => {
                 </div>
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {community.isMember && (
                   <Button onClick={() => setShowCreatePost(true)}>
                     <Plus className="h-4 w-4 mr-2" />
@@ -305,42 +236,21 @@ const CommunityDetailPage = () => {
           {/* Posts */}
           <div className="space-y-4">
             {posts.map((post) => (
-              <div key={post.id} className="space-y-4">
-                <CommunityPost
-                  post={post}
-                  onLike={handleLikePost}
-                  onComment={handleCommentPost}
-                  onPin={community.isModerator ? handlePinPost : undefined}
-                  onLock={community.isModerator ? handleLockPost : undefined}
-                  onUnlock={community.isModerator ? handleUnlockPost : undefined}
-                  onLockComments={community.isModerator ? handleLockComments : undefined}
-                  onUnlockComments={community.isModerator ? handleUnlockComments : undefined}
-                  isModerator={community.isModerator}
-                />
-                
-                {/* Reply Section */}
-                {community.isMember && !post.commentsLocked && (
-                  <Card className="ml-8">
-                    <CardContent className="pt-4">
-                      <div className="flex gap-3">
-                        <Textarea
-                          placeholder="Write a reply..."
-                          value={newReply}
-                          onChange={(e) => setNewReply(e.target.value)}
-                          className="flex-1"
-                          rows={3}
-                        />
-                        <Button 
-                          onClick={() => handleSubmitReply(post.id)}
-                          disabled={!newReply.trim()}
-                          className="self-end"
-                        >
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+              <div key={post.id}>
+                <Link to={`/community/${communityId}/post/${post.id}`}>
+                  <CommunityPost
+                    post={post}
+                    onLike={handleLikePost}
+                    onComment={handleCommentPost}
+                    onPin={community.isModerator ? handlePinPost : undefined}
+                    onLock={community.isModerator ? handleLockPost : undefined}
+                    onUnlock={community.isModerator ? handleUnlockPost : undefined}
+                    onLockComments={community.isModerator ? handleLockComments : undefined}
+                    onUnlockComments={community.isModerator ? handleUnlockComments : undefined}
+                    isModerator={community.isModerator}
+                    showPreview={true}
+                  />
+                </Link>
               </div>
             ))}
           </div>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +30,31 @@ const ProfilePage = () => {
   });
 
   const [editedProfile, setEditedProfile] = useState<UserProfile>({...profile});
+
+  // Mock joined communities data
+  const [joinedCommunities] = useState([
+    {
+      id: "1",
+      name: "Photography Enthusiasts",
+      memberCount: 1250,
+      role: "Member",
+      joinedAt: new Date(2024, 2, 15)
+    },
+    {
+      id: "2",
+      name: "Web Developers",
+      memberCount: 5721,
+      role: "Moderator",
+      joinedAt: new Date(2024, 1, 8)
+    },
+    {
+      id: "3",
+      name: "Fitness & Wellness",
+      memberCount: 3189,
+      role: "Member",
+      joinedAt: new Date(2024, 0, 22)
+    }
+  ]);
 
   // Calculate age from date of birth
   const calculateAge = (dateOfBirth: string) => {
@@ -210,6 +234,34 @@ const ProfilePage = () => {
             </div>
           </div>
         </CardFooter>
+      </Card>
+
+      {/* Joined Communities */}
+      <Card>
+        <CardHeader>
+          <CardTitle>My Communities</CardTitle>
+          <CardDescription>Communities you're a member of ({joinedCommunities.length})</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {joinedCommunities.map((community) => (
+              <div key={community.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium">{community.name}</h4>
+                  <Badge variant={community.role === "Moderator" ? "default" : "secondary"}>
+                    {community.role}
+                  </Badge>
+                </div>
+                <p className="text-sm text-gray-500 mb-2">
+                  {community.memberCount.toLocaleString()} members
+                </p>
+                <p className="text-xs text-gray-400">
+                  Joined {community.joinedAt.toLocaleDateString()}
+                </p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
       </Card>
 
       <Card>

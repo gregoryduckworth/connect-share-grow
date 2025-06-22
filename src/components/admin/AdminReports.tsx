@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +27,7 @@ const AdminReports = () => {
       id: "report-1",
       contentType: "post",
       contentId: "post-123",
-      contentPreview: "This post contains potentially inappropriate content about politics...",
+      contentPreview: "This post contains potentially inappropriate content about politics and inflammatory language that goes against community guidelines. It uses divisive rhetoric and could incite arguments.",
       reportedBy: "user-456",
       reason: "Contains inappropriate content",
       createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
@@ -38,7 +37,7 @@ const AdminReports = () => {
       id: "report-2",
       contentType: "reply",
       contentId: "reply-789",
-      contentPreview: "This reply contains offensive language and personal attacks...",
+      contentPreview: "This reply contains offensive language and personal attacks directed at other community members. The language used is clearly harassment and violates our community standards.",
       reportedBy: "user-101",
       reason: "Harassment",
       createdAt: new Date(Date.now() - 1000 * 60 * 60), // 1 hour ago
@@ -48,7 +47,7 @@ const AdminReports = () => {
       id: "report-3",
       contentType: "user",
       contentId: "user-202",
-      contentPreview: "This user has been repeatedly posting spam across multiple communities...",
+      contentPreview: "This user has been repeatedly posting spam across multiple communities including promotional links, duplicate content, and off-topic advertisements that disrupt community discussions.",
       reportedBy: "user-303",
       reason: "Spamming",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
@@ -145,8 +144,11 @@ const AdminReports = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-4">
-                  <div className="p-3 rounded-md bg-muted/50 border">
-                    <p className="text-sm">{report.contentPreview}</p>
+                  <div>
+                    <h4 className="font-medium text-sm mb-2">Original Content:</h4>
+                    <div className="p-4 rounded-md bg-muted/50 border">
+                      <p className="text-sm">{report.contentPreview}</p>
+                    </div>
                   </div>
                   
                   <div className="flex flex-wrap gap-2 justify-end mt-4">
@@ -154,7 +156,7 @@ const AdminReports = () => {
                       variant="outline"
                       onClick={() => handleViewContent(report)}
                     >
-                      <Eye className="h-4 w-4 mr-2" /> View Content
+                      <Eye className="h-4 w-4 mr-2" /> View Full Details
                     </Button>
                     <Button 
                       variant="outline" 
