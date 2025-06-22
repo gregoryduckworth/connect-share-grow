@@ -302,7 +302,7 @@ const AdminCommunitiesPage = () => {
       {/* All Communities */}
       <div className="border rounded-md">
         <Table>
-          <Table Header>
+          <TableHeader>
             <TableRow>
               <TableHead>Community</TableHead>
               <TableHead>Category</TableHead>
