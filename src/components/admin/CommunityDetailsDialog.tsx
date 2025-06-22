@@ -56,7 +56,7 @@ const CommunityDetailsDialog = ({ isOpen, onClose, community }: CommunityDetails
               <div>
                 <h4 className="font-semibold text-sm text-gray-700 mb-2">Tags</h4>
                 <div className="flex flex-wrap gap-2">
-                  {community.tags.map((tag) => (
+                  {(community.tags ?? []).map((tag) => (
                     <Badge key={tag} variant="secondary" className="bg-social-accent/50">
                       {tag}
                     </Badge>
