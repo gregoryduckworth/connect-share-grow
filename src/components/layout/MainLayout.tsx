@@ -31,7 +31,7 @@ const MainLayout = () => {
           lg:relative lg:translate-x-0 lg:z-0
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
-          <Sidebar onCloseMobile={() => setSidebarOpen(false)} />
+          <Sidebar />
         </div>
 
         {/* Main content */}

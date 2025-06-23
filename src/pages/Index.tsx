@@ -1,11 +1,11 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, MessageCircle, Video, User, TrendingUp, Heart, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
-import { api, Post } from "@/lib/api";
+import { api } from "@/lib/api";
+import { Post } from "@/lib/types";
 
 const Index = () => {
   const [hotPosts, setHotPosts] = useState<Post[]>([]);

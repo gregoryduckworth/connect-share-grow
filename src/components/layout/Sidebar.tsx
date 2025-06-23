@@ -34,7 +34,7 @@ import {
   SidebarMenuButton,
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarToggleButton,
+  SidebarTrigger,
 } from "@/components/ui/sidebar"
 
 const SidebarComponent = () => {
@@ -46,7 +46,7 @@ const SidebarComponent = () => {
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="mr-2">
-              <SidebarToggleButton />
+              <SidebarTrigger />
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0">
