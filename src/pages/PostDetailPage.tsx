@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { useToast } from "@/components/ui/use-toast";
+import UserProfileDialog from "@/components/user/UserProfileDialog";
 
 interface Reply {
   id: string;
@@ -215,7 +215,11 @@ const PostDetailPage = () => {
           </Avatar>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <p className="font-medium">{reply.author}</p>
+              <UserProfileDialog username={reply.author}>
+                <button className="font-medium hover:text-social-primary transition-colors cursor-pointer">
+                  {reply.author}
+                </button>
+              </UserProfileDialog>
               <span className="text-sm text-gray-500">
                 {reply.timestamp.toLocaleDateString()}
               </span>
@@ -340,7 +344,11 @@ const PostDetailPage = () => {
                     {post.isLocked && <Lock className="h-5 w-5 text-red-500" />}
                   </div>
                   <p className="text-sm text-social-muted">
-                    by {post.author} • {post.timestamp.toLocaleDateString()}
+                    by <UserProfileDialog username={post.author}>
+                      <button className="hover:text-social-primary transition-colors cursor-pointer">
+                        {post.author}
+                      </button>
+                    </UserProfileDialog> • {post.timestamp.toLocaleDateString()}
                   </p>
                 </div>
               </div>

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import CommunityPost from "@/components/community/CommunityPost";
 import { useToast } from "@/components/ui/use-toast";
+import UserProfileDialog from "@/components/user/UserProfileDialog";
 
 interface PostData {
   id: string;
@@ -271,7 +272,11 @@ const CommunityDetailPage = () => {
                       <Users className="h-4 w-4" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-sm">{moderator.name}</p>
+                      <UserProfileDialog username={moderator.name}>
+                        <button className="font-medium text-sm hover:text-social-primary transition-colors cursor-pointer">
+                          {moderator.name}
+                        </button>
+                      </UserProfileDialog>
                       <p className="text-xs text-social-muted">{moderator.role}</p>
                       <p className="text-xs text-gray-400">
                         Since {moderator.joinedAsModAt.toLocaleDateString()}

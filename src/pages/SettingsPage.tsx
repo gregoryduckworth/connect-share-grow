@@ -1,237 +1,358 @@
 
 import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { User, Bell, Shield, Palette } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const SettingsPage = () => {
   const { toast } = useToast();
-  const [accountSettings, setAccountSettings] = useState({
-    email: "user@example.com",
-    password: "••••••••",
+  const [profile, setProfile] = useState({
+    displayName: "John Doe",
+    email: "john.doe@example.com",
+    bio: "Photography enthusiast and community moderator",
+    location: "San Francisco, CA",
+    website: "https://johndoe.photography"
   });
 
-  const [privacySettings, setPrivacySettings] = useState({
-    profileVisibility: "everyone",
-    showOnlineStatus: true,
-    allowFriendRequests: true,
-    allowDirectMessages: true,
-  });
-
-  const [notificationSettings, setNotificationSettings] = useState({
-    friendRequests: true,
-    messages: true,
+  const [notifications, setNotifications] = useState({
+    emailNotifications: true,
+    pushNotifications: true,
     communityUpdates: true,
-    emailNotifications: false,
+    directMessages: true,
+    connectionRequests: true
   });
 
-  const handleAccountChange = (field: string, value: string) => {
-    setAccountSettings({
-      ...accountSettings,
-      [field]: value,
-    });
-  };
+  const [privacy, setPrivacy] = useState({
+    profileVisibility: "public",
+    showEmail: false,
+    showLocation: true,
+    allowDirectMessages: true
+  });
 
-  const handlePrivacyChange = (field: string, value: boolean | string) => {
-    setPrivacySettings({
-      ...privacySettings,
-      [field]: value,
-    });
-  };
+  const [appearance, setAppearance] = useState({
+    theme: "system",
+    compactMode: false,
+    language: "en"
+  });
 
-  const handleNotificationChange = (field: string, value: boolean) => {
-    setNotificationSettings({
-      ...notificationSettings,
-      [field]: value,
-    });
-  };
-
-  const saveSettings = () => {
+  const handleSaveProfile = () => {
     toast({
-      title: "Settings saved",
-      description: "Your settings have been updated successfully.",
+      title: "Profile updated",
+      description: "Your profile changes have been saved successfully."
+    });
+  };
+
+  const handleSaveNotifications = () => {
+    toast({
+      title: "Notification preferences updated",
+      description: "Your notification settings have been saved."
+    });
+  };
+
+  const handleSavePrivacy = () => {
+    toast({
+      title: "Privacy settings updated",
+      description: "Your privacy preferences have been saved."
+    });
+  };
+
+  const handleSaveAppearance = () => {
+    toast({
+      title: "Appearance settings updated",
+      description: "Your appearance preferences have been saved."
     });
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <h1 className="text-3xl font-bold text-social-primary">Settings</h1>
-      <p className="text-social-muted">Manage your account settings and preferences</p>
+    <div className="container mx-auto px-4 py-6 max-w-4xl">
+      <div className="mb-6 text-left">
+        <h1 className="text-3xl font-bold text-social-primary mb-2">Settings</h1>
+        <p className="text-social-muted">Manage your account preferences and privacy settings</p>
+      </div>
 
-      <Tabs defaultValue="account" className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8">
-          <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="privacy">Privacy</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+      <Tabs defaultValue="profile" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="profile" className="flex items-center gap-2">
+            <User className="h-4 w-4" />
+            Profile
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            Notifications
+          </TabsTrigger>
+          <TabsTrigger value="privacy" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Privacy
+          </TabsTrigger>
+          <TabsTrigger value="appearance" className="flex items-center gap-2">
+            <Palette className="h-4 w-4" />
+            Appearance
+          </TabsTrigger>
         </TabsList>
-        
-        {/* Account Settings */}
-        <TabsContent value="account">
+
+        <TabsContent value="profile" className="mt-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Account Information</CardTitle>
-              <CardDescription>Update your account information and password</CardDescription>
+            <CardHeader className="text-left">
+              <CardTitle>Profile Information</CardTitle>
+              <CardDescription>Update your personal information and bio</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={accountSettings.email}
-                  onChange={(e) => handleAccountChange("email", e.target.value)}
-                />
-                <p className="text-xs text-social-muted">This email is private and used only for account purposes.</p>
+            <CardContent className="space-y-6 text-left">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="displayName">Display Name</Label>
+                  <Input
+                    id="displayName"
+                    value={profile.displayName}
+                    onChange={(e) => setProfile(prev => ({ ...prev, displayName: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={profile.email}
+                    onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
+                  />
+                </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={accountSettings.password}
-                  onChange={(e) => handleAccountChange("password", e.target.value)}
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea
+                  id="bio"
+                  placeholder="Tell others about yourself..."
+                  value={profile.bio}
+                  onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
+                  rows={3}
                 />
-                <p className="text-xs text-social-muted">Use a strong password with at least 8 characters.</p>
               </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    value={profile.location}
+                    onChange={(e) => setProfile(prev => ({ ...prev, location: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="website">Website</Label>
+                  <Input
+                    id="website"
+                    type="url"
+                    value={profile.website}
+                    onChange={(e) => setProfile(prev => ({ ...prev, website: e.target.value }))}
+                  />
+                </div>
+              </div>
+              
+              <Button onClick={handleSaveProfile}>Save Profile</Button>
             </CardContent>
-            <CardFooter>
-              <Button className="bg-social-primary hover:bg-social-secondary" onClick={saveSettings}>Save Changes</Button>
-            </CardFooter>
           </Card>
+        </TabsContent>
 
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Account Actions</CardTitle>
-              <CardDescription>Manage your account access and data</CardDescription>
+        <TabsContent value="notifications" className="mt-6">
+          <Card>
+            <CardHeader className="text-left">
+              <CardTitle>Notification Preferences</CardTitle>
+              <CardDescription>Choose how you want to be notified about activity</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6 text-left">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium">Download Your Data</h4>
-                  <p className="text-sm text-social-muted">Get a copy of your personal data</p>
+                  <Label htmlFor="emailNotifications" className="text-base font-medium">Email Notifications</Label>
+                  <p className="text-sm text-muted-foreground">Receive notifications via email</p>
                 </div>
-                <Button variant="outline">Download</Button>
+                <Switch
+                  id="emailNotifications"
+                  checked={notifications.emailNotifications}
+                  onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, emailNotifications: checked }))}
+                />
               </div>
-              <Separator />
+              
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium">Delete Account</h4>
-                  <p className="text-sm text-social-muted">Permanently delete your account and all data</p>
+                  <Label htmlFor="pushNotifications" className="text-base font-medium">Push Notifications</Label>
+                  <p className="text-sm text-muted-foreground">Receive browser push notifications</p>
                 </div>
-                <Button variant="destructive">Delete Account</Button>
+                <Switch
+                  id="pushNotifications"
+                  checked={notifications.pushNotifications}
+                  onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, pushNotifications: checked }))}
+                />
               </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="communityUpdates" className="text-base font-medium">Community Updates</Label>
+                  <p className="text-sm text-muted-foreground">Notifications about community activity</p>
+                </div>
+                <Switch
+                  id="communityUpdates"
+                  checked={notifications.communityUpdates}
+                  onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, communityUpdates: checked }))}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="directMessages" className="text-base font-medium">Direct Messages</Label>
+                  <p className="text-sm text-muted-foreground">Notifications for new messages</p>
+                </div>
+                <Switch
+                  id="directMessages"
+                  checked={notifications.directMessages}
+                  onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, directMessages: checked }))}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="connectionRequests" className="text-base font-medium">Connection Requests</Label>
+                  <p className="text-sm text-muted-foreground">Notifications for connection requests</p>
+                </div>
+                <Switch
+                  id="connectionRequests"
+                  checked={notifications.connectionRequests}
+                  onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, connectionRequests: checked }))}
+                />
+              </div>
+              
+              <Button onClick={handleSaveNotifications}>Save Notification Settings</Button>
             </CardContent>
           </Card>
         </TabsContent>
-        
-        {/* Privacy Settings */}
-        <TabsContent value="privacy">
+
+        <TabsContent value="privacy" className="mt-6">
           <Card>
-            <CardHeader>
+            <CardHeader className="text-left">
               <CardTitle>Privacy Settings</CardTitle>
-              <CardDescription>Control your privacy and visibility on the platform</CardDescription>
+              <CardDescription>Control who can see your information and contact you</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6 text-left">
+              <div className="space-y-2">
+                <Label htmlFor="profileVisibility">Profile Visibility</Label>
+                <Select
+                  value={privacy.profileVisibility}
+                  onValueChange={(value) => setPrivacy(prev => ({ ...prev, profileVisibility: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="public">Public</SelectItem>
+                    <SelectItem value="connections">Connections Only</SelectItem>
+                    <SelectItem value="private">Private</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Show Online Status</Label>
-                  <p className="text-sm text-social-muted">Allow others to see when you're online</p>
+                <div>
+                  <Label htmlFor="showEmail" className="text-base font-medium">Show Email Address</Label>
+                  <p className="text-sm text-muted-foreground">Allow others to see your email</p>
                 </div>
-                <Switch 
-                  checked={privacySettings.showOnlineStatus}
-                  onCheckedChange={(checked) => handlePrivacyChange("showOnlineStatus", checked)}
+                <Switch
+                  id="showEmail"
+                  checked={privacy.showEmail}
+                  onCheckedChange={(checked) => setPrivacy(prev => ({ ...prev, showEmail: checked }))}
                 />
               </div>
-              <Separator />
+              
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Allow Friend Requests</Label>
-                  <p className="text-sm text-social-muted">Let others send you friend requests</p>
+                <div>
+                  <Label htmlFor="showLocation" className="text-base font-medium">Show Location</Label>
+                  <p className="text-sm text-muted-foreground">Display your location on your profile</p>
                 </div>
-                <Switch 
-                  checked={privacySettings.allowFriendRequests}
-                  onCheckedChange={(checked) => handlePrivacyChange("allowFriendRequests", checked)}
+                <Switch
+                  id="showLocation"
+                  checked={privacy.showLocation}
+                  onCheckedChange={(checked) => setPrivacy(prev => ({ ...prev, showLocation: checked }))}
                 />
               </div>
-              <Separator />
+              
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Allow Direct Messages</Label>
-                  <p className="text-sm text-social-muted">Let others send you direct messages</p>
+                <div>
+                  <Label htmlFor="allowDirectMessages" className="text-base font-medium">Allow Direct Messages</Label>
+                  <p className="text-sm text-muted-foreground">Let others send you direct messages</p>
                 </div>
-                <Switch 
-                  checked={privacySettings.allowDirectMessages}
-                  onCheckedChange={(checked) => handlePrivacyChange("allowDirectMessages", checked)}
+                <Switch
+                  id="allowDirectMessages"
+                  checked={privacy.allowDirectMessages}
+                  onCheckedChange={(checked) => setPrivacy(prev => ({ ...prev, allowDirectMessages: checked }))}
                 />
               </div>
+              
+              <Button onClick={handleSavePrivacy}>Save Privacy Settings</Button>
             </CardContent>
-            <CardFooter>
-              <Button className="bg-social-primary hover:bg-social-secondary" onClick={saveSettings}>Save Changes</Button>
-            </CardFooter>
           </Card>
         </TabsContent>
-        
-        {/* Notification Settings */}
-        <TabsContent value="notifications">
+
+        <TabsContent value="appearance" className="mt-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Notification Settings</CardTitle>
-              <CardDescription>Manage how and when you receive notifications</CardDescription>
+            <CardHeader className="text-left">
+              <CardTitle>Appearance Settings</CardTitle>
+              <CardDescription>Customize how the application looks and feels</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6 text-left">
+              <div className="space-y-2">
+                <Label htmlFor="theme">Theme</Label>
+                <Select
+                  value={appearance.theme}
+                  onValueChange={(value) => setAppearance(prev => ({ ...prev, theme: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="light">Light</SelectItem>
+                    <SelectItem value="dark">Dark</SelectItem>
+                    <SelectItem value="system">System</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="language">Language</Label>
+                <Select
+                  value={appearance.language}
+                  onValueChange={(value) => setAppearance(prev => ({ ...prev, language: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="es">Español</SelectItem>
+                    <SelectItem value="fr">Français</SelectItem>
+                    <SelectItem value="de">Deutsch</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Friend Requests</Label>
-                  <p className="text-sm text-social-muted">Get notified about new friend requests</p>
+                <div>
+                  <Label htmlFor="compactMode" className="text-base font-medium">Compact Mode</Label>
+                  <p className="text-sm text-muted-foreground">Use a more compact interface layout</p>
                 </div>
-                <Switch 
-                  checked={notificationSettings.friendRequests}
-                  onCheckedChange={(checked) => handleNotificationChange("friendRequests", checked)}
+                <Switch
+                  id="compactMode"
+                  checked={appearance.compactMode}
+                  onCheckedChange={(checked) => setAppearance(prev => ({ ...prev, compactMode: checked }))}
                 />
               </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Messages</Label>
-                  <p className="text-sm text-social-muted">Get notified about new messages</p>
-                </div>
-                <Switch 
-                  checked={notificationSettings.messages}
-                  onCheckedChange={(checked) => handleNotificationChange("messages", checked)}
-                />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Community Updates</Label>
-                  <p className="text-sm text-social-muted">Get notified about updates in your communities</p>
-                </div>
-                <Switch 
-                  checked={notificationSettings.communityUpdates}
-                  onCheckedChange={(checked) => handleNotificationChange("communityUpdates", checked)}
-                />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Email Notifications</Label>
-                  <p className="text-sm text-social-muted">Receive important updates via email</p>
-                </div>
-                <Switch 
-                  checked={notificationSettings.emailNotifications}
-                  onCheckedChange={(checked) => handleNotificationChange("emailNotifications", checked)}
-                />
-              </div>
+              
+              <Button onClick={handleSaveAppearance}>Save Appearance Settings</Button>
             </CardContent>
-            <CardFooter>
-              <Button className="bg-social-primary hover:bg-social-secondary" onClick={saveSettings}>Save Changes</Button>
-            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>

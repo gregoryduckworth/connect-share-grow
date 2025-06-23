@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -121,60 +120,13 @@ const ConnectionsPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-social-primary">My Connections</h1>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Connection
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Send Connection Request</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="user-select">Select User</Label>
-                <select
-                  id="user-select"
-                  value={selectedUserId}
-                  onChange={(e) => setSelectedUserId(e.target.value)}
-                  className="w-full mt-1 p-2 border rounded-md"
-                >
-                  <option value="">Choose a user...</option>
-                  {users.filter(u => u.id !== "user-1").map(user => (
-                    <option key={user.id} value={user.id}>
-                      {user.name} ({user.email})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <Label htmlFor="message">Connection Message</Label>
-                <Textarea
-                  id="message"
-                  value={connectionMessage}
-                  onChange={(e) => setConnectionMessage(e.target.value)}
-                  placeholder="Why would you like to connect with this person?"
-                  rows={3}
-                />
-              </div>
-              <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleCreateConnection}>
-                  Send Request
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+    <div className="container mx-auto px-4 py-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-social-primary mb-2">My Connections</h1>
+        <p className="text-social-muted">Manage your connections and chat with accepted contacts</p>
       </div>
 
+      {/* Tabs */}
       <Tabs defaultValue="accepted" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="accepted">
