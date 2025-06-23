@@ -1,10 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bell, BellOff, MessageSquare, User, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
+import { Notification } from "@/lib/types";
 import {
   Popover,
   PopoverContent,
@@ -12,65 +13,25 @@ import {
 } from "@/components/ui/popover";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-interface Notification {
-  id: string;
-  type: "reply" | "comment" | "mention" | "system";
-  title: string;
-  message: string;
-  timestamp: Date;
-  isRead: boolean;
-  postId?: string;
-  userId?: string;
-  communityId?: string;
-}
-
 const NotificationBell = () => {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: "notif-1",
-      type: "reply",
-      title: "New reply to your post",
-      message: "Alice Johnson replied to your post 'Golden Hour Landscape Tips'",
-      timestamp: new Date(2024, 5, 20, 14, 30),
-      isRead: false,
-      postId: "post-1",
-      communityId: "photography",
-      userId: "user-1"
-    },
-    {
-      id: "notif-2",
-      type: "comment",
-      title: "New comment on your post",
-      message: "Bob Smith commented on your post 'Street Photography Ethics'",
-      timestamp: new Date(2024, 5, 20, 12, 15),
-      isRead: false,
-      postId: "post-2",
-      communityId: "photography",
-      userId: "user-2"
-    },
-    {
-      id: "notif-3",
-      type: "mention",
-      title: "You were mentioned",
-      message: "Carol Davis mentioned you in a comment",
-      timestamp: new Date(2024, 5, 19, 16, 45),
-      isRead: true,
-      postId: "post-3",
-      communityId: "general",
-      userId: "user-3"
-    },
-    {
-      id: "notif-4",
-      type: "system",
-      title: "Post locked",
-      message: "Your post 'Camera Gear Recommendations' has been locked by a moderator",
-      timestamp: new Date(2024, 5, 19, 10, 30),
-      isRead: false,
-      postId: "post-4",
-      communityId: "photography"
-    }
-  ]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const fetchedNotifications = await api.getNotifications();
+        setNotifications(fetchedNotifications);
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
@@ -85,18 +46,27 @@ const NotificationBell = () => {
     }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+  const markAllAsRead = async () => {
+    try {
+      await Promise.all(
+        notifications.filter(n => !n.isRead).map(n => api.markNotificationAsRead(n.id))
+      );
+      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+    }
   };
 
-  const handleNotificationClick = (notification: Notification) => {
-    markAsRead(notification.id);
+  const handleNotificationClick = async (notification: Notification) => {
+    await markAsRead(notification.id);
     
-    // Navigate to the relevant post or page based on notification type
-    if (notification.postId && notification.communityId) {
+    // Navigate to the relevant content based on notification type
+    if (notification.type === "connection_request" && notification.connectionId) {
+      navigate("/connections");
+    } else if (notification.postId && notification.communityId) {
       navigate(`/community/${notification.communityId}/post/${notification.postId}`);
     } else if (notification.type === "system") {
-      // For system notifications, we can navigate to a general page or stay on current
+      // For system notifications, stay on current page
       console.log("System notification clicked");
     }
   };
@@ -107,6 +77,8 @@ const NotificationBell = () => {
       case "comment":
         return <MessageSquare className="h-4 w-4" />;
       case "mention":
+      case "connection_request":
+      case "connection_accepted":
         return <User className="h-4 w-4" />;
       case "system":
         return <AlertTriangle className="h-4 w-4" />;
@@ -114,6 +86,14 @@ const NotificationBell = () => {
         return <Bell className="h-4 w-4" />;
     }
   };
+
+  if (loading) {
+    return (
+      <Button variant="ghost" size="sm" disabled>
+        <Bell className="h-5 w-5" />
+      </Button>
+    );
+  }
 
   return (
     <Popover>
@@ -165,7 +145,7 @@ const NotificationBell = () => {
                       <div className="flex items-start gap-3">
                         <div className={`p-1 rounded-full ${
                           notification.type === "system" ? "bg-orange-100 text-orange-600" :
-                          notification.type === "mention" ? "bg-blue-100 text-blue-600" :
+                          notification.type === "mention" || notification.type === "connection_request" || notification.type === "connection_accepted" ? "bg-blue-100 text-blue-600" :
                           "bg-green-100 text-green-600"
                         }`}>
                           {getNotificationIcon(notification.type)}
