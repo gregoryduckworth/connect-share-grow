@@ -30,9 +30,19 @@ interface Community {
   moderators: string[];
 }
 
-interface PendingCommunity extends Community {
+interface PendingCommunity {
+  id: string;
+  name: string;
+  description: string;
   tags: string[];
+  createdBy: string;
   requestedAt: Date;
+  memberCount: number;
+  postCount: number;
+  category: string;
+  status: "pending";
+  moderators: string[];
+  createdAt: Date;
 }
 
 const AdminCommunitiesPage = () => {
@@ -40,6 +50,8 @@ const AdminCommunitiesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [selectedCommunity, setSelectedCommunity] = useState<PendingCommunity | null>(null);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
 
   const [communities, setCommunities] = useState<Community[]>([
     {
@@ -89,6 +101,7 @@ const AdminCommunitiesPage = () => {
       status: "pending",
       moderators: [],
       tags: ["Crypto", "Trading", "Investment"],
+      createdBy: "John Trader",
       requestedAt: new Date(2024, 5, 15)
     }
   ]);
@@ -199,6 +212,11 @@ const AdminCommunitiesPage = () => {
     }
   };
 
+  const handleViewDetails = (community: PendingCommunity) => {
+    setSelectedCommunity(community);
+    setDetailsDialogOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -243,6 +261,14 @@ const AdminCommunitiesPage = () => {
                     <TableCell>{community.requestedAt.toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewDetails(community)}
+                        >
+                          View Details
+                        </Button>
+                        
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button size="sm" className="bg-green-500 hover:bg-green-600">
