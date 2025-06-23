@@ -25,7 +25,6 @@ const CommunitiesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("members");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const [communities] = useState<Community[]>([
     {
@@ -115,51 +114,61 @@ const CommunitiesPage = () => {
   };
 
   const CommunityCard = ({ community }: { community: Community }) => (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg">
-              <Link 
-                to={`/community/${community.id}`}
-                className="hover:text-social-primary transition-colors"
+    <Card className="hover:shadow-md transition-shadow w-full">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex-1">
+                <CardTitle className="text-lg">
+                  <Link 
+                    to={`/community/${community.id}`}
+                    className="hover:text-social-primary transition-colors"
+                  >
+                    {community.name}
+                  </Link>
+                </CardTitle>
+                <Badge variant="secondary" className="mt-1">
+                  {community.category}
+                </Badge>
+              </div>
+              <Button
+                size="sm"
+                variant={community.isJoined ? "outline" : "default"}
+                className="ml-4 shrink-0"
               >
-                {community.name}
-              </Link>
-            </CardTitle>
-            <p className="text-sm text-social-muted mt-1">{community.description}</p>
-          </div>
-          <Badge variant="secondary" className="ml-2">
-            {community.category}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-4 text-sm text-social-muted">
-            <div className="flex items-center gap-1">
-              <Users className="h-4 w-4" />
-              <span>{community.memberCount.toLocaleString()}</span>
+                {community.isJoined ? "Joined" : "Join"}
+              </Button>
             </div>
-            <div className="flex items-center gap-1">
-              <MessageSquare className="h-4 w-4" />
-              <span>{community.postCount}</span>
+            
+            <p className="text-sm text-social-muted mb-3 line-clamp-2">{community.description}</p>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4 text-sm text-social-muted">
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4" />
+                  <span>{community.memberCount.toLocaleString()}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <MessageSquare className="h-4 w-4" />
+                  <span>{community.postCount}</span>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap gap-1 justify-end">
+                {community.tags.slice(0, 3).map((tag, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+                {community.tags.length > 3 && (
+                  <Badge variant="outline" className="text-xs">
+                    +{community.tags.length - 3}
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
-          <Button
-            size="sm"
-            variant={community.isJoined ? "outline" : "default"}
-          >
-            {community.isJoined ? "Joined" : "Join"}
-          </Button>
-        </div>
-        
-        <div className="flex flex-wrap gap-1">
-          {community.tags.map((tag, index) => (
-            <Badge key={index} variant="outline" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
         </div>
       </CardContent>
     </Card>
@@ -179,7 +188,6 @@ const CommunitiesPage = () => {
         />
       </div>
 
-      {/* Search and Filters */}
       <div className="mb-6 space-y-4">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -226,7 +234,7 @@ const CommunitiesPage = () => {
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-4">
             {filteredCommunities.map((community) => (
               <CommunityCard key={community.id} community={community} />
             ))}
@@ -234,7 +242,7 @@ const CommunitiesPage = () => {
         </TabsContent>
 
         <TabsContent value="joined" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-4">
             {joinedCommunities.map((community) => (
               <CommunityCard key={community.id} community={community} />
             ))}
@@ -242,7 +250,7 @@ const CommunitiesPage = () => {
         </TabsContent>
 
         <TabsContent value="discover" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-4">
             {availableCommunities.map((community) => (
               <CommunityCard key={community.id} community={community} />
             ))}

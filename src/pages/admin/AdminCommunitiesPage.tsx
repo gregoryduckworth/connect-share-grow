@@ -53,7 +53,7 @@ const AdminCommunitiesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [selectedCommunity, setSelectedCommunity] = useState<PendingCommunity | null>(null);
+  const [selectedCommunity, setSelectedCommunity] = useState<Community | PendingCommunity | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
 
   const [communities, setCommunities] = useState<Community[]>([

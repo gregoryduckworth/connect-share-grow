@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,13 @@ interface Report {
   reason: string;
   createdAt: Date;
   status: "pending" | "reviewed";
+  originalContent?: {
+    title?: string;
+    author: string;
+    community?: string;
+    fullText: string;
+    parentPost?: string;
+  };
 }
 
 const AdminReports = () => {
@@ -31,7 +39,13 @@ const AdminReports = () => {
       reportedBy: "user-456",
       reason: "Contains inappropriate content",
       createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-      status: "pending"
+      status: "pending",
+      originalContent: {
+        title: "Why Current Political System is Completely Broken",
+        author: "AngryUser2024",
+        community: "Political Discussion",
+        fullText: "I'm so tired of all these politicians lying to us constantly. They're all corrupt and only care about their own power. The whole system needs to be torn down and rebuilt from scratch. Anyone who supports the current administration is either blind or complicit in this corruption. We need to take action now before it's too late and our democracy is completely destroyed. This is not a drill - we're heading towards a complete collapse of our society if we don't act immediately."
+      }
     },
     {
       id: "report-2",
@@ -41,7 +55,12 @@ const AdminReports = () => {
       reportedBy: "user-101",
       reason: "Harassment",
       createdAt: new Date(Date.now() - 1000 * 60 * 60), // 1 hour ago
-      status: "pending"
+      status: "pending",
+      originalContent: {
+        author: "ToxicUser123",
+        parentPost: "Best Programming Languages for Beginners",
+        fullText: "You're absolutely clueless and shouldn't be giving advice to anyone. Your suggestions are terrible and show you have no idea what you're talking about. Maybe stick to something you actually understand instead of spreading misinformation. People like you are what's wrong with this community - always acting like experts when you clearly aren't. Just delete your account and save everyone the trouble of reading your garbage posts."
+      }
     },
     {
       id: "report-3",
@@ -144,9 +163,41 @@ const AdminReports = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-4">
+                  {report.originalContent && (
+                    <div>
+                      <h4 className="font-medium text-sm mb-2">Original Content:</h4>
+                      <div className="p-4 rounded-md bg-muted/50 border space-y-2">
+                        {report.contentType === "post" && (
+                          <>
+                            <div className="flex items-center justify-between text-sm text-gray-600">
+                              <span><strong>Title:</strong> {report.originalContent.title}</span>
+                              <span><strong>Community:</strong> {report.originalContent.community}</span>
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              <strong>Author:</strong> {report.originalContent.author}
+                            </div>
+                          </>
+                        )}
+                        {report.contentType === "reply" && (
+                          <>
+                            <div className="text-sm text-gray-600">
+                              <strong>Reply to:</strong> {report.originalContent.parentPost}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              <strong>Author:</strong> {report.originalContent.author}
+                            </div>
+                          </>
+                        )}
+                        <div className="pt-2 border-t">
+                          <p className="text-sm">{report.originalContent.fullText}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   <div>
-                    <h4 className="font-medium text-sm mb-2">Original Content:</h4>
-                    <div className="p-4 rounded-md bg-muted/50 border">
+                    <h4 className="font-medium text-sm mb-2">Report Summary:</h4>
+                    <div className="p-4 rounded-md bg-red-50 border border-red-200">
                       <p className="text-sm">{report.contentPreview}</p>
                     </div>
                   </div>
