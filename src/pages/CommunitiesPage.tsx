@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -170,10 +169,14 @@ const CommunitiesPage = () => {
     <div className="container mx-auto px-4 py-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <h1 className="text-3xl font-bold text-social-primary">Communities</h1>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Community
-        </Button>
+        <CreateCommunityDialog 
+          trigger={
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Community
+            </Button>
+          }
+        />
       </div>
 
       {/* Search and Filters */}
@@ -246,11 +249,6 @@ const CommunitiesPage = () => {
           </div>
         </TabsContent>
       </Tabs>
-
-      <CreateCommunityDialog 
-        isOpen={showCreateDialog}
-        onClose={() => setShowCreateDialog(false)}
-      />
     </div>
   );
 };

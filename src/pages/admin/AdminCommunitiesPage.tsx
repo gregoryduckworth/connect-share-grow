@@ -28,6 +28,9 @@ interface Community {
   createdAt: Date;
   status: "active" | "suspended" | "pending";
   moderators: string[];
+  tags: string[];
+  createdBy: string;
+  requestedAt: Date;
 }
 
 interface PendingCommunity {
@@ -63,7 +66,10 @@ const AdminCommunitiesPage = () => {
       category: "Art & Design",
       createdAt: new Date(2023, 0, 15),
       status: "active",
-      moderators: ["Sarah Johnson", "Mike Chen"]
+      moderators: ["Sarah Johnson", "Mike Chen"],
+      tags: ["Photography", "Art", "Camera"],
+      createdBy: "admin",
+      requestedAt: new Date(2023, 0, 15)
     },
     {
       id: "comm-2",
@@ -74,7 +80,10 @@ const AdminCommunitiesPage = () => {
       category: "Technology",
       createdAt: new Date(2023, 1, 20),
       status: "active",
-      moderators: ["Alex Rivera"]
+      moderators: ["Alex Rivera"],
+      tags: ["JavaScript", "React", "Node.js"],
+      createdBy: "admin",
+      requestedAt: new Date(2023, 1, 20)
     },
     {
       id: "comm-3",
@@ -85,7 +94,10 @@ const AdminCommunitiesPage = () => {
       category: "Food & Drink",
       createdAt: new Date(2023, 2, 10),
       status: "suspended",
-      moderators: ["Emma Davis"]
+      moderators: ["Emma Davis"],
+      tags: ["Cooking", "Recipes", "Food"],
+      createdBy: "admin",
+      requestedAt: new Date(2023, 2, 10)
     }
   ]);
 
