@@ -184,7 +184,10 @@ const AdminCommunitiesPage = () => {
         category: pendingCommunity.category,
         createdAt: new Date(),
         status: "active",
-        moderators: []
+        moderators: [],
+        tags: pendingCommunity.tags,
+        createdBy: pendingCommunity.createdBy,
+        requestedAt: pendingCommunity.requestedAt
       };
 
       setCommunities([...communities, newCommunity]);
@@ -222,11 +225,6 @@ const AdminCommunitiesPage = () => {
         targetType: "community"
       });
     }
-  };
-
-  const handleViewDetails = (community: PendingCommunity) => {
-    setSelectedCommunity(community);
-    setDetailsDialogOpen(true);
   };
 
   return (
@@ -276,7 +274,10 @@ const AdminCommunitiesPage = () => {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => handleViewDetails(community)}
+                          onClick={() => {
+                            setSelectedCommunity(community);
+                            setDetailsDialogOpen(true);
+                          }}
                         >
                           View Details
                         </Button>
@@ -384,11 +385,16 @@ const AdminCommunitiesPage = () => {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <CommunityDetailsDialog community={community}>
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
-                    </CommunityDetailsDialog>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setSelectedCommunity(community);
+                        setDetailsDialogOpen(true);
+                      }}
+                    >
+                      View Details
+                    </Button>
                     
                     {community.status === "active" ? (
                       <AlertDialog>
@@ -462,6 +468,12 @@ const AdminCommunitiesPage = () => {
           />
         )}
       </div>
+
+      <CommunityDetailsDialog
+        isOpen={detailsDialogOpen}
+        onClose={() => setDetailsDialogOpen(false)}
+        community={selectedCommunity}
+      />
     </div>
   );
 };
