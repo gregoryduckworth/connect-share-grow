@@ -3,6 +3,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bell, BellOff, MessageSquare, User, AlertTriangle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { api } from "@/lib/api";
 import {
   Popover,
   PopoverContent,
@@ -19,9 +21,11 @@ interface Notification {
   isRead: boolean;
   postId?: string;
   userId?: string;
+  communityId?: string;
 }
 
 const NotificationBell = () => {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notification[]>([
     {
       id: "notif-1",
@@ -31,6 +35,7 @@ const NotificationBell = () => {
       timestamp: new Date(2024, 5, 20, 14, 30),
       isRead: false,
       postId: "post-1",
+      communityId: "photography",
       userId: "user-1"
     },
     {
@@ -41,6 +46,7 @@ const NotificationBell = () => {
       timestamp: new Date(2024, 5, 20, 12, 15),
       isRead: false,
       postId: "post-2",
+      communityId: "photography",
       userId: "user-2"
     },
     {
@@ -51,6 +57,7 @@ const NotificationBell = () => {
       timestamp: new Date(2024, 5, 19, 16, 45),
       isRead: true,
       postId: "post-3",
+      communityId: "general",
       userId: "user-3"
     },
     {
@@ -60,20 +67,38 @@ const NotificationBell = () => {
       message: "Your post 'Camera Gear Recommendations' has been locked by a moderator",
       timestamp: new Date(2024, 5, 19, 10, 30),
       isRead: false,
-      postId: "post-4"
+      postId: "post-4",
+      communityId: "photography"
     }
   ]);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  const markAsRead = (notificationId: string) => {
-    setNotifications(notifications.map(n => 
-      n.id === notificationId ? { ...n, isRead: true } : n
-    ));
+  const markAsRead = async (notificationId: string) => {
+    try {
+      await api.markNotificationAsRead(notificationId);
+      setNotifications(notifications.map(n => 
+        n.id === notificationId ? { ...n, isRead: true } : n
+      ));
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
   };
 
   const markAllAsRead = () => {
     setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+  };
+
+  const handleNotificationClick = (notification: Notification) => {
+    markAsRead(notification.id);
+    
+    // Navigate to the relevant post or page based on notification type
+    if (notification.postId && notification.communityId) {
+      navigate(`/community/${notification.communityId}/post/${notification.postId}`);
+    } else if (notification.type === "system") {
+      // For system notifications, we can navigate to a general page or stay on current
+      console.log("System notification clicked");
+    }
   };
 
   const getNotificationIcon = (type: string) => {
@@ -121,8 +146,8 @@ const NotificationBell = () => {
           <CardContent className="p-0">
             <div className="max-h-96 overflow-y-auto">
               {notifications.length === 0 ? (
-                <div className="text-center p-8">
-                  <Bell className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                <div className="text-left p-8">
+                  <Bell className="h-12 w-12 text-gray-400 mb-3" />
                   <p className="text-gray-500">No notifications</p>
                 </div>
               ) : (
@@ -135,7 +160,7 @@ const NotificationBell = () => {
                           ? "border-l-transparent bg-gray-50/50" 
                           : "border-l-social-primary bg-social-accent/10"
                       }`}
-                      onClick={() => markAsRead(notification.id)}
+                      onClick={() => handleNotificationClick(notification)}
                     >
                       <div className="flex items-start gap-3">
                         <div className={`p-1 rounded-full ${
@@ -145,7 +170,7 @@ const NotificationBell = () => {
                         }`}>
                           {getNotificationIcon(notification.type)}
                         </div>
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 text-left">
                           <p className="font-medium text-sm">{notification.title}</p>
                           <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
                           <p className="text-xs text-gray-400 mt-2">

@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, Eye, AlertTriangle, Lock } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import ReportDetailsDialog from "./ReportDetailsDialog";
@@ -123,6 +123,95 @@ const AdminReports = () => {
   };
 
   const pendingReports = reports.filter(r => r.status === "pending");
+  const postReports = pendingReports.filter(r => r.contentType === "post");
+  const replyReports = pendingReports.filter(r => r.contentType === "reply");
+  const userReports = pendingReports.filter(r => r.contentType === "user");
+
+  const ReportCard = ({ report }: { report: Report }) => (
+    <Card key={report.id}>
+      <CardHeader className="bg-muted/50">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+          <CardTitle className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-destructive" />
+            {report.contentType === "post" && "Post Report"}
+            {report.contentType === "reply" && "Reply Report"}
+            {report.contentType === "user" && "User Report"}
+          </CardTitle>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="outline" className="bg-social-background">
+              Reported {new Date(report.createdAt).toLocaleDateString()}
+            </Badge>
+            <Badge variant="destructive">
+              {report.reason}
+            </Badge>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-6 space-y-4">
+        {report.originalContent && (
+          <div>
+            <h4 className="font-medium text-sm mb-2">Original Content:</h4>
+            <div className="p-4 rounded-md bg-muted/50 border space-y-2">
+              {report.contentType === "post" && (
+                <>
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <span><strong>Title:</strong> {report.originalContent.title}</span>
+                    <span><strong>Community:</strong> {report.originalContent.community}</span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <strong>Author:</strong> {report.originalContent.author}
+                  </div>
+                </>
+              )}
+              {report.contentType === "reply" && (
+                <>
+                  <div className="text-sm text-gray-600">
+                    <strong>Reply to:</strong> {report.originalContent.parentPost}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <strong>Author:</strong> {report.originalContent.author}
+                  </div>
+                </>
+              )}
+              <div className="pt-2 border-t">
+                <p className="text-sm">{report.originalContent.fullText}</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        <div>
+          <h4 className="font-medium text-sm mb-2">Report Summary:</h4>
+          <div className="p-4 rounded-md bg-red-50 border border-red-200">
+            <p className="text-sm">{report.contentPreview}</p>
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap gap-2 justify-end mt-4">
+          <Button 
+            variant="outline"
+            onClick={() => handleViewContent(report)}
+          >
+            <Eye className="h-4 w-4 mr-2" /> View Full Details
+          </Button>
+          <Button 
+            variant="outline" 
+            className="border-orange-400 text-orange-500 hover:bg-orange-50"
+            onClick={() => handleLockContent(report.id)}
+          >
+            <Lock className="h-4 w-4 mr-2" /> Lock Content
+          </Button>
+          <Button 
+            variant="default"
+            className="bg-green-500 hover:bg-green-600"
+            onClick={() => handleResolve(report.id)}
+          >
+            <Check className="h-4 w-4 mr-2" /> Mark Resolved
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <>
@@ -136,98 +225,43 @@ const AdminReports = () => {
         
         {pendingReports.length === 0 ? (
           <Card>
-            <CardContent className="pt-6 text-center">
+            <CardContent className="pt-6 text-left">
               <p className="text-social-muted">No pending reports</p>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
-            {pendingReports.map((report) => (
-              <Card key={report.id}>
-                <CardHeader className="bg-muted/50">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                    <CardTitle className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-destructive" />
-                      {report.contentType === "post" && "Post Report"}
-                      {report.contentType === "reply" && "Reply Report"}
-                      {report.contentType === "user" && "User Report"}
-                    </CardTitle>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline" className="bg-social-background">
-                        Reported {new Date(report.createdAt).toLocaleDateString()}
-                      </Badge>
-                      <Badge variant="destructive">
-                        {report.reason}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-6 space-y-4">
-                  {report.originalContent && (
-                    <div>
-                      <h4 className="font-medium text-sm mb-2">Original Content:</h4>
-                      <div className="p-4 rounded-md bg-muted/50 border space-y-2">
-                        {report.contentType === "post" && (
-                          <>
-                            <div className="flex items-center justify-between text-sm text-gray-600">
-                              <span><strong>Title:</strong> {report.originalContent.title}</span>
-                              <span><strong>Community:</strong> {report.originalContent.community}</span>
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              <strong>Author:</strong> {report.originalContent.author}
-                            </div>
-                          </>
-                        )}
-                        {report.contentType === "reply" && (
-                          <>
-                            <div className="text-sm text-gray-600">
-                              <strong>Reply to:</strong> {report.originalContent.parentPost}
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              <strong>Author:</strong> {report.originalContent.author}
-                            </div>
-                          </>
-                        )}
-                        <div className="pt-2 border-t">
-                          <p className="text-sm">{report.originalContent.fullText}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div>
-                    <h4 className="font-medium text-sm mb-2">Report Summary:</h4>
-                    <div className="p-4 rounded-md bg-red-50 border border-red-200">
-                      <p className="text-sm">{report.contentPreview}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 justify-end mt-4">
-                    <Button 
-                      variant="outline"
-                      onClick={() => handleViewContent(report)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" /> View Full Details
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="border-orange-400 text-orange-500 hover:bg-orange-50"
-                      onClick={() => handleLockContent(report.id)}
-                    >
-                      <Lock className="h-4 w-4 mr-2" /> Lock Content
-                    </Button>
-                    <Button 
-                      variant="default"
-                      className="bg-green-500 hover:bg-green-600"
-                      onClick={() => handleResolve(report.id)}
-                    >
-                      <Check className="h-4 w-4 mr-2" /> Mark Resolved
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <Tabs defaultValue="all" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="all">All Reports ({pendingReports.length})</TabsTrigger>
+              <TabsTrigger value="posts">Posts ({postReports.length})</TabsTrigger>
+              <TabsTrigger value="replies">Replies ({replyReports.length})</TabsTrigger>
+              <TabsTrigger value="users">Users ({userReports.length})</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="all" className="space-y-4">
+              {pendingReports.map((report) => (
+                <ReportCard key={report.id} report={report} />
+              ))}
+            </TabsContent>
+
+            <TabsContent value="posts" className="space-y-4">
+              {postReports.map((report) => (
+                <ReportCard key={report.id} report={report} />
+              ))}
+            </TabsContent>
+
+            <TabsContent value="replies" className="space-y-4">
+              {replyReports.map((report) => (
+                <ReportCard key={report.id} report={report} />
+              ))}
+            </TabsContent>
+
+            <TabsContent value="users" className="space-y-4">
+              {userReports.map((report) => (
+                <ReportCard key={report.id} report={report} />
+              ))}
+            </TabsContent>
+          </Tabs>
         )}
       </div>
 

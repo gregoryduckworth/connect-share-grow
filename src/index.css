@@ -56,8 +56,26 @@
     @apply bg-social-background text-foreground;
   }
 
+  /* Override default text alignment to be left-aligned */
+  .container {
+    @apply text-left;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-left;
+  }
+
+  p {
+    @apply text-left;
+  }
+
   /* Custom utility classes */
   .hover-scale {
     @apply transition-transform duration-200 hover:scale-105;
+  }
+
+  /* Ensure cards and content are left-aligned */
+  .card {
+    @apply text-left;
   }
 }

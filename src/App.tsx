@@ -7,6 +7,8 @@ import MainLayout from "@/components/layout/MainLayout";
 import AdminLayout from "@/components/layout/AdminLayout";
 
 // Pages
+import LandingPage from "@/pages/LandingPage";
+import Index from "@/pages/Index";
 import CommunitiesPage from "@/pages/CommunitiesPage";
 import CommunityDetailPage from "@/pages/CommunityDetailPage";
 import PostDetailPage from "@/pages/PostDetailPage";
@@ -37,6 +39,9 @@ function App() {
       <AuthProvider>
         <div className="App">
           <Routes>
+            {/* Landing Page - Public Route */}
+            <Route path="/landing" element={<LandingPage />} />
+            
             {/* Public Auth Routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
@@ -63,7 +68,8 @@ function App() {
                 <MainLayout />
               </ProtectedRoute>
             }>
-              <Route index element={<Navigate to="/discover" replace />} />
+              <Route index element={<Index />} />
+              <Route path="home" element={<Index />} />
               <Route path="communities" element={<CommunitiesPage />} />
               <Route path="community/:communityId" element={<CommunityDetailPage />} />
               <Route path="community/:communityId/post/:postId" element={<PostDetailPage />} />
