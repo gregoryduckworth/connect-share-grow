@@ -10,7 +10,6 @@ import {
   SidebarMenuButton,
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { t } from "@/lib/i18n";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -31,7 +30,6 @@ const SidebarComponent = () => {
     { title: t("nav.connections"), url: "/connections", icon: Users },
   ];
 
-  // Admin section links
   const adminNavItems = [
     { title: "Dashboard", url: "/admin", icon: Home },
     { title: "Users", url: "/admin/users", icon: Users },
@@ -44,19 +42,24 @@ const SidebarComponent = () => {
   ];
 
   return (
-    <Sidebar>
-      <SidebarHeader className="h-16 p-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-foreground">ConnectSphere</h2>
-          <SidebarTrigger className="md:hidden" />
-        </div>
+    <Sidebar collapsible="offcanvas">
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              className="data-[slot=sidebar-menu-button]:!p-1.5"
+            >
+              <a href="/">
+                <span className="text-base font-semibold">ConnectSphere</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
-
-      <SidebarContent className="bg-background">
+      <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-foreground">
-            {t("nav.home")}
-          </SidebarGroupLabel>
+          <SidebarGroupLabel>{t("nav.home")}</SidebarGroupLabel>
           <SidebarMenu>
             {mainNavItems.map((item) => (
               <SidebarMenuItem key={item.title}>
@@ -77,13 +80,9 @@ const SidebarComponent = () => {
             ))}
           </SidebarMenu>
         </SidebarGroup>
-
         <Separator className="my-4 bg-border" />
-
         <SidebarGroup>
-          <SidebarGroupLabel className="text-foreground">
-            {t("nav.chat")}
-          </SidebarGroupLabel>
+          <SidebarGroupLabel>{t("nav.chat")}</SidebarGroupLabel>
           <SidebarMenu>
             {chatNavItems.map((item) => (
               <SidebarMenuItem key={item.title}>
@@ -104,15 +103,11 @@ const SidebarComponent = () => {
             ))}
           </SidebarMenu>
         </SidebarGroup>
-
-        {/* Admin section only if user is admin */}
         {user?.role === "admin" && (
           <>
             <Separator className="my-4 bg-border" />
             <SidebarGroup>
-              <SidebarGroupLabel className="text-foreground">
-                Admin
-              </SidebarGroupLabel>
+              <SidebarGroupLabel>Admin</SidebarGroupLabel>
               <SidebarMenu>
                 {adminNavItems.map((item) => (
                   <SidebarMenuItem key={item.title}>

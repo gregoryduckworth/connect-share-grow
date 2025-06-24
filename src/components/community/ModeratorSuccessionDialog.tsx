@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Dialog,
@@ -34,11 +33,11 @@ const ModeratorSuccessionDialog = ({
   onClose,
   members,
   onSelectNewModerator,
-  communityName
+  communityName,
 }: ModeratorSuccessionDialogProps) => {
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
 
-  const eligibleMembers = members.filter(member => !member.isBanned);
+  const eligibleMembers = members.filter((member) => !member.isBanned);
 
   const handleConfirm = () => {
     if (selectedMember) {
@@ -56,10 +55,11 @@ const ModeratorSuccessionDialog = ({
             Choose New Moderator
           </DialogTitle>
           <DialogDescription>
-            You are the last moderator of "{communityName}". Please select a new moderator before leaving.
+            You are the last moderator of "{communityName}". Please select a new
+            moderator before leaving.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="max-h-[300px] overflow-y-auto space-y-2">
           {eligibleMembers.length === 0 ? (
             <div className="text-center py-4 text-muted-foreground">
@@ -85,9 +85,10 @@ const ModeratorSuccessionDialog = ({
                 <div className="flex-1">
                   <div className="font-medium">{member.name}</div>
                   <div className="text-sm text-muted-foreground">
-                    Joined {new Intl.DateTimeFormat('en-US', {
-                      month: 'short',
-                      year: 'numeric'
+                    Joined{" "}
+                    {new Intl.DateTimeFormat("en-US", {
+                      month: "short",
+                      year: "numeric",
                     }).format(member.joinDate)}
                   </div>
                 </div>
@@ -103,8 +104,8 @@ const ModeratorSuccessionDialog = ({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleConfirm} 
+          <Button
+            onClick={handleConfirm}
             disabled={!selectedMember}
             className="bg-social-primary hover:bg-social-secondary"
           >

@@ -1,8 +1,13 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Bell, BellOff, MessageSquare, User, AlertTriangle } from "lucide-react";
+import {
+  Bell,
+  BellOff,
+  MessageSquare,
+  User,
+  AlertTriangle,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
 import { Notification } from "@/lib/types";
@@ -33,14 +38,16 @@ const NotificationBell = () => {
     fetchNotifications();
   }, []);
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const markAsRead = async (notificationId: string) => {
     try {
       await api.markNotificationAsRead(notificationId);
-      setNotifications(notifications.map(n => 
-        n.id === notificationId ? { ...n, isRead: true } : n
-      ));
+      setNotifications(
+        notifications.map((n) =>
+          n.id === notificationId ? { ...n, isRead: true } : n
+        )
+      );
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
     }
@@ -49,9 +56,11 @@ const NotificationBell = () => {
   const markAllAsRead = async () => {
     try {
       await Promise.all(
-        notifications.filter(n => !n.isRead).map(n => api.markNotificationAsRead(n.id))
+        notifications
+          .filter((n) => !n.isRead)
+          .map((n) => api.markNotificationAsRead(n.id))
       );
-      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+      setNotifications(notifications.map((n) => ({ ...n, isRead: true })));
     } catch (error) {
       console.error("Failed to mark all notifications as read:", error);
     }
@@ -59,12 +68,17 @@ const NotificationBell = () => {
 
   const handleNotificationClick = async (notification: Notification) => {
     await markAsRead(notification.id);
-    
+
     // Navigate to the relevant content based on notification type
-    if (notification.type === "connection_request" && notification.connectionId) {
+    if (
+      notification.type === "connection_request" &&
+      notification.connectionId
+    ) {
       navigate("/connections");
     } else if (notification.postId && notification.communityId) {
-      navigate(`/community/${notification.communityId}/post/${notification.postId}`);
+      navigate(
+        `/community/${notification.communityId}/post/${notification.postId}`
+      );
     } else if (notification.type === "system") {
       // For system notifications, stay on current page
       console.log("System notification clicked");
@@ -136,23 +150,33 @@ const NotificationBell = () => {
                     <div
                       key={notification.id}
                       className={`p-3 cursor-pointer hover:bg-gray-50 border-l-4 ${
-                        notification.isRead 
-                          ? "border-l-transparent bg-gray-50/50" 
+                        notification.isRead
+                          ? "border-l-transparent bg-gray-50/50"
                           : "border-l-social-primary bg-social-accent/10"
                       }`}
                       onClick={() => handleNotificationClick(notification)}
                     >
                       <div className="flex items-start gap-3">
-                        <div className={`p-1 rounded-full ${
-                          notification.type === "system" ? "bg-orange-100 text-orange-600" :
-                          notification.type === "mention" || notification.type === "connection_request" || notification.type === "connection_accepted" ? "bg-blue-100 text-blue-600" :
-                          "bg-green-100 text-green-600"
-                        }`}>
+                        <div
+                          className={`p-1 rounded-full ${
+                            notification.type === "system"
+                              ? "bg-orange-100 text-orange-600"
+                              : notification.type === "mention" ||
+                                notification.type === "connection_request" ||
+                                notification.type === "connection_accepted"
+                              ? "bg-blue-100 text-blue-600"
+                              : "bg-green-100 text-green-600"
+                          }`}
+                        >
                           {getNotificationIcon(notification.type)}
                         </div>
                         <div className="flex-1 min-w-0 text-left">
-                          <p className="font-medium text-sm">{notification.title}</p>
-                          <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+                          <p className="font-medium text-sm">
+                            {notification.title}
+                          </p>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {notification.message}
+                          </p>
                           <p className="text-xs text-gray-400 mt-2">
                             {notification.timestamp.toLocaleString()}
                           </p>
