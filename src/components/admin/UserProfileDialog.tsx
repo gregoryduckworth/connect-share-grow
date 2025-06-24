@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Dialog,
@@ -10,7 +9,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Calendar, MessageSquare, Users, Shield, AlertTriangle } from "lucide-react";
+import {
+  User,
+  Calendar,
+  MessageSquare,
+  Users,
+  Shield,
+  AlertTriangle,
+} from "lucide-react";
 
 interface UserProfileDialogProps {
   user: {
@@ -29,7 +35,11 @@ interface UserProfileDialogProps {
   onClose: () => void;
 }
 
-const UserProfileDialog = ({ user, isOpen, onClose }: UserProfileDialogProps) => {
+const UserProfileDialog = ({
+  user,
+  isOpen,
+  onClose,
+}: UserProfileDialogProps) => {
   // Mock user activity data
   const userStats = {
     totalPosts: 127,
@@ -47,7 +57,7 @@ const UserProfileDialog = ({ user, isOpen, onClose }: UserProfileDialogProps) =>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            {user.name}'s Profile
+            {user.name || user.email}'s Profile
           </DialogTitle>
           <DialogDescription>
             Detailed information about this user's account and activity.
@@ -63,7 +73,7 @@ const UserProfileDialog = ({ user, isOpen, onClose }: UserProfileDialogProps) =>
             <CardContent className="grid gap-3">
               <div className="flex justify-between">
                 <span className="font-medium">Name:</span>
-                <span>{user.name}</span>
+                <span>{user.name || user.email}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Email:</span>
@@ -71,22 +81,30 @@ const UserProfileDialog = ({ user, isOpen, onClose }: UserProfileDialogProps) =>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Role:</span>
-                <Badge className={
-                  user.role === "admin" ? "bg-social-primary" :
-                  user.role === "moderator" ? "bg-social-secondary" :
-                  "bg-slate-400"
-                }>
+                <Badge
+                  className={
+                    user.role === "admin"
+                      ? "bg-social-primary"
+                      : user.role === "moderator"
+                      ? "bg-social-secondary"
+                      : "bg-slate-400"
+                  }
+                >
                   {user.role === "admin" && <Shield className="h-3 w-3 mr-1" />}
                   {user.role}
                 </Badge>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Status:</span>
-                <Badge className={
-                  user.status === "active" ? "bg-green-500" :
-                  user.status === "suspended" ? "bg-orange-500" :
-                  "bg-red-500"
-                }>
+                <Badge
+                  className={
+                    user.status === "active"
+                      ? "bg-green-500"
+                      : user.status === "suspended"
+                      ? "bg-orange-500"
+                      : "bg-red-500"
+                  }
+                >
                   {user.status}
                 </Badge>
               </div>
@@ -113,7 +131,9 @@ const UserProfileDialog = ({ user, isOpen, onClose }: UserProfileDialogProps) =>
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
                   <span className="font-medium">Suspension Reason:</span>
-                  <span className="text-orange-700">{user.suspensionReason}</span>
+                  <span className="text-orange-700">
+                    {user.suspensionReason}
+                  </span>
                 </div>
                 {user.suspendedAt && (
                   <div className="flex justify-between">
@@ -124,12 +144,17 @@ const UserProfileDialog = ({ user, isOpen, onClose }: UserProfileDialogProps) =>
                 {user.suspendedBy && (
                   <div className="flex justify-between">
                     <span className="font-medium">Suspended By:</span>
-                    <span className="font-semibold text-red-600">{user.suspendedBy}</span>
+                    <span className="font-semibold text-red-600">
+                      {user.suspendedBy === "admin@example.com"
+                        ? "Admin User"
+                        : user.suspendedBy}
+                    </span>
                   </div>
                 )}
                 <div className="p-3 bg-orange-50 rounded-md">
                   <p className="text-sm text-orange-800">
-                    This user is currently suspended and cannot access the platform.
+                    This user is currently suspended and cannot access the
+                    platform.
                   </p>
                 </div>
               </CardContent>
@@ -159,7 +184,9 @@ const UserProfileDialog = ({ user, isOpen, onClose }: UserProfileDialogProps) =>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Reports Received:</span>
-                <span className="text-red-600">{userStats.reportsReceived}</span>
+                <span className="text-red-600">
+                  {userStats.reportsReceived}
+                </span>
               </div>
             </CardContent>
           </Card>

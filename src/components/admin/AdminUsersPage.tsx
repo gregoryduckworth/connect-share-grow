@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { 
-  Table, TableBody, TableCell, TableHead, 
-  TableHeader, TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,15 +32,18 @@ interface AppUser {
 
 const AdminUsersPage = () => {
   console.log("AdminUsersPage rendering...");
-  
+
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentUser] = useState("admin@example.com");
+  const [currentUser] = useState({
+    email: "admin@example.com",
+    name: "Admin User",
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [roleChangeDialogOpen, setRoleChangeDialogOpen] = useState(false);
-  
+
   const [users, setUsers] = useState<AppUser[]>([
     {
       id: "user-1",
@@ -45,7 +52,7 @@ const AdminUsersPage = () => {
       joinDate: new Date(2023, 0, 15),
       role: "admin",
       status: "active",
-      communities: ["Photography", "Tech Talk"]
+      communities: ["Photography", "Tech Talk"],
     },
     {
       id: "user-2",
@@ -54,7 +61,7 @@ const AdminUsersPage = () => {
       joinDate: new Date(2023, 1, 3),
       role: "moderator",
       status: "active",
-      communities: ["Cooking Club", "Travel Adventures"]
+      communities: ["Cooking Club", "Travel Adventures"],
     },
     {
       id: "user-3",
@@ -63,7 +70,7 @@ const AdminUsersPage = () => {
       joinDate: new Date(2023, 2, 20),
       role: "user",
       status: "active",
-      communities: ["Book Readers"]
+      communities: ["Book Readers"],
     },
     {
       id: "user-4",
@@ -73,9 +80,10 @@ const AdminUsersPage = () => {
       role: "user",
       status: "suspended",
       communities: [],
-      suspensionReason: "Repeated violation of community guidelines and inappropriate behavior",
+      suspensionReason:
+        "Repeated violation of community guidelines and inappropriate behavior",
       suspendedAt: new Date(2024, 5, 10),
-      suspendedBy: "admin@example.com"
+      suspendedBy: "admin@example.com",
     },
     {
       id: "user-5",
@@ -84,13 +92,14 @@ const AdminUsersPage = () => {
       joinDate: new Date(2023, 4, 12),
       role: "user",
       status: "active",
-      communities: ["Gaming", "Tech Talk"]
+      communities: ["Gaming", "Tech Talk"],
     },
   ]);
 
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    user.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredUsers.length / pageSize);
@@ -100,22 +109,26 @@ const AdminUsersPage = () => {
   );
 
   const handleRoleChange = (userId: string, newRole: string) => {
-    const user = users.find(u => u.id === userId);
+    const user = users.find((u) => u.id === userId);
     if (user) {
-      setUsers(users.map(u => 
-        u.id === userId ? { ...u, role: newRole as "user" | "moderator" | "admin" } : u
-      ));
-      
+      setUsers(
+        users.map((u) =>
+          u.id === userId
+            ? { ...u, role: newRole as "user" | "moderator" | "admin" }
+            : u
+        )
+      );
+
       toast({
         title: `Role Updated`,
         description: `${user.name} is now a ${newRole}.`,
       });
-      
+
       logAdminAction({
         action: "role_updated",
         details: `Changed ${user.name}'s role from ${user.role} to ${newRole}`,
         targetId: user.id,
-        targetType: "user"
+        targetType: "user",
       });
     }
   };
@@ -125,7 +138,7 @@ const AdminUsersPage = () => {
     setRoleChangeDialogOpen(true);
   };
 
-  const isCurrentUser = (userEmail: string) => userEmail === currentUser;
+  const isCurrentUser = (userEmail: string) => userEmail === currentUser.email;
 
   return (
     <div className="space-y-6">
@@ -141,7 +154,7 @@ const AdminUsersPage = () => {
           />
         </div>
       </div>
-      
+
       <div className="border rounded-md">
         <Table>
           <TableHeader>
@@ -165,36 +178,53 @@ const AdminUsersPage = () => {
                     <span className="font-medium">{user.name}</span>
                   </div>
                 </TableCell>
-                <TableCell className="hidden md:table-cell">{user.email}</TableCell>
-                <TableCell className="hidden md:table-cell">{user.joinDate.toLocaleDateString()}</TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {user.email}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {user.joinDate.toLocaleDateString()}
+                </TableCell>
                 <TableCell>
-                  <Badge className={
-                    user.role === "admin" ? "bg-social-primary" :
-                    user.role === "moderator" ? "bg-social-secondary" :
-                    "bg-slate-400"
-                  }>
-                    {user.role === "admin" && <Shield className="h-3 w-3 mr-1" />}
+                  <Badge
+                    className={
+                      user.role === "admin"
+                        ? "bg-social-primary"
+                        : user.role === "moderator"
+                        ? "bg-social-secondary"
+                        : "bg-slate-400"
+                    }
+                  >
+                    {user.role === "admin" && (
+                      <Shield className="h-3 w-3 mr-1" />
+                    )}
                     {user.role}
                     {isCurrentUser(user.email) && " (You)"}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge className={
-                    user.status === "active" ? "bg-green-500" :
-                    user.status === "suspended" ? "bg-orange-500" :
-                    "bg-red-500"
-                  }>
+                  <Badge
+                    className={
+                      user.status === "active"
+                        ? "bg-green-500"
+                        : user.status === "suspended"
+                        ? "bg-orange-500"
+                        : "bg-red-500"
+                    }
+                  >
                     {user.status}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="text-xs"
                       onClick={() => {
-                        console.log("View Profile button clicked for user:", user.id);
+                        console.log(
+                          "View Profile button clicked for user:",
+                          user.id
+                        );
                         setSelectedUser(user);
                       }}
                     >
@@ -205,7 +235,10 @@ const AdminUsersPage = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          console.log("Change Role button clicked for user:", user.id);
+                          console.log(
+                            "Change Role button clicked for user:",
+                            user.id
+                          );
                           handleChangeRole(user);
                         }}
                         className="text-xs"
@@ -219,13 +252,15 @@ const AdminUsersPage = () => {
             ))}
           </TableBody>
         </Table>
-        
+
         {paginatedUsers.length === 0 && (
           <div className="text-center p-8">
-            <p className="text-social-muted">No users found matching your search.</p>
+            <p className="text-social-muted">
+              No users found matching your search.
+            </p>
           </div>
         )}
-        
+
         {filteredUsers.length > 0 && (
           <AdminTablePagination
             currentPage={currentPage}
@@ -243,7 +278,12 @@ const AdminUsersPage = () => {
 
       {selectedUser && (
         <UserProfileDialog
-          user={selectedUser}
+          user={{
+            ...selectedUser,
+            name: isCurrentUser(selectedUser.email)
+              ? currentUser.name
+              : selectedUser.name,
+          }}
           isOpen={!!selectedUser}
           onClose={() => {
             console.log("Closing UserProfileDialog");
