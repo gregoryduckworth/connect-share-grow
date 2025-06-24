@@ -10,7 +10,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { AlertTriangle, User, MessageSquare, FileText, Lock, Check, Ban, UserX } from "lucide-react";
+import {
+  AlertTriangle,
+  User,
+  MessageSquare,
+  FileText,
+  Lock,
+  Check,
+  Ban,
+  UserX,
+} from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -26,12 +35,9 @@ interface Report {
   createdAt: Date;
   status: "pending" | "reviewed";
   originalContent?: {
-    // For posts
     title?: string;
     community?: string;
-    // For replies
     parentPost?: string;
-    // For both
     author?: string;
     fullText: string;
   };
@@ -45,12 +51,12 @@ interface ReportDetailsDialogProps {
   onLockContent: (reportId: string) => void;
 }
 
-const ReportDetailsDialog = ({ 
-  isOpen, 
-  onClose, 
-  report, 
-  onResolve, 
-  onLockContent 
+const ReportDetailsDialog = ({
+  isOpen,
+  onClose,
+  report,
+  onResolve,
+  onLockContent,
 }: ReportDetailsDialogProps) => {
   const { toast } = useToast();
   const [warnReason, setWarnReason] = useState("");
@@ -83,14 +89,14 @@ const ReportDetailsDialog = ({
       title: "User Warned",
       description: `Warning sent to user with reason: ${warnReason}`,
     });
-    
+
     logAdminAction({
       action: "user_warned",
       details: `Warned user for report ${report.id}: ${warnReason} (Admin: ${currentAdmin})`,
       targetId: report.contentId,
-      targetType: "user"
+      targetType: "user",
     });
-    
+
     setWarnReason("");
     onClose();
   };
@@ -110,14 +116,14 @@ const ReportDetailsDialog = ({
       description: `User suspended with reason: ${suspendReason}`,
       variant: "destructive",
     });
-    
+
     logAdminAction({
       action: "user_suspended",
       details: `Suspended user for report ${report.id}: ${suspendReason} (Admin: ${currentAdmin})`,
       targetId: report.contentId,
-      targetType: "user"
+      targetType: "user",
     });
-    
+
     setSuspendReason("");
     onClose();
   };
@@ -178,8 +184,8 @@ const ReportDetailsDialog = ({
           metadata: {
             likes: 23,
             comments: 8,
-            posted: "2 hours ago"
-          }
+            posted: "2 hours ago",
+          },
         };
       case "reply":
         return {
@@ -189,8 +195,8 @@ const ReportDetailsDialog = ({
           metadata: {
             likes: 5,
             replies: 2,
-            posted: "1 hour ago"
-          }
+            posted: "1 hour ago",
+          },
         };
       case "user":
         return {
@@ -200,8 +206,8 @@ const ReportDetailsDialog = ({
           metadata: {
             posts: 47,
             communities: 12,
-            reports: 8
-          }
+            reports: 8,
+          },
         };
       default:
         return null;
@@ -222,7 +228,7 @@ const ReportDetailsDialog = ({
             Review the reported content and take appropriate action
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-6">
           {/* Report Information */}
           <Card>
@@ -243,7 +249,9 @@ const ReportDetailsDialog = ({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Report date</span>
-                <span className="font-medium">{report.createdAt.toLocaleString()}</span>
+                <span className="font-medium">
+                  {report.createdAt.toLocaleString()}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Content ID</span>
@@ -252,7 +260,9 @@ const ReportDetailsDialog = ({
                 </span>
               </div>
               <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-1 mt-2">Report Summary</h4>
+                <h4 className="font-semibold text-sm text-gray-700 mb-1 mt-2">
+                  Report Summary
+                </h4>
                 <div className="p-3 rounded-md bg-red-50 border border-red-200">
                   <p className="text-sm">{report.contentPreview}</p>
                 </div>
@@ -274,64 +284,88 @@ const ReportDetailsDialog = ({
                   {report.contentType === "post" && (
                     <>
                       <div>
-                        <h4 className="font-semibold text-sm text-gray-700 mb-1">Post Title</h4>
+                        <h4 className="font-semibold text-sm text-gray-700 mb-1">
+                          Post Title
+                        </h4>
                         <p className="font-medium">{detailedContent.title}</p>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <h4 className="font-semibold text-sm text-gray-700 mb-1">Author</h4>
+                          <h4 className="font-semibold text-sm text-gray-700 mb-1">
+                            Author
+                          </h4>
                           <p>{detailedContent.author}</p>
                         </div>
                         <div>
-                          <h4 className="font-semibold text-sm text-gray-700 mb-1">Community</h4>
+                          <h4 className="font-semibold text-sm text-gray-700 mb-1">
+                            Community
+                          </h4>
                           <p>{detailedContent.community}</p>
                         </div>
                       </div>
                     </>
                   )}
-                  
+
                   {report.contentType === "reply" && (
                     <>
                       <div>
-                        <h4 className="font-semibold text-sm text-gray-700 mb-1">Reply to Post</h4>
-                        <p className="font-medium">{detailedContent.parentPost}</p>
+                        <h4 className="font-semibold text-sm text-gray-700 mb-1">
+                          Reply to Post
+                        </h4>
+                        <p className="font-medium">
+                          {detailedContent.parentPost}
+                        </p>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-sm text-gray-700 mb-1">Author</h4>
+                        <h4 className="font-semibold text-sm text-gray-700 mb-1">
+                          Author
+                        </h4>
                         <p>{detailedContent.author}</p>
                       </div>
                     </>
                   )}
-                  
+
                   {report.contentType === "user" && (
                     <>
                       <div>
-                        <h4 className="font-semibold text-sm text-gray-700 mb-1">Username</h4>
-                        <p className="font-medium">{detailedContent.username}</p>
+                        <h4 className="font-semibold text-sm text-gray-700 mb-1">
+                          Username
+                        </h4>
+                        <p className="font-medium">
+                          {detailedContent.username}
+                        </p>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-sm text-gray-700 mb-1">Member since</h4>
+                        <h4 className="font-semibold text-sm text-gray-700 mb-1">
+                          Member since
+                        </h4>
                         <p>{detailedContent.joinDate}</p>
                       </div>
                     </>
                   )}
-                  
+
                   <div>
-                    <h4 className="font-semibold text-sm text-gray-700 mb-2">Content</h4>
+                    <h4 className="font-semibold text-sm text-gray-700 mb-2">
+                      Content
+                    </h4>
                     <div className="p-3 rounded-md bg-muted/50 border">
                       <p className="text-sm">{detailedContent.content}</p>
                     </div>
                   </div>
                   {detailedContent.metadata && (
                     <div>
-                      <h4 className="font-semibold text-sm text-gray-700 mb-2">Metadata</h4>
+                      <h4 className="font-semibold text-sm text-gray-700 mb-2">
+                        Metadata
+                      </h4>
                       <div className="grid grid-cols-3 gap-4 text-sm">
-                        {Object.entries(detailedContent.metadata).map(([key, value]) => (
-                          <div key={key} className="text-center">
-                            <p className="text-gray-600 capitalize">{key}</p>
-                            <p className="font-semibold">{value}</p>
-                          </div>
-                        ))}
+                        {Object.entries(detailedContent.metadata).map(
+                          ([key, value]) => (
+                            <div key={key} className="text-center">
+                              <p className="text-gray-600 capitalize">{key}</p>
+                              <p className="font-semibold">{value}</p>
+                            </div>
+                          )
+                        )}
                       </div>
                     </div>
                   )}
@@ -358,7 +392,7 @@ const ReportDetailsDialog = ({
                     value={warnReason}
                     onChange={(e) => setWarnReason(e.target.value)}
                   />
-                  <Button 
+                  <Button
                     className="mt-2 bg-orange-500 hover:bg-orange-600"
                     onClick={handleWarnUser}
                   >
@@ -366,7 +400,7 @@ const ReportDetailsDialog = ({
                     Send Warning
                   </Button>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="suspendReason">Suspension Reason</Label>
                   <Input
@@ -375,7 +409,7 @@ const ReportDetailsDialog = ({
                     value={suspendReason}
                     onChange={(e) => setSuspendReason(e.target.value)}
                   />
-                  <Button 
+                  <Button
                     className="mt-2"
                     variant="destructive"
                     onClick={handleSuspendUser}
@@ -393,14 +427,14 @@ const ReportDetailsDialog = ({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="border-orange-400 text-orange-500 hover:bg-orange-50"
             onClick={handleLockContent}
           >
             <Lock className="h-4 w-4 mr-2" /> Lock Content
           </Button>
-          <Button 
+          <Button
             variant="default"
             className="bg-green-500 hover:bg-green-600"
             onClick={handleResolve}

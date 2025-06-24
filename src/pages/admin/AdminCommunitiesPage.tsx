@@ -28,6 +28,8 @@ import CommunityDetailsDialog from "@/components/admin/CommunityDetailsDialog";
 import AdminTablePagination from "@/components/admin/AdminTablePagination";
 import CommunityApprovalDialog from "@/components/admin/CommunityApprovalDialog";
 import CommunityRejectionDialog from "@/components/admin/CommunityRejectionDialog";
+import CommunitySuspendDialog from "@/components/admin/CommunitySuspendDialog";
+import CommunityActivateDialog from "@/components/admin/CommunityActivateDialog";
 
 interface Community {
   id: string;
@@ -74,6 +76,14 @@ const AdminCommunitiesPage = () => {
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
   const [rejectionCommunity, setRejectionCommunity] =
     useState<PendingCommunity | null>(null);
+  const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
+  const [suspendCommunity, setSuspendCommunity] = useState<Community | null>(
+    null
+  );
+  const [activateDialogOpen, setActivateDialogOpen] = useState(false);
+  const [activateCommunity, setActivateCommunity] = useState<Community | null>(
+    null
+  );
 
   const [communities, setCommunities] = useState<Community[]>([
     {
@@ -151,7 +161,7 @@ const AdminCommunitiesPage = () => {
     currentPage * pageSize
   );
 
-  const handleSuspendCommunity = (id: string) => {
+  const handleSuspendCommunity = (id: string, reason: string) => {
     const community = communities.find((c) => c.id === id);
     if (community) {
       setCommunities(
@@ -159,23 +169,29 @@ const AdminCommunitiesPage = () => {
           c.id === id ? { ...c, status: "suspended" as const } : c
         )
       );
-
       toast({
         title: "Community Suspended",
-        description: `${community.name} has been suspended.`,
-        variant: "destructive",
+        description: `${community.name} has been suspended.\nReason: ${reason}`,
       });
-
+      // Notify all moderators
+      if (community.moderators && community.moderators.length > 0) {
+        community.moderators.forEach((mod) => {
+          toast({
+            title: `Moderators Notified: ${mod}`,
+            description: `The community "${community.name}" was suspended. Reason: ${reason}`,
+          });
+        });
+      }
       logAdminAction({
         action: "community_suspended",
-        details: `Suspended community: ${community.name}`,
+        details: `Suspended community: ${community.name}. Reason: ${reason}`,
         targetId: community.id,
         targetType: "community",
       });
     }
   };
 
-  const handleActivateCommunity = (id: string) => {
+  const handleActivateCommunity = (id: string, message: string) => {
     const community = communities.find((c) => c.id === id);
     if (community) {
       setCommunities(
@@ -183,15 +199,22 @@ const AdminCommunitiesPage = () => {
           c.id === id ? { ...c, status: "active" as const } : c
         )
       );
-
       toast({
         title: "Community Activated",
-        description: `${community.name} has been activated.`,
+        description: `${community.name} has been activated.\nMessage: ${message}`,
       });
-
+      // Notify all moderators
+      if (community.moderators && community.moderators.length > 0) {
+        community.moderators.forEach((mod) => {
+          toast({
+            title: `Moderator Notified: ${mod}`,
+            description: `The community "${community.name}" was activated. Message: ${message}`,
+          });
+        });
+      }
       logAdminAction({
         action: "community_activated",
-        details: `Activated community: ${community.name}`,
+        details: `Activated community: ${community.name}. Message: ${message}`,
         targetId: community.id,
         targetType: "community",
       });
@@ -417,67 +440,27 @@ const AdminCommunitiesPage = () => {
                     </Button>
 
                     {community.status === "active" ? (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="destructive">
-                            Suspend
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Suspend Community
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to suspend "{community.name}
-                              "? Members won't be able to post or interact.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() =>
-                                handleSuspendCommunity(community.id)
-                              }
-                            >
-                              Suspend
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                          setSuspendCommunity(community);
+                          setSuspendDialogOpen(true);
+                        }}
+                      >
+                        Suspend
+                      </Button>
                     ) : (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            size="sm"
-                            className="bg-green-500 hover:bg-green-600"
-                          >
-                            Activate
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Activate Community
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to activate "
-                              {community.name}"? This will restore full
-                              functionality.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() =>
-                                handleActivateCommunity(community.id)
-                              }
-                            >
-                              Activate
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <Button
+                        size="sm"
+                        className="bg-green-500 hover:bg-green-600"
+                        onClick={() => {
+                          setActivateCommunity(community);
+                          setActivateDialogOpen(true);
+                        }}
+                      >
+                        Activate
+                      </Button>
                     )}
                   </div>
                 </TableCell>
@@ -527,6 +510,20 @@ const AdminCommunitiesPage = () => {
         onClose={() => setRejectionDialogOpen(false)}
         community={rejectionCommunity}
         onReject={handleRejectCommunity}
+      />
+
+      <CommunitySuspendDialog
+        isOpen={suspendDialogOpen}
+        onClose={() => setSuspendDialogOpen(false)}
+        community={suspendCommunity}
+        onSuspend={handleSuspendCommunity}
+      />
+
+      <CommunityActivateDialog
+        isOpen={activateDialogOpen}
+        onClose={() => setActivateDialogOpen(false)}
+        community={activateCommunity}
+        onActivate={handleActivateCommunity}
       />
     </div>
   );
