@@ -113,7 +113,7 @@ const ConnectionsPage = () => {
     connection: Connection;
     showActions?: boolean;
   }) => (
-    <Card className="h-full">
+    <Card className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent h-full">
       <CardHeader className="pb-3">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
           <div className="flex-1">
@@ -208,7 +208,7 @@ const ConnectionsPage = () => {
         </TabsList>
 
         <TabsContent value="connected">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredConnections.map((connection) => (
               <ConnectionCard key={connection.id} connection={connection} />
             ))}
@@ -223,7 +223,7 @@ const ConnectionsPage = () => {
         </TabsContent>
 
         <TabsContent value="pending">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pendingRequests.map((connection) => (
               <ConnectionCard key={connection.id} connection={connection} />
             ))}
@@ -237,7 +237,7 @@ const ConnectionsPage = () => {
         </TabsContent>
 
         <TabsContent value="requests">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {receivedRequests.map((connection) => (
               <ConnectionCard
                 key={connection.id}

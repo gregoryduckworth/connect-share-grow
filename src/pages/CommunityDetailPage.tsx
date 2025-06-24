@@ -312,7 +312,7 @@ const CommunityDetailPage = () => {
         {/* Sidebar */}
         <div className="lg:col-span-1">
           {/* Moderators */}
-          <Card className="mb-6">
+          <Card className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent mb-6">
             <CardHeader>
               <CardTitle>Moderators</CardTitle>
             </CardHeader>
@@ -344,7 +344,7 @@ const CommunityDetailPage = () => {
           </Card>
 
           {/* Community Rules */}
-          <Card className="mb-6">
+          <Card className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent mb-6">
             <CardHeader>
               <CardTitle>Community Rules</CardTitle>
             </CardHeader>

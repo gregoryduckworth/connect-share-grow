@@ -1,4 +1,3 @@
-
 import { Outlet } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import Sidebar from "./Sidebar";
@@ -9,13 +8,13 @@ import BaseLayout from "./BaseLayout";
 const MainLayout = () => {
   const user = {
     name: "John Doe",
-    email: "john.doe@example.com"
+    email: "john.doe@example.com",
   };
 
   const header = (
     <header className="h-16 bg-background border-b border-border flex items-center justify-between px-4 md:px-6 flex-shrink-0">
       <div className="flex items-center gap-2">
-        <SidebarTrigger className="md:hidden" />
+        <SidebarTrigger />
         <div className="flex-1" />
       </div>
       <div className="flex items-center gap-2">
@@ -26,10 +25,7 @@ const MainLayout = () => {
   );
 
   return (
-    <BaseLayout
-      sidebar={<Sidebar />}
-      header={header}
-    >
+    <BaseLayout sidebar={<Sidebar />} header={header}>
       <Outlet />
     </BaseLayout>
   );

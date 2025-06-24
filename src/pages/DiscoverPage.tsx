@@ -161,50 +161,54 @@ const DiscoverPage = () => {
         </TabsList>
 
         <TabsContent value="posts" className="space-y-4 sm:space-y-6">
-          {filteredPosts.map((post) => (
-            <Card key={post.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
-                  <div className="flex-1">
-                    <CardTitle className="text-base sm:text-lg mb-2 break-words">
-                      <Link
-                        to={`/post/${post.id}`}
-                        className="hover:text-primary transition-colors"
-                      >
-                        {post.title}
-                      </Link>
-                    </CardTitle>
-                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                      <span>by {post.author}</span>
-                      <span>•</span>
-                      <span>in {post.community}</span>
-                      <span>•</span>
-                      <span>{post.createdAt.toLocaleDateString()}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPosts.map((post) => (
+              <Card
+                key={post.id}
+                className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent h-full"
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
+                    <div className="flex-1">
+                      <CardTitle className="text-base sm:text-lg mb-2 break-words">
+                        <Link
+                          to={`/post/${post.id}`}
+                          className="hover:text-primary transition-colors"
+                        >
+                          {post.title}
+                        </Link>
+                      </CardTitle>
+                      <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                        <span>by {post.author}</span>
+                        <span>•</span>
+                        <span>in {post.community}</span>
+                        <span>•</span>
+                        <span>{post.createdAt.toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+                        <span>{post.likes}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
+                        <span>{post.replies}</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
-                    <div className="flex items-center gap-1">
-                      <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
-                      <span>{post.likes}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
-                      <span>{post.replies}</span>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm sm:text-base text-muted-foreground mb-4 break-words">
-                  {post.excerpt}
-                </p>
-                <Button variant="outline" size="sm" asChild>
-                  <Link to={`/post/${post.id}`}>Read More</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm sm:text-base text-muted-foreground mb-4 break-words">
+                    {post.excerpt}
+                  </p>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to={`/post/${post.id}`}>Read More</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
           {filteredPosts.length === 0 && (
             <div className="text-center py-12">
               <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -214,13 +218,12 @@ const DiscoverPage = () => {
             </div>
           )}
         </TabsContent>
-
         <TabsContent value="communities" className="space-y-4 sm:space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCommunities.map((community) => (
               <Card
                 key={community.id}
-                className="h-full hover:shadow-md transition-shadow"
+                className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent h-full"
               >
                 <CardHeader>
                   <div className="flex items-start justify-between gap-2">
@@ -260,7 +263,6 @@ const DiscoverPage = () => {
                       </Badge>
                     </div>
                   </div>
-
                   <Button className="w-full text-xs sm:text-sm" asChild>
                     <Link to={`/community/${community.id}`}>
                       Join Community
@@ -270,7 +272,6 @@ const DiscoverPage = () => {
               </Card>
             ))}
           </div>
-
           {filteredCommunities.length === 0 && (
             <div className="text-center py-12">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

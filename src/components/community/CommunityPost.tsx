@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -73,7 +72,16 @@ const CommunityPost = ({
 
   return (
     <>
-      <Card className={`mb-4 ${post.isPinned ? "border-social-primary bg-social-accent/10" : ""} ${showPreview ? "hover:shadow-md transition-shadow cursor-pointer" : ""}`}>
+      <Card
+        className={`mb-4 w-full max-w-[98%] sm:max-w-[98%] mx-auto ${
+          post.isPinned ? "border-social-primary bg-social-accent/10" : ""
+        } ${
+          showPreview
+            ? "hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent cursor-pointer"
+            : ""
+        }`}
+        style={{ transition: "transform 0.2s", willChange: "transform" }}
+      >
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
@@ -88,16 +96,14 @@ const CommunityPost = ({
                   {post.isPinned && (
                     <Pin className="h-4 w-4 text-social-primary" />
                   )}
-                  {post.isLocked && (
-                    <Lock className="h-4 w-4 text-red-500" />
-                  )}
+                  {post.isLocked && <Lock className="h-4 w-4 text-red-500" />}
                 </div>
                 <p className="text-sm text-social-muted">
                   by {post.author} • {post.timestamp.toLocaleDateString()}
                 </p>
               </div>
             </div>
-            
+
             {isModerator && !showPreview && (
               <div className="flex gap-2 flex-wrap">
                 {onPin && (
@@ -111,63 +117,59 @@ const CommunityPost = ({
                     {post.isPinned ? "Unpin" : "Pin"}
                   </Button>
                 )}
-                
-                {post.isLocked ? (
-                  onUnlock && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onUnlock(post.id)}
-                      className="text-xs border-green-400 text-green-500 hover:bg-green-50"
-                    >
-                      <Unlock className="h-3 w-3 mr-1" />
-                      Unlock Post
-                    </Button>
-                  )
-                ) : (
-                  onLock && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleLockClick("post")}
-                      className="text-xs border-red-400 text-red-500 hover:bg-red-50"
-                    >
-                      <Lock className="h-3 w-3 mr-1" />
-                      Lock Post
-                    </Button>
-                  )
-                )}
-                
-                {post.commentsLocked ? (
-                  onUnlockComments && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onUnlockComments(post.id)}
-                      className="text-xs border-green-400 text-green-500 hover:bg-green-50"
-                    >
-                      <Unlock className="h-3 w-3 mr-1" />
-                      Unlock Comments
-                    </Button>
-                  )
-                ) : (
-                  onLockComments && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleLockClick("comments")}
-                      className="text-xs border-orange-400 text-orange-500 hover:bg-orange-50"
-                    >
-                      <Lock className="h-3 w-3 mr-1" />
-                      Lock Comments
-                    </Button>
-                  )
-                )}
+
+                {post.isLocked
+                  ? onUnlock && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onUnlock(post.id)}
+                        className="text-xs border-green-400 text-green-500 hover:bg-green-50"
+                      >
+                        <Unlock className="h-3 w-3 mr-1" />
+                        Unlock Post
+                      </Button>
+                    )
+                  : onLock && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleLockClick("post")}
+                        className="text-xs border-red-400 text-red-500 hover:bg-red-50"
+                      >
+                        <Lock className="h-3 w-3 mr-1" />
+                        Lock Post
+                      </Button>
+                    )}
+
+                {post.commentsLocked
+                  ? onUnlockComments && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onUnlockComments(post.id)}
+                        className="text-xs border-green-400 text-green-500 hover:bg-green-50"
+                      >
+                        <Unlock className="h-3 w-3 mr-1" />
+                        Unlock Comments
+                      </Button>
+                    )
+                  : onLockComments && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleLockClick("comments")}
+                        className="text-xs border-orange-400 text-orange-500 hover:bg-orange-50"
+                      >
+                        <Lock className="h-3 w-3 mr-1" />
+                        Lock Comments
+                      </Button>
+                    )}
               </div>
             )}
           </div>
         </CardHeader>
-        
+
         <CardContent className="pt-0">
           {post.isLocked && post.lockReason && (
             <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-md">
@@ -177,7 +179,7 @@ const CommunityPost = ({
               </p>
             </div>
           )}
-          
+
           {post.commentsLocked && post.commentsLockReason && (
             <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded-md">
               <p className="text-sm text-orange-700">
@@ -186,19 +188,23 @@ const CommunityPost = ({
               </p>
             </div>
           )}
-          
+
           <p className="text-social-foreground mb-4">
             {showPreview ? truncateContent(post.content) : post.content}
           </p>
-          
+
           <div className="flex flex-wrap gap-2 mb-4">
             {post.tags.map((tag, index) => (
-              <Badge key={index} variant="secondary" className="bg-social-accent/50">
+              <Badge
+                key={index}
+                variant="secondary"
+                className="bg-social-accent/50"
+              >
                 {tag}
               </Badge>
             ))}
           </div>
-          
+
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -213,10 +219,12 @@ const CommunityPost = ({
               }`}
               disabled={post.isLocked}
             >
-              <Heart className={`h-4 w-4 ${post.isLiked ? "fill-current" : ""}`} />
+              <Heart
+                className={`h-4 w-4 ${post.isLiked ? "fill-current" : ""}`}
+              />
               {post.likes}
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"

@@ -41,14 +41,15 @@ const Index = () => {
             className="bg-social-primary hover:bg-social-secondary"
           >
             <Link to="/communities">
-              <Users className="mr-2 h-4 w-4" /> Find Communities
+              <Users className="mr-2 h-4 w-4" />
+              Find Communities
             </Link>
           </Button>
         </div>
 
         {/* Hot Topics Section */}
         <section className="space-y-4">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-4 mt-4">
             <TrendingUp className="h-5 w-5 text-social-primary" />
             <h2 className="text-2xl font-bold text-social-primary">
               Hot Topics
@@ -58,7 +59,7 @@ const Index = () => {
           {loading ? (
             <div className="text-left">Loading hot topics...</div>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {hotPosts.map((post) => (
                 <Card key={post.id} className="hover-scale text-left">
                   <CardHeader className="pb-3">
