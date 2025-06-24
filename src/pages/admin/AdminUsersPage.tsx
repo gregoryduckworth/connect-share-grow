@@ -16,6 +16,7 @@ import { logAdminAction } from "@/lib/admin-logger";
 import UserProfileDialog from "@/components/admin/UserProfileDialog";
 import RoleChangeDialog from "@/components/admin/RoleChangeDialog";
 import AdminTablePagination from "@/components/admin/AdminTablePagination";
+import AdminRoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
 
 interface AppUser {
   id: string;
@@ -38,6 +39,31 @@ const AdminUsersPage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [roleChangeDialogOpen, setRoleChangeDialogOpen] = useState(false);
+  const [pendingAdminRoleChanges, setPendingAdminRoleChanges] = useState<
+    {
+      id: string;
+      user: AppUser;
+      requestedBy: string;
+      requestedAt: Date;
+      newRole: "admin" | "user" | "moderator";
+    }[]
+  >([
+    {
+      id: "mock-1",
+      user: {
+        id: "user-2",
+        name: "Jane Smith",
+        email: "jane.smith@example.com",
+        joinDate: new Date(2023, 1, 3),
+        role: "moderator",
+        status: "active",
+        communities: ["Cooking Club", "Travel Adventures"],
+      },
+      requestedBy: "admin@example.com",
+      requestedAt: new Date(),
+      newRole: "admin",
+    },
+  ]);
 
   const [users, setUsers] = useState<AppUser[]>([
     {
@@ -106,6 +132,28 @@ const AdminUsersPage = () => {
   const handleRoleChange = (userId: string, newRole: string) => {
     const user = users.find((u) => u.id === userId);
     if (user) {
+      // If changing to or from admin, require approval
+      if (
+        (user.role === "admin" && newRole !== "admin") ||
+        (user.role !== "admin" && newRole === "admin")
+      ) {
+        setPendingAdminRoleChanges([
+          ...pendingAdminRoleChanges,
+          {
+            id: `${userId}-${Date.now()}`,
+            user,
+            requestedBy: currentUser,
+            requestedAt: new Date(),
+            newRole: newRole as "admin" | "user" | "moderator",
+          },
+        ]);
+        toast({
+          title: "Admin Approval Required",
+          description: `A request to change ${user.name}'s role to ${newRole} has been sent to all admins for approval.`,
+        });
+        return;
+      }
+
       setUsers(
         users.map((u) =>
           u.id === userId
@@ -113,12 +161,10 @@ const AdminUsersPage = () => {
             : u
         )
       );
-
       toast({
         title: `Role Updated`,
         description: `${user.name} is now a ${newRole}.`,
       });
-
       logAdminAction({
         action: "role_updated",
         details: `Changed ${user.name}'s role from ${user.role} to ${newRole}`,
@@ -151,6 +197,44 @@ const AdminUsersPage = () => {
           />
         </div>
       </div>
+
+      <AdminRoleChangeAlert
+        pendingChanges={pendingAdminRoleChanges}
+        currentUser={currentUser}
+        onApprove={(changeId) => {
+          const change = pendingAdminRoleChanges.find((c) => c.id === changeId);
+          if (change) {
+            setUsers(
+              users.map((u) =>
+                u.id === change.user.id ? { ...u, role: change.newRole } : u
+              )
+            );
+            setPendingAdminRoleChanges(
+              pendingAdminRoleChanges.filter((c) => c.id !== changeId)
+            );
+            toast({
+              title: "Role Change Approved",
+              description: `${change.user.name}'s role has been updated to ${change.newRole}.`,
+            });
+            logAdminAction({
+              action: "role_updated",
+              details: `Changed ${change.user.name}'s role to ${change.newRole} (approved by another admin)`,
+              targetId: change.user.id,
+              targetType: "user",
+            });
+          }
+        }}
+        onReject={(changeId) => {
+          setPendingAdminRoleChanges(
+            pendingAdminRoleChanges.filter((c) => c.id !== changeId)
+          );
+          toast({
+            title: "Role Change Rejected",
+            description: `The admin role change request has been rejected.`,
+            variant: "destructive",
+          });
+        }}
+      />
 
       <div className="border rounded-md">
         <Table>
