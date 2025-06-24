@@ -27,6 +27,7 @@ import { logAdminAction } from "@/lib/admin-logger";
 import CommunityDetailsDialog from "@/components/admin/CommunityDetailsDialog";
 import AdminTablePagination from "@/components/admin/AdminTablePagination";
 import CommunityApprovalDialog from "@/components/admin/CommunityApprovalDialog";
+import CommunityRejectionDialog from "@/components/admin/CommunityRejectionDialog";
 
 interface Community {
   id: string;
@@ -69,6 +70,9 @@ const AdminCommunitiesPage = () => {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
   const [approvalCommunity, setApprovalCommunity] =
+    useState<PendingCommunity | null>(null);
+  const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
+  const [rejectionCommunity, setRejectionCommunity] =
     useState<PendingCommunity | null>(null);
 
   const [communities, setCommunities] = useState<Community[]>([
@@ -236,20 +240,17 @@ const AdminCommunitiesPage = () => {
     }
   };
 
-  const handleRejectCommunity = (id: string) => {
+  const handleRejectCommunity = (id: string, feedback: string) => {
     const pendingCommunity = pendingCommunities.find((c) => c.id === id);
     if (pendingCommunity) {
       setPendingCommunities(pendingCommunities.filter((c) => c.id !== id));
-
       toast({
         title: "Community Rejected",
-        description: `${pendingCommunity.name} has been rejected.`,
-        variant: "destructive",
+        description: `${pendingCommunity.name} has been rejected.\nReason: ${feedback}`,
       });
-
       logAdminAction({
         action: "community_rejected",
-        details: `Rejected community: ${pendingCommunity.name}`,
+        details: `Rejected community: ${pendingCommunity.name}. Feedback: ${feedback}`,
         targetId: pendingCommunity.id,
         targetType: "community",
       });
@@ -329,35 +330,17 @@ const AdminCommunitiesPage = () => {
                           Approve
                         </Button>
 
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="destructive">
-                              <X className="h-4 w-4 mr-1" />
-                              Reject
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Reject Community
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to reject "
-                                {community.name}"? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() =>
-                                  handleRejectCommunity(community.id)
-                                }
-                              >
-                                Reject
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => {
+                            setRejectionCommunity(community);
+                            setRejectionDialogOpen(true);
+                          }}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Reject
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -537,6 +520,13 @@ const AdminCommunitiesPage = () => {
         onClose={() => setApprovalDialogOpen(false)}
         community={approvalCommunity}
         onApprove={handleApproveCommunity}
+      />
+
+      <CommunityRejectionDialog
+        isOpen={rejectionDialogOpen}
+        onClose={() => setRejectionDialogOpen(false)}
+        community={rejectionCommunity}
+        onReject={handleRejectCommunity}
       />
     </div>
   );
