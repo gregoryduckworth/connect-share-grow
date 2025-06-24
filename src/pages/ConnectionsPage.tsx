@@ -112,9 +112,9 @@ const ConnectionsPage = () => {
     connection: Connection;
     showActions?: boolean;
   }) => (
-    <Card className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent h-full">
-      <CardHeader className="pb-3">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+    <Card className="flex flex-col h-full border-2 transition-shadow hover:shadow-xl hover:scale-[1.03] hover:border-purple-400 hover:bg-purple-50 focus-within:border-purple-500 focus-within:bg-purple-50">
+      <CardHeader className="flex-1 pb-2">
+        <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
             <CardTitle className="text-base sm:text-lg break-words">
               {connection.name}
@@ -128,14 +128,13 @@ const ConnectionsPage = () => {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+      <CardContent className="flex flex-col flex-1 justify-end space-y-3">
+        <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
           <span className="break-words">
             Last active: {connection.lastActive.toLocaleDateString()}
           </span>
         </div>
-
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 mt-auto w-full">
           {showActions ? (
             <>
               <Button
