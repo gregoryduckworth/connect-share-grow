@@ -41,30 +41,30 @@ const AdminSettingsPage = () => {
 
   return (
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 mb-2">
         <div>
-          <h1 className="text-3xl font-bold text-social-primary">
+          <h1 className="text-3xl font-bold text-social-primary leading-tight">
             Admin Settings
           </h1>
-          <p className="text-social-muted">
+          <p className="text-social-muted text-base">
             Configure platform settings and policies
           </p>
         </div>
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-8 md:grid-cols-3">
         {/* General Settings */}
-        <Card>
+        <Card className="shadow-md border-2 border-social-primary/10 col-span-1">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Shield className="h-5 w-5 text-social-primary" />
               General Settings
             </CardTitle>
             <CardDescription>
               Basic platform configuration and display settings
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="siteName">Site Name</Label>
               <Input
@@ -73,12 +73,15 @@ const AdminSettingsPage = () => {
                 onChange={(e) =>
                   handleSettingChange("siteName", e.target.value)
                 }
+                className="bg-white"
               />
             </div>
             <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Allow New User Registration</Label>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex flex-col items-start text-left">
+                <Label className="font-semibold text-base">
+                  Allow New User Registration
+                </Label>
                 <p className="text-sm text-muted-foreground">
                   Enable or disable new user signups
                 </p>
@@ -90,9 +93,11 @@ const AdminSettingsPage = () => {
                 }
               />
             </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Require Email Verification</Label>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex flex-col items-start text-left">
+                <Label className="font-semibold text-base">
+                  Require Email Verification
+                </Label>
                 <p className="text-sm text-muted-foreground">
                   Users must verify their email before accessing the platform
                 </p>
@@ -108,20 +113,22 @@ const AdminSettingsPage = () => {
         </Card>
 
         {/* Community Settings */}
-        <Card>
+        <Card className="shadow-md border-2 border-social-secondary/10 col-span-1">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Flag className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Flag className="h-5 w-5 text-social-secondary" />
               Community Settings
             </CardTitle>
             <CardDescription>
               Configure how communities are created and managed
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Auto-approve Communities</Label>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between w-full">
+              <div className="flex flex-col items-start text-left">
+                <Label className="font-semibold text-base">
+                  Auto-approve Communities
+                </Label>
                 <p className="text-sm text-muted-foreground">
                   Automatically approve new community requests
                 </p>
@@ -147,6 +154,7 @@ const AdminSettingsPage = () => {
                     parseInt(e.target.value)
                   )
                 }
+                className="bg-white"
               />
             </div>
             <div className="space-y-2">
@@ -161,26 +169,29 @@ const AdminSettingsPage = () => {
                     parseInt(e.target.value)
                   )
                 }
+                className="bg-white"
               />
             </div>
           </CardContent>
         </Card>
 
-        {/* Moderation Settings */}
-        <Card>
+        {/* Moderation Settings (full width on mobile, 1 col on desktop) */}
+        <Card className="shadow-md border-2 border-social-accent/10 md:col-span-1 col-span-3">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Users className="h-5 w-5 text-social-accent" />
               Moderation Settings
             </CardTitle>
             <CardDescription>
               Configure moderation policies and thresholds
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Enable Moderator Requests</Label>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between w-full">
+              <div className="flex flex-col items-start text-left">
+                <Label className="font-semibold text-base">
+                  Enable Moderator Requests
+                </Label>
                 <p className="text-sm text-muted-foreground">
                   Allow users to request moderator status for communities
                 </p>
@@ -206,6 +217,7 @@ const AdminSettingsPage = () => {
                     parseInt(e.target.value)
                   )
                 }
+                className="bg-white"
               />
               <p className="text-sm text-muted-foreground">
                 Alert admins when moderators have been inactive for this many
@@ -214,15 +226,15 @@ const AdminSettingsPage = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
 
-        <div className="flex justify-end">
-          <Button
-            onClick={handleSaveSettings}
-            className="bg-social-primary hover:bg-social-secondary"
-          >
-            Save Settings
-          </Button>
-        </div>
+      <div className="flex justify-end pt-4">
+        <Button
+          onClick={handleSaveSettings}
+          className="bg-social-primary hover:bg-social-secondary px-8 py-2 text-lg font-semibold shadow-md"
+        >
+          Save Settings
+        </Button>
       </div>
     </div>
   );

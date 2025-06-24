@@ -94,7 +94,6 @@ const AdminReportsPage = () => {
       toast({
         title: "Content Locked",
         description: `The reported content has been locked.`,
-        variant: "destructive",
       });
       logAdminAction({
         action: "content_locked",

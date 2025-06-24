@@ -41,7 +41,8 @@ const AdminUsersPage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [roleChangeDialogOpen, setRoleChangeDialogOpen] = useState(false);
-  const [roleChangeTargetUser, setRoleChangeTargetUser] = useState<AppUser | null>(null);
+  const [roleChangeTargetUser, setRoleChangeTargetUser] =
+    useState<AppUser | null>(null);
   const [pendingAdminRoleChanges, setPendingAdminRoleChanges] = useState<
     {
       id: string;

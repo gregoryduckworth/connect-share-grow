@@ -97,7 +97,6 @@ const ConnectionsPage = () => {
     toast({
       title: "Connection rejected",
       description: `Request from ${connection?.name} has been declined`,
-      variant: "destructive",
     });
   };
 

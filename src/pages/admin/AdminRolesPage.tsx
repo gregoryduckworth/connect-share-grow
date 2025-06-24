@@ -154,7 +154,7 @@ const AdminRolesPage = () => {
   ]);
 
   const RoleCard = ({ role }: { role: Role }) => (
-    <Card>
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
@@ -168,7 +168,7 @@ const AdminRolesPage = () => {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 flex-1 flex flex-col">
         <p className="text-social-muted">{role.description}</p>
 
         <div>
@@ -186,9 +186,11 @@ const AdminRolesPage = () => {
           </ul>
         </div>
 
+        <div className="flex-1" />
+
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" className="w-full">
+            <Button variant="outline" className="w-full mt-4">
               <Users className="h-4 w-4 mr-2" />
               View All {role.name}s
             </Button>
