@@ -10,27 +10,27 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { User, Users, MessageSquare } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 
 interface UserProfileDialogProps {
-  username: string;
-  children: React.ReactNode;
+  userId: string;
+  isOpen: boolean;
+  onClose: () => void;
+  currentUserId: string;
 }
 
-const UserProfileDialog = ({ username, children }: UserProfileDialogProps) => {
+const UserProfileDialog = ({ userId, isOpen, onClose, currentUserId }: UserProfileDialogProps) => {
   const [connectionMessage, setConnectionMessage] = useState("");
   const [isRequesting, setIsRequesting] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
-  // Mock user data based on username
+  // Mock user data based on userId
   const userProfile = {
-    id: `user-${username.toLowerCase().replace(' ', '-')}`,
-    name: username,
+    id: userId,
+    name: `User ${userId.replace('user-', '').replace('-', ' ')}`,
     commonCommunities: ["Photography Enthusiasts", "Web Development", "Tech Discussions"],
     joinDate: new Date(2024, 3, 15)
   };
@@ -48,7 +48,7 @@ const UserProfileDialog = ({ username, children }: UserProfileDialogProps) => {
     setIsRequesting(true);
     try {
       await api.createConnectionRequest({
-        fromUserId: "current-user-id",
+        fromUserId: currentUserId,
         toUserId: userProfile.id,
         fromUserName: "Current User",
         toUserName: userProfile.name,
@@ -61,7 +61,7 @@ const UserProfileDialog = ({ username, children }: UserProfileDialogProps) => {
       });
 
       setConnectionMessage("");
-      setIsOpen(false);
+      onClose();
     } catch (error) {
       toast({
         title: "Error",
@@ -74,10 +74,7 @@ const UserProfileDialog = ({ username, children }: UserProfileDialogProps) => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
