@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,10 +44,10 @@ interface User {
 const AdminUsers = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [roleChangeUser, setRoleChangeUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [pageSize] = useState(10);
 
   // Mock data - in a real app, this would come from an API
   const [users, setUsers] = useState<User[]>([
@@ -120,9 +119,9 @@ const AdminUsers = () => {
     user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
+  const totalPages = Math.ceil(filteredUsers.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
   const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
   const getRoleColor = (role: string) => {
@@ -278,7 +277,7 @@ const AdminUsers = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setSelectedUserId(user.id)}>
+                          <DropdownMenuItem onClick={() => setSelectedUser(user)}>
                             <Eye className="h-4 w-4 mr-2" />
                             View Profile
                           </DropdownMenuItem>
@@ -319,20 +318,19 @@ const AdminUsers = () => {
           <AdminTablePagination
             currentPage={currentPage}
             totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            itemsPerPage={itemsPerPage}
+            pageSize={pageSize}
             totalItems={filteredUsers.length}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={() => {}} // Not implemented in this component
           />
         </CardContent>
       </Card>
 
       {/* User Profile Dialog */}
-      {selectedUserId && (
-        <UserProfileDialog
-          userId={selectedUserId}
-          isOpen={!!selectedUserId}
-          onClose={() => setSelectedUserId(null)}
-        />
+      {selectedUser && (
+        <UserProfileDialog user={selectedUser}>
+          <div />
+        </UserProfileDialog>
       )}
 
       {/* Role Change Dialog */}
@@ -341,7 +339,7 @@ const AdminUsers = () => {
           user={roleChangeUser}
           isOpen={!!roleChangeUser}
           onClose={() => setRoleChangeUser(null)}
-          onRoleChange={handleRoleChange}
+          onConfirm={handleRoleChange}
         />
       )}
     </div>

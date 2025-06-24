@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Search, Users, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,6 @@ interface Community {
 const CommunitiesPage = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const communitiesPerPage = 6;
 
@@ -153,7 +151,6 @@ const CommunitiesPage = () => {
       title: "Community created!",
       description: "Your new community has been created successfully.",
     });
-    setShowCreateDialog(false);
   };
 
   const CommunityCard = ({ community }: { community: Community }) => (
@@ -214,10 +211,14 @@ const CommunitiesPage = () => {
           <h1 className="text-3xl font-bold text-social-primary mb-2">Communities</h1>
           <p className="text-social-muted">Discover and join communities that match your interests</p>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Community
-        </Button>
+        <CreateCommunityDialog
+          trigger={
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Community
+            </Button>
+          }
+        />
       </div>
 
       <div className="relative mb-6">
@@ -297,7 +298,7 @@ const CommunitiesPage = () => {
           {joinedCommunities.length === 0 && (
             <div className="text-center py-12">
               <p className="text-social-muted">You haven't joined any communities yet.</p>
-              <Button className="mt-4" onClick={() => setShowCreateDialog(true)}>
+              <Button className="mt-4" >
                 <Plus className="h-4 w-4 mr-2" />
                 Create Your First Community
               </Button>
@@ -305,12 +306,6 @@ const CommunitiesPage = () => {
           )}
         </TabsContent>
       </Tabs>
-
-      <CreateCommunityDialog
-        isOpen={showCreateDialog}
-        onClose={() => setShowCreateDialog(false)}
-        onSubmit={handleCreateCommunity}
-      />
     </div>
   );
 };
