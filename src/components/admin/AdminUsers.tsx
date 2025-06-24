@@ -327,12 +327,9 @@ const AdminUsers = () => {
       </Card>
 
       {selectedUser && (
-        <UserProfileDialog 
-          user={selectedUser}
-          isOpen={!!selectedUser}
-          onClose={() => setSelectedUser(null)}
-          currentUserId="admin-user-id"
-        />
+        <UserProfileDialog user={selectedUser}>
+          <div />
+        </UserProfileDialog>
       )}
 
       {roleChangeUser && (

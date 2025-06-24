@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Search, Users, MessageCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +20,7 @@ interface Connection {
 const ConnectionsPage = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedUser, setSelectedUser] = useState<Connection | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
   const [connections, setConnections] = useState<Connection[]>([
@@ -93,7 +92,7 @@ const ConnectionsPage = () => {
   };
 
   const handleViewProfile = (connection: Connection) => {
-    setSelectedUser(connection);
+    setSelectedUserId(connection.id);
     setProfileDialogOpen(true);
   };
 
@@ -231,16 +230,16 @@ const ConnectionsPage = () => {
         </TabsContent>
       </Tabs>
 
-      {selectedUser && (
+      {selectedUserId && (
         <UserProfileDialog
-          user={selectedUser}
+          userId={selectedUserId}
           isOpen={profileDialogOpen}
           onClose={() => {
             setProfileDialogOpen(false);
-            setSelectedUser(null);
+            setSelectedUserId(null);
           }}
           currentUserId="current-user-id"
-          hideConnectionRequest={true}
+          showConnectionButton={false}
         />
       )}
     </div>
