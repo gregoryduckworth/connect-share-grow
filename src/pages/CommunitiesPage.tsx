@@ -1,307 +1,316 @@
+
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Search, Users, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, MessageSquare, Plus, Search, ArrowUpDown } from "lucide-react";
-import { Link } from "react-router-dom";
 import CreateCommunityDialog from "@/components/community/CreateCommunityDialog";
+import { useToast } from "@/components/ui/use-toast";
+import { Link } from "react-router-dom";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface Community {
   id: string;
   name: string;
   description: string;
   memberCount: number;
-  postCount: number;
-  category: string;
   tags: string[];
   isJoined: boolean;
-  lastActivity: Date;
+  isModerator: boolean;
 }
 
 const CommunitiesPage = () => {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("members");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const communitiesPerPage = 6;
 
-  // Enhanced mock data with more communities
-  const [communities] = useState<Community[]>([
+  // Mock data - in a real app, this would come from an API
+  const [allCommunities, setAllCommunities] = useState<Community[]>([
     {
       id: "1",
       name: "Photography Enthusiasts",
       description: "A place for photographers to share their work and discuss techniques",
       memberCount: 1250,
-      postCount: 423,
-      category: "Art & Design",
       tags: ["Photography", "Art", "Camera"],
       isJoined: true,
-      lastActivity: new Date(2024, 5, 20)
+      isModerator: true
     },
     {
-      id: "2",
-      name: "Web Development",
-      description: "Discussion about modern web development practices and technologies",
-      memberCount: 2100,
-      postCount: 867,
-      category: "Technology",
-      tags: ["JavaScript", "React", "Node.js"],
+      id: "2", 
+      name: "Tech Innovators",
+      description: "Discussing the latest in technology and innovation",
+      memberCount: 890,
+      tags: ["Technology", "Innovation", "Startups"],
       isJoined: false,
-      lastActivity: new Date(2024, 5, 21)
+      isModerator: false
     },
     {
       id: "3",
-      name: "Book Club",
-      description: "Monthly book discussions and reading recommendations",
-      memberCount: 890,
-      postCount: 234,
-      category: "Literature",
-      tags: ["Books", "Reading", "Discussion"],
+      name: "Cooking Adventures",
+      description: "Share recipes, cooking tips, and culinary experiences",
+      memberCount: 2100,
+      tags: ["Cooking", "Recipes", "Food"],
       isJoined: true,
-      lastActivity: new Date(2024, 5, 19)
+      isModerator: false
     },
     {
       id: "4",
-      name: "Fitness & Health",
-      description: "Workout routines, nutrition tips, and health discussions",
-      memberCount: 1567,
-      postCount: 542,
-      category: "Health & Fitness",
-      tags: ["Fitness", "Health", "Nutrition"],
+      name: "Travel Stories",
+      description: "Share your travel experiences and get recommendations",
+      memberCount: 756,
+      tags: ["Travel", "Adventure", "Culture"],
       isJoined: false,
-      lastActivity: new Date(2024, 5, 22)
+      isModerator: false
     },
     {
       id: "5",
-      name: "Travel Adventures",
-      description: "Share your travel experiences and get recommendations for new destinations",
-      memberCount: 3200,
-      postCount: 1205,
-      category: "Travel",
-      tags: ["Travel", "Adventure", "Culture"],
+      name: "Fitness & Health",
+      description: "Tips, motivation, and discussions about fitness and health",
+      memberCount: 1543,
+      tags: ["Fitness", "Health", "Wellness"],
       isJoined: true,
-      lastActivity: new Date(2024, 5, 23)
+      isModerator: false
     },
     {
       id: "6",
-      name: "Gaming Central",
-      description: "Discuss the latest games, share reviews, and find gaming buddies",
-      memberCount: 4500,
-      postCount: 2100,
-      category: "Gaming",
-      tags: ["Gaming", "Reviews", "Multiplayer"],
+      name: "Book Club",
+      description: "Monthly book discussions and reading recommendations",
+      memberCount: 432,
+      tags: ["Books", "Reading", "Literature"],
       isJoined: false,
-      lastActivity: new Date(2024, 5, 24)
+      isModerator: false
     },
     {
       id: "7",
-      name: "Cooking & Recipes",
-      description: "Share recipes, cooking tips, and food photography",
-      memberCount: 2800,
-      postCount: 890,
-      category: "Food & Cooking",
-      tags: ["Cooking", "Recipes", "Food"],
-      isJoined: true,
-      lastActivity: new Date(2024, 5, 21)
+      name: "Gaming Hub",
+      description: "Discuss games, share gameplay, and find gaming partners",
+      memberCount: 2890,
+      tags: ["Gaming", "Entertainment", "Community"],
+      isJoined: false,
+      isModerator: false
     },
     {
       id: "8",
-      name: "Music Lovers",
-      description: "Discover new music, share your favorites, and discuss artists",
-      memberCount: 1900,
-      postCount: 670,
-      category: "Music",
-      tags: ["Music", "Artists", "Albums"],
+      name: "Art & Design",
+      description: "Showcase artwork and discuss design principles",
+      memberCount: 1120,
+      tags: ["Art", "Design", "Creative"],
       isJoined: false,
-      lastActivity: new Date(2024, 5, 20)
+      isModerator: false
     }
   ]);
 
-  const sortCommunities = (communities: Community[]) => {
-    return [...communities].sort((a, b) => {
-      let comparison = 0;
-      
-      switch (sortBy) {
-        case "members":
-          comparison = a.memberCount - b.memberCount;
-          break;
-        case "posts":
-          comparison = a.postCount - b.postCount;
-          break;
-        case "activity":
-          comparison = a.lastActivity.getTime() - b.lastActivity.getTime();
-          break;
-        case "name":
-          comparison = a.name.localeCompare(b.name);
-          break;
-        default:
-          comparison = 0;
-      }
-      
-      return sortOrder === "desc" ? -comparison : comparison;
+  const filteredCommunities = allCommunities.filter(community =>
+    community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    community.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const joinedCommunities = allCommunities.filter(community => community.isJoined);
+
+  const getCurrentPageCommunities = (communities: Community[]) => {
+    const startIndex = (currentPage - 1) * communitiesPerPage;
+    const endIndex = startIndex + communitiesPerPage;
+    return communities.slice(startIndex, endIndex);
+  };
+
+  const getTotalPages = (communities: Community[]) => {
+    return Math.ceil(communities.length / communitiesPerPage);
+  };
+
+  const handleJoinCommunity = (communityId: string) => {
+    setAllCommunities(communities =>
+      communities.map(community =>
+        community.id === communityId
+          ? { ...community, isJoined: !community.isJoined, memberCount: community.isJoined ? community.memberCount - 1 : community.memberCount + 1 }
+          : community
+      )
+    );
+
+    const community = allCommunities.find(c => c.id === communityId);
+    toast({
+      title: community?.isJoined ? "Left community" : "Joined community",
+      description: community?.isJoined ? `You have left ${community.name}` : `Welcome to ${community?.name}!`,
     });
   };
 
-  const filteredCommunities = sortCommunities(
-    communities.filter(community =>
-      community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      community.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-    )
-  );
-
-  const joinedCommunities = filteredCommunities.filter(c => c.isJoined);
-  const availableCommunities = filteredCommunities.filter(c => !c.isJoined);
-
-  const toggleSortOrder = () => {
-    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  const handleCreateCommunity = (communityData: any) => {
+    // In a real app, this would make an API call
+    console.log("Creating community:", communityData);
+    toast({
+      title: "Community created!",
+      description: "Your new community has been created successfully.",
+    });
+    setShowCreateDialog(false);
   };
 
   const CommunityCard = ({ community }: { community: Community }) => (
-    <Card className="hover:shadow-md transition-shadow w-full">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex-1">
-                <CardTitle className="text-lg">
-                  <Link 
-                    to={`/community/${community.id}`}
-                    className="hover:text-social-primary transition-colors"
-                  >
-                    {community.name}
-                  </Link>
-                </CardTitle>
-                <Badge variant="secondary" className="mt-1">
-                  {community.category}
-                </Badge>
-              </div>
-              <Button
-                size="sm"
-                variant={community.isJoined ? "outline" : "default"}
-                className="ml-4 shrink-0"
-              >
-                {community.isJoined ? "Joined" : "Join"}
-              </Button>
-            </div>
-            
-            <p className="text-sm text-social-muted mb-3 line-clamp-2">{community.description}</p>
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 text-sm text-social-muted">
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  <span>{community.memberCount.toLocaleString()}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <MessageSquare className="h-4 w-4" />
-                  <span>{community.postCount}</span>
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap gap-1 justify-end">
-                {community.tags.slice(0, 3).map((tag, index) => (
-                  <Badge key={index} variant="outline" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-                {community.tags.length > 3 && (
-                  <Badge variant="outline" className="text-xs">
-                    +{community.tags.length - 3}
-                  </Badge>
-                )}
-              </div>
-            </div>
+    <Card className="h-full">
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <CardTitle className="text-lg">
+              <Link to={`/community/${community.id}`} className="hover:text-social-primary transition-colors">
+                {community.name}
+              </Link>
+            </CardTitle>
+            <CardDescription className="mt-2">{community.description}</CardDescription>
           </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center text-sm text-social-muted mb-4">
+          <Users className="h-4 w-4 mr-1" />
+          {community.memberCount.toLocaleString()} members
+        </div>
+        
+        <div className="flex flex-wrap gap-2 mb-4">
+          {community.tags.map((tag, index) => (
+            <Badge key={index} variant="secondary" className="text-xs">
+              {tag}
+            </Badge>
+          ))}
+        </div>
+        
+        <div className="flex gap-2">
+          <Button
+            onClick={() => handleJoinCommunity(community.id)}
+            variant={community.isJoined ? "outline" : "default"}
+            className="flex-1"
+          >
+            {community.isJoined ? "Leave" : "Join"}
+          </Button>
+          
+          {community.isModerator && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              asChild
+            >
+              <Link to="/moderate">Moderate</Link>
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
   );
 
   return (
-    <div className="min-h-full p-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-        <h1 className="text-3xl font-bold text-social-primary">Communities</h1>
-        <CreateCommunityDialog 
-          trigger={
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Create Community
-            </Button>
-          }
+    <div className="container mx-auto px-4 py-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-social-primary mb-2">Communities</h1>
+          <p className="text-social-muted">Discover and join communities that match your interests</p>
+        </div>
+        <Button onClick={() => setShowCreateDialog(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Community
+        </Button>
+      </div>
+
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-social-muted h-4 w-4" />
+        <Input
+          placeholder="Search communities..."
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setCurrentPage(1); // Reset to first page when searching
+          }}
+          className="pl-10"
         />
       </div>
 
-      <div className="mb-6 space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search communities..."
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Sort by:</span>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="members">Members</SelectItem>
-                <SelectItem value="posts">Posts</SelectItem>
-                <SelectItem value="activity">Activity</SelectItem>
-                <SelectItem value="name">Name</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleSortOrder}
-              className="flex items-center gap-1"
-            >
-              <ArrowUpDown className="h-4 w-4" />
-              {sortOrder === "desc" ? "High to Low" : "Low to High"}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <Tabs defaultValue="all" className="space-y-6">
-        <TabsList>
+      <Tabs defaultValue="all" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="all">All Communities</TabsTrigger>
-          <TabsTrigger value="joined">My Communities ({joinedCommunities.length})</TabsTrigger>
-          <TabsTrigger value="discover">Discover</TabsTrigger>
+          <TabsTrigger value="joined">My Communities</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="all" className="space-y-4">
-          <div className="space-y-4">
-            {filteredCommunities.map((community) => (
+        
+        <TabsContent value="all" className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            {getCurrentPageCommunities(filteredCommunities).map((community) => (
               <CommunityCard key={community.id} community={community} />
             ))}
           </div>
-        </TabsContent>
+          
+          {filteredCommunities.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-social-muted">No communities found matching your search.</p>
+            </div>
+          )}
 
-        <TabsContent value="joined" className="space-y-4">
-          <div className="space-y-4">
+          {filteredCommunities.length > communitiesPerPage && (
+            <div className="flex justify-center">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                  
+                  {Array.from({ length: getTotalPages(filteredCommunities) }, (_, i) => i + 1).map((page) => (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(page)}
+                        isActive={currentPage === page}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => setCurrentPage(Math.min(getTotalPages(filteredCommunities), currentPage + 1))}
+                      className={currentPage === getTotalPages(filteredCommunities) ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="joined" className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {joinedCommunities.map((community) => (
               <CommunityCard key={community.id} community={community} />
             ))}
           </div>
-        </TabsContent>
-
-        <TabsContent value="discover" className="space-y-4">
-          <div className="space-y-4">
-            {availableCommunities.map((community) => (
-              <CommunityCard key={community.id} community={community} />
-            ))}
-          </div>
+          
+          {joinedCommunities.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-social-muted">You haven't joined any communities yet.</p>
+              <Button className="mt-4" onClick={() => setShowCreateDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Your First Community
+              </Button>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
+
+      <CreateCommunityDialog
+        isOpen={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+        onSubmit={handleCreateCommunity}
+      />
     </div>
   );
 };

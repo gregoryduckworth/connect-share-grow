@@ -1,223 +1,349 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Search, MoreHorizontal, Shield, Ban, Eye, UserX } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { Shield, User, Search, Ban, UserCheck } from "lucide-react";
-import { logAdminAction } from "@/lib/admin-logger";
+import UserProfileDialog from "./UserProfileDialog";
+import RoleChangeDialog from "./RoleChangeDialog";
+import AdminTablePagination from "./AdminTablePagination";
 
-interface AppUser {
+interface User {
   id: string;
   name: string;
   email: string;
+  role: 'user' | 'moderator' | 'admin';
+  status: 'active' | 'suspended' | 'banned';
   joinDate: Date;
-  role: "user" | "moderator" | "admin";
-  status: "active" | "suspended" | "banned";
+  lastActive: Date;
+  postCount: number;
+  reportCount: number;
+  suspensionDetails?: {
+    reason: string;
+    adminName: string;
+    suspendedAt: Date;
+    expiresAt?: Date;
+  };
 }
 
 const AdminUsers = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState<AppUser[]>([
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [roleChangeUser, setRoleChangeUser] = useState<User | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+
+  // Mock data - in a real app, this would come from an API
+  const [users, setUsers] = useState<User[]>([
     {
-      id: "user-1",
+      id: "1",
       name: "John Doe",
       email: "john.doe@example.com",
-      joinDate: new Date(2023, 0, 15),
-      role: "admin",
-      status: "active"
+      role: "user",
+      status: "active",
+      joinDate: new Date(2024, 0, 15),
+      lastActive: new Date(2024, 5, 20),
+      postCount: 45,
+      reportCount: 0
     },
     {
-      id: "user-2",
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      joinDate: new Date(2023, 1, 3),
+      id: "2",
+      name: "Sarah Johnson",
+      email: "sarah.johnson@example.com",
       role: "moderator",
-      status: "active"
+      status: "active",
+      joinDate: new Date(2023, 11, 3),
+      lastActive: new Date(2024, 5, 21),
+      postCount: 127,
+      reportCount: 0
     },
     {
-      id: "user-3",
-      name: "Robert Johnson",
-      email: "robert.j@example.com",
-      joinDate: new Date(2023, 2, 20),
+      id: "3",
+      name: "Mike Wilson",
+      email: "mike.wilson@example.com",
       role: "user",
-      status: "active"
+      status: "suspended",
+      joinDate: new Date(2024, 2, 10),
+      lastActive: new Date(2024, 5, 18),
+      postCount: 23,
+      reportCount: 3,
+      suspensionDetails: {
+        reason: "Harassment and inappropriate behavior towards other community members",
+        adminName: "Admin Smith",
+        suspendedAt: new Date(2024, 5, 18),
+        expiresAt: new Date(2024, 6, 18)
+      }
     },
     {
-      id: "user-4",
-      name: "Lisa Brown",
-      email: "lisa.b@example.com",
-      joinDate: new Date(2023, 3, 5),
+      id: "4",
+      name: "Emily Chen",
+      email: "emily.chen@example.com",
       role: "user",
-      status: "suspended"
+      status: "active",
+      joinDate: new Date(2024, 1, 22),
+      lastActive: new Date(2024, 5, 19),
+      postCount: 67,
+      reportCount: 1
     },
     {
-      id: "user-5",
-      name: "Michael Wilson",
-      email: "michael.w@example.com",
-      joinDate: new Date(2023, 4, 12),
-      role: "user",
-      status: "active"
-    },
+      id: "5",
+      name: "David Rodriguez",
+      email: "david.rodriguez@example.com",
+      role: "admin",
+      status: "active",
+      joinDate: new Date(2023, 8, 5),
+      lastActive: new Date(2024, 5, 21),
+      postCount: 89,
+      reportCount: 0
+    }
   ]);
 
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleToggleRole = (id: string) => {
-    const user = users.find(u => u.id === id);
-    if (user) {
-      const newRole = user.role === "user" ? "moderator" : "user";
-      
-      setUsers(users.map(u => 
-        u.id === id ? { ...u, role: newRole as "user" | "moderator" | "admin" } : u
-      ));
-      
-      toast({
-        title: `Role Updated`,
-        description: `${user.name} is now a ${newRole}.`,
-      });
-      
-      logAdminAction({
-        action: "role_updated",
-        details: `Changed ${user.name}'s role from ${user.role} to ${newRole}`,
-        targetId: user.id,
-        targetType: "user"
-      });
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = filteredUsers.slice(startIndex, endIndex);
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'admin': return 'bg-red-100 text-red-800';
+      case 'moderator': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const handleToggleStatus = (id: string) => {
-    const user = users.find(u => u.id === id);
-    if (user) {
-      const newStatus = user.status === "active" ? "suspended" : "active";
-      
-      setUsers(users.map(u => 
-        u.id === id ? { ...u, status: newStatus as "active" | "suspended" | "banned" } : u
-      ));
-      
-      toast({
-        title: `Account ${newStatus === 'active' ? 'Activated' : 'Suspended'}`,
-        description: `${user.name}'s account has been ${newStatus === 'active' ? 'activated' : 'suspended'}.`,
-        variant: newStatus === 'active' ? 'default' : 'destructive',
-      });
-      
-      logAdminAction({
-        action: newStatus === 'active' ? "user_activated" : "user_suspended",
-        details: `${newStatus === 'active' ? 'Activated' : 'Suspended'} ${user.name}'s account`,
-        targetId: user.id,
-        targetType: "user"
-      });
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'suspended': return 'bg-yellow-100 text-yellow-800';
+      case 'banned': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleSuspendUser = (userId: string) => {
+    setUsers(users.map(user =>
+      user.id === userId
+        ? {
+            ...user,
+            status: 'suspended' as const,
+            suspensionDetails: {
+              reason: "Violation of community guidelines",
+              adminName: "Current Admin",
+              suspendedAt: new Date(),
+              expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+            }
+          }
+        : user
+    ));
+
+    const user = users.find(u => u.id === userId);
+    toast({
+      title: "User suspended",
+      description: `${user?.name} has been suspended for 30 days`,
+    });
+  };
+
+  const handleUnsuspendUser = (userId: string) => {
+    setUsers(users.map(user =>
+      user.id === userId
+        ? { ...user, status: 'active' as const, suspensionDetails: undefined }
+        : user
+    ));
+
+    const user = users.find(u => u.id === userId);
+    toast({
+      title: "User unsuspended",
+      description: `${user?.name} has been unsuspended`,
+    });
+  };
+
+  const handleBanUser = (userId: string) => {
+    setUsers(users.map(user =>
+      user.id === userId ? { ...user, status: 'banned' as const } : user
+    ));
+
+    const user = users.find(u => u.id === userId);
+    toast({
+      title: "User banned",
+      description: `${user?.name} has been permanently banned`,
+    });
+  };
+
+  const handleRoleChange = (userId: string, newRole: 'user' | 'moderator' | 'admin') => {
+    setUsers(users.map(user =>
+      user.id === userId ? { ...user, role: newRole } : user
+    ));
+
+    const user = users.find(u => u.id === userId);
+    toast({
+      title: "Role updated",
+      description: `${user?.name} is now a ${newRole}`,
+    });
+    setRoleChangeUser(null);
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h2 className="text-2xl font-semibold">Manage Users</h2>
-        <div className="relative w-full md:w-64">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search users..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
-      
       <Card>
-        <CardHeader className="bg-muted/50">
-          <CardTitle>Users</CardTitle>
+        <CardHeader>
+          <CardTitle>User Management</CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-4">Name</th>
-                  <th className="text-left p-4 hidden md:table-cell">Email</th>
-                  <th className="text-left p-4 hidden md:table-cell">Join Date</th>
-                  <th className="text-left p-4">Role</th>
-                  <th className="text-left p-4">Status</th>
-                  <th className="text-right p-4">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user) => (
-                  <tr key={user.id} className="border-b hover:bg-muted/20">
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-social-primary flex items-center justify-center text-white">
-                          <User size={16} />
-                        </div>
-                        <span>{user.name}</span>
+        <CardContent>
+          <div className="mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search users..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>User</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Join Date</TableHead>
+                  <TableHead>Posts</TableHead>
+                  <TableHead>Reports</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {currentUsers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{user.name}</div>
+                        <div className="text-sm text-gray-500">{user.email}</div>
+                        {user.suspensionDetails && (
+                          <div className="text-xs text-orange-600 mt-1">
+                            Suspended by {user.suspensionDetails.adminName}: {user.suspensionDetails.reason}
+                            {user.suspensionDetails.expiresAt && (
+                              <div>Expires: {user.suspensionDetails.expiresAt.toLocaleDateString()}</div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </td>
-                    <td className="p-4 hidden md:table-cell">{user.email}</td>
-                    <td className="p-4 hidden md:table-cell">{user.joinDate.toLocaleDateString()}</td>
-                    <td className="p-4">
-                      <Badge className={
-                        user.role === "admin" ? "bg-social-primary" : 
-                        user.role === "moderator" ? "bg-social-secondary" : 
-                        "bg-muted"
-                      }>
-                        {user.role === "admin" && <Shield className="h-3 w-3 mr-1" />}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getRoleColor(user.role)}>
                         {user.role}
                       </Badge>
-                    </td>
-                    <td className="p-4">
-                      <Badge className={
-                        user.status === "active" ? "bg-green-500" :
-                        user.status === "suspended" ? "bg-orange-500" :
-                        "bg-red-500"
-                      }>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(user.status)}>
                         {user.status}
                       </Badge>
-                    </td>
-                    <td className="p-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        {user.role !== "admin" && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleToggleRole(user.id)}
-                            className="text-xs"
-                          >
-                            {user.role === "user" ? "Make Moderator" : "Remove Mod"}
+                    </TableCell>
+                    <TableCell>{user.joinDate.toLocaleDateString()}</TableCell>
+                    <TableCell>{user.postCount}</TableCell>
+                    <TableCell>
+                      <span className={user.reportCount > 0 ? 'text-red-600 font-semibold' : ''}>
+                        {user.reportCount}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
                           </Button>
-                        )}
-                        <Button 
-                          variant={user.status === "active" ? "destructive" : "default"}
-                          size="sm"
-                          onClick={() => handleToggleStatus(user.id)}
-                          className="text-xs"
-                        >
-                          {user.status === "active" ? (
-                            <><Ban className="h-3 w-3 mr-1" /> Suspend</>
-                          ) : (
-                            <><UserCheck className="h-3 w-3 mr-1" /> Activate</>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setSelectedUserId(user.id)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Profile
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setRoleChangeUser(user)}>
+                            <Shield className="h-4 w-4 mr-2" />
+                            Change Role
+                          </DropdownMenuItem>
+                          {user.status === 'active' && (
+                            <DropdownMenuItem onClick={() => handleSuspendUser(user.id)}>
+                              <UserX className="h-4 w-4 mr-2" />
+                              Suspend
+                            </DropdownMenuItem>
                           )}
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
+                          {user.status === 'suspended' && (
+                            <DropdownMenuItem onClick={() => handleUnsuspendUser(user.id)}>
+                              <Shield className="h-4 w-4 mr-2" />
+                              Unsuspend
+                            </DropdownMenuItem>
+                          )}
+                          {user.status !== 'banned' && (
+                            <DropdownMenuItem 
+                              onClick={() => handleBanUser(user.id)}
+                              className="text-red-600"
+                            >
+                              <Ban className="h-4 w-4 mr-2" />
+                              Ban
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
-          
-          {filteredUsers.length === 0 && (
-            <div className="text-center p-8">
-              <p className="text-social-muted">No users found matching your search.</p>
-            </div>
-          )}
+
+          <AdminTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            itemsPerPage={itemsPerPage}
+            totalItems={filteredUsers.length}
+          />
         </CardContent>
       </Card>
+
+      {/* User Profile Dialog */}
+      {selectedUserId && (
+        <UserProfileDialog
+          userId={selectedUserId}
+          isOpen={!!selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+        />
+      )}
+
+      {/* Role Change Dialog */}
+      {roleChangeUser && (
+        <RoleChangeDialog
+          user={roleChangeUser}
+          isOpen={!!roleChangeUser}
+          onClose={() => setRoleChangeUser(null)}
+          onRoleChange={handleRoleChange}
+        />
+      )}
     </div>
   );
 };

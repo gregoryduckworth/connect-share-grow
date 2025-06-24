@@ -1,242 +1,298 @@
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { Search, Users, UserCheck, UserPlus, X, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/components/ui/use-toast";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Check, X, MessageCircle, User } from "lucide-react";
-import { api } from "@/lib/api";
-import { Connection } from "@/lib/types";
-import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
+
+interface Connection {
+  id: string;
+  name: string;
+  email: string;
+  mutualConnections: number;
+  status: 'connected' | 'pending' | 'suggested';
+  connectionDate?: Date;
+}
 
 const ConnectionsPage = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const [connections, setConnections] = useState<Connection[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const connectionsData = await api.getConnections("user-1"); // Current user ID
-        setConnections(connectionsData);
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const handleRespondToConnection = async (connectionId: string, response: "accepted" | "declined") => {
-    try {
-      await api.respondToConnection(connectionId, response);
-      setConnections(connections.map(c => 
-        c.id === connectionId 
-          ? { ...c, status: response, respondedAt: new Date() }
-          : c
-      ));
-
-      toast({
-        title: response === "accepted" ? "Connection Accepted" : "Connection Declined",
-        description: `You have ${response} the connection request.`,
-      });
-    } catch (error) {
-      console.error("Failed to respond to connection:", error);
-      toast({
-        title: "Error",
-        description: "Failed to respond to connection request.",
-        variant: "destructive"
-      });
+  const [connections, setConnections] = useState<Connection[]>([
+    {
+      id: "1",
+      name: "Sarah Johnson",
+      email: "sarah.johnson@example.com",
+      mutualConnections: 12,
+      status: 'connected',
+      connectionDate: new Date(2024, 3, 15)
+    },
+    {
+      id: "2",
+      name: "Mike Chen",
+      email: "mike.chen@example.com", 
+      mutualConnections: 8,
+      status: 'connected',
+      connectionDate: new Date(2024, 4, 2)
+    },
+    {
+      id: "3",
+      name: "Emily Rodriguez",
+      email: "emily.rodriguez@example.com",
+      mutualConnections: 5,
+      status: 'pending'
+    },
+    {
+      id: "4",
+      name: "David Kim",
+      email: "david.kim@example.com",
+      mutualConnections: 15,
+      status: 'suggested'
+    },
+    {
+      id: "5",
+      name: "Lisa Thompson",
+      email: "lisa.thompson@example.com",
+      mutualConnections: 3,
+      status: 'pending'
+    },
+    {
+      id: "6",
+      name: "Alex Rivera",
+      email: "alex.rivera@example.com",
+      mutualConnections: 7,
+      status: 'suggested'
     }
+  ]);
+
+  const filteredConnections = connections.filter(connection =>
+    connection.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    connection.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const connectedUsers = filteredConnections.filter(c => c.status === 'connected');
+  const pendingRequests = filteredConnections.filter(c => c.status === 'pending');
+  const suggestedConnections = filteredConnections.filter(c => c.status === 'suggested');
+
+  const handleAcceptConnection = (connectionId: string) => {
+    setConnections(connections.map(conn => 
+      conn.id === connectionId 
+        ? { ...conn, status: 'connected' as const, connectionDate: new Date() }
+        : conn
+    ));
+    
+    const connection = connections.find(c => c.id === connectionId);
+    toast({
+      title: "Connection accepted",
+      description: `You are now connected with ${connection?.name}`,
+    });
   };
 
-  const handleStartChat = (connectionId: string) => {
-    navigate(`/chat?connection=${connectionId}`);
+  const handleDeclineConnection = (connectionId: string) => {
+    setConnections(connections.filter(conn => conn.id !== connectionId));
+    
+    const connection = connections.find(c => c.id === connectionId);
+    toast({
+      title: "Connection declined",
+      description: `Connection request from ${connection?.name} declined`,
+    });
   };
 
-  const handleViewProfile = (userId: string) => {
-    setSelectedUserId(userId);
+  const handleSendConnectionRequest = (connectionId: string) => {
+    setConnections(connections.map(conn => 
+      conn.id === connectionId 
+        ? { ...conn, status: 'pending' as const }
+        : conn
+    ));
+    
+    const connection = connections.find(c => c.id === connectionId);
+    toast({
+      title: "Connection request sent",
+      description: `Connection request sent to ${connection?.name}`,
+    });
   };
 
-  const pendingRequests = connections.filter(c => c.status === "pending");
-  const acceptedConnections = connections.filter(c => c.status === "accepted");
-  const sentRequests = connections.filter(c => c.fromUserId === "user-1" && c.status === "pending");
-  const receivedRequests = connections.filter(c => c.toUserId === "user-1" && c.status === "pending");
+  const handleRemoveConnection = (connectionId: string) => {
+    setConnections(connections.filter(conn => conn.id !== connectionId));
+    
+    const connection = connections.find(c => c.id === connectionId);
+    toast({
+      title: "Connection removed",
+      description: `You are no longer connected with ${connection?.name}`,
+    });
+  };
 
-  if (loading) {
-    return <div className="container mx-auto px-4 py-6">Loading connections...</div>;
-  }
+  const ConnectionCard = ({ connection, showActions = true }: { connection: Connection; showActions?: boolean }) => (
+    <Card>
+      <CardContent className="pt-6">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-12 w-12">
+            <AvatarFallback>
+              {connection.name.split(' ').map(n => n[0]).join('')}
+            </AvatarFallback>
+          </Avatar>
+          
+          <div className="flex-1">
+            <h3 className="font-semibold">
+              <button 
+                className="hover:text-social-primary transition-colors cursor-pointer"
+                onClick={() => setSelectedUserId(connection.id)}
+              >
+                {connection.name}
+              </button>
+            </h3>
+            <p className="text-sm text-social-muted">{connection.email}</p>
+            <p className="text-xs text-social-muted mt-1">
+              {connection.mutualConnections} mutual connections
+            </p>
+            {connection.connectionDate && (
+              <p className="text-xs text-social-muted">
+                Connected on {connection.connectionDate.toLocaleDateString()}
+              </p>
+            )}
+          </div>
+          
+          {showActions && (
+            <div className="flex gap-2">
+              {connection.status === 'connected' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRemoveConnection(connection.id)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+              
+              {connection.status === 'pending' && (
+                <>
+                  <Button
+                    size="sm"
+                    onClick={() => handleAcceptConnection(connection.id)}
+                  >
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeclineConnection(connection.id)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedUserId(connection.id)}
+                  >
+                    View Profile
+                  </Button>
+                </>
+              )}
+              
+              {connection.status === 'suggested' && (
+                <Button
+                  size="sm"
+                  onClick={() => handleSendConnectionRequest(connection.id)}
+                >
+                  <UserPlus className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-social-primary mb-2">My Connections</h1>
-        <p className="text-social-muted">Manage your connections and chat with accepted contacts</p>
+        <h1 className="text-3xl font-bold text-social-primary mb-2">Connections</h1>
+        <p className="text-social-muted">Manage your network and discover new connections</p>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="accepted" className="w-full">
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-social-muted h-4 w-4" />
+        <Input
+          placeholder="Search connections..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
+      <Tabs defaultValue="connected" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="accepted">
-            Connections ({acceptedConnections.length})
+          <TabsTrigger value="connected" className="flex items-center gap-2">
+            <UserCheck className="h-4 w-4" />
+            Connected ({connectedUsers.length})
           </TabsTrigger>
-          <TabsTrigger value="pending">
-            Pending ({receivedRequests.length})
+          <TabsTrigger value="pending" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Requests ({pendingRequests.length})
           </TabsTrigger>
-          <TabsTrigger value="sent">
-            Sent ({sentRequests.length})
+          <TabsTrigger value="suggested" className="flex items-center gap-2">
+            <UserPlus className="h-4 w-4" />
+            Suggested ({suggestedConnections.length})
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="accepted" className="space-y-4">
-          {acceptedConnections.length === 0 ? (
-            <Card>
-              <CardContent className="text-left p-6">
-                <div className="flex items-center gap-3 text-gray-500">
-                  <Users className="h-8 w-8" />
-                  <p>No accepted connections yet.</p>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            acceptedConnections.map((connection) => (
-              <Card key={connection.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-left">
-                      <button
-                        onClick={() => handleViewProfile(connection.fromUserId === "user-1" ? connection.toUserId : connection.fromUserId)}
-                        className="font-semibold text-social-primary hover:underline"
-                      >
-                        {connection.fromUserId === "user-1" ? connection.toUserName : connection.fromUserName}
-                      </button>
-                      <p className="text-sm text-gray-600 mb-2">{connection.message}</p>
-                      <p className="text-xs text-gray-400">
-                        Connected on {connection.respondedAt?.toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Button 
-                      onClick={() => handleStartChat(connection.id)}
-                      className="flex items-center gap-2"
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      Chat
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+        
+        <TabsContent value="connected" className="mt-6">
+          <div className="space-y-4">
+            {connectedUsers.map((connection) => (
+              <ConnectionCard key={connection.id} connection={connection} />
+            ))}
+            
+            {connectedUsers.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-social-muted">No connections found.</p>
+              </div>
+            )}
+          </div>
         </TabsContent>
-
-        <TabsContent value="pending" className="space-y-4">
-          {receivedRequests.length === 0 ? (
-            <Card>
-              <CardContent className="text-left p-6">
-                <div className="flex items-center gap-3 text-gray-500">
-                  <Users className="h-8 w-8" />
-                  <p>No pending connection requests.</p>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            receivedRequests.map((connection) => (
-              <Card key={connection.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-left">
-                      <button
-                        onClick={() => handleViewProfile(connection.fromUserId)}
-                        className="font-semibold text-social-primary hover:underline"
-                      >
-                        {connection.fromUserName}
-                      </button>
-                      <p className="text-sm text-gray-600 mb-2">{connection.message}</p>
-                      <p className="text-xs text-gray-400">
-                        Requested on {connection.requestedAt.toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm"
-                        onClick={() => handleRespondToConnection(connection.id, "accepted")}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        <Check className="h-4 w-4 mr-1" />
-                        Accept
-                      </Button>
-                      <Button 
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleRespondToConnection(connection.id, "declined")}
-                      >
-                        <X className="h-4 w-4 mr-1" />
-                        Decline
-                      </Button>
-                      <Button 
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleViewProfile(connection.fromUserId)}
-                      >
-                        <User className="h-4 w-4 mr-1" />
-                        Profile
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+        
+        <TabsContent value="pending" className="mt-6">
+          <div className="space-y-4">
+            {pendingRequests.map((connection) => (
+              <ConnectionCard key={connection.id} connection={connection} />
+            ))}
+            
+            {pendingRequests.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-social-muted">No pending connection requests.</p>
+              </div>
+            )}
+          </div>
         </TabsContent>
-
-        <TabsContent value="sent" className="space-y-4">
-          {sentRequests.length === 0 ? (
-            <Card>
-              <CardContent className="text-left p-6">
-                <div className="flex items-center gap-3 text-gray-500">
-                  <Users className="h-8 w-8" />
-                  <p>No sent connection requests.</p>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            sentRequests.map((connection) => (
-              <Card key={connection.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-left">
-                      <button
-                        onClick={() => handleViewProfile(connection.toUserId)}
-                        className="font-semibold text-social-primary hover:underline"
-                      >
-                        {connection.toUserName}
-                      </button>
-                      <p className="text-sm text-gray-600 mb-2">{connection.message}</p>
-                      <p className="text-xs text-gray-400">
-                        Sent on {connection.requestedAt.toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Badge variant="secondary">Pending</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+        
+        <TabsContent value="suggested" className="mt-6">
+          <div className="space-y-4">
+            {suggestedConnections.map((connection) => (
+              <ConnectionCard key={connection.id} connection={connection} />
+            ))}
+            
+            {suggestedConnections.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-social-muted">No suggested connections at the moment.</p>
+              </div>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
 
+      {/* User Profile Dialog */}
       {selectedUserId && (
         <UserProfileDialog
           userId={selectedUserId}
           isOpen={!!selectedUserId}
           onClose={() => setSelectedUserId(null)}
-          currentUserId="user-1"
+          currentUserId="current-user-id"
+          showConnectionButton={false}
         />
       )}
     </div>

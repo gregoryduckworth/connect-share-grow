@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,10 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Bell, Shield, Palette } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { t, setLanguage, getSupportedLanguages } from "@/lib/i18n";
+import { t, getSupportedLanguages } from "@/lib/i18n";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const SettingsPage = () => {
   const { toast } = useToast();
+  const { theme, language, setTheme, updateLanguage } = useTheme();
   const [profile, setProfile] = useState({
     displayName: "John Doe",
     email: "john.doe@example.com",
@@ -29,17 +31,20 @@ const SettingsPage = () => {
   });
 
   const [privacy, setPrivacy] = useState({
-    profileVisibility: "public",
-    showEmail: false,
     showLocation: true,
     allowDirectMessages: true
   });
 
-  const [appearance, setAppearance] = useState({
-    theme: "system",
-    compactMode: false,
-    language: "en"
-  });
+  // Force re-render when language changes
+  const [, forceUpdate] = useState({});
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      forceUpdate({});
+    };
+    
+    window.addEventListener('languageChange', handleLanguageChange);
+    return () => window.removeEventListener('languageChange', handleLanguageChange);
+  }, []);
 
   const handleSaveProfile = () => {
     toast({
@@ -63,23 +68,6 @@ const SettingsPage = () => {
   };
 
   const handleSaveAppearance = () => {
-    // Apply theme changes
-    const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
-    
-    if (appearance.theme === "light") {
-      root.classList.add("light");
-    } else if (appearance.theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      // System theme
-      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        root.classList.add("dark");
-      } else {
-        root.classList.add("light");
-      }
-    }
-
     toast({
       title: "Appearance settings updated",
       description: "Your appearance preferences have been saved."
@@ -87,8 +75,7 @@ const SettingsPage = () => {
   };
 
   const handleLanguageChange = (newLanguage: string) => {
-    setAppearance(prev => ({ ...prev, language: newLanguage }));
-    setLanguage(newLanguage);
+    updateLanguage(newLanguage);
     toast({
       title: t('settings.language') + " updated",
       description: "Language has been changed successfully."
@@ -240,35 +227,6 @@ const SettingsPage = () => {
               <CardDescription>Control who can see your information and contact you</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 text-left">
-              <div className="space-y-2">
-                <Label htmlFor="profileVisibility">Profile Visibility</Label>
-                <Select
-                  value={privacy.profileVisibility}
-                  onValueChange={(value) => setPrivacy(prev => ({ ...prev, profileVisibility: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="public">Public</SelectItem>
-                    <SelectItem value="connections">Connections Only</SelectItem>
-                    <SelectItem value="private">Private</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="showEmail" className="text-base font-medium">Show Email Address</Label>
-                  <p className="text-sm text-muted-foreground">Allow others to see your email</p>
-                </div>
-                <Switch
-                  id="showEmail"
-                  checked={privacy.showEmail}
-                  onCheckedChange={(checked) => setPrivacy(prev => ({ ...prev, showEmail: checked }))}
-                />
-              </div>
-              
               <div className="flex items-center justify-between">
                 <div>
                   <Label htmlFor="showLocation" className="text-base font-medium">Show Location</Label>
@@ -308,8 +266,8 @@ const SettingsPage = () => {
               <div className="space-y-2">
                 <Label htmlFor="theme">Theme</Label>
                 <Select
-                  value={appearance.theme}
-                  onValueChange={(value) => setAppearance(prev => ({ ...prev, theme: value }))}
+                  value={theme}
+                  onValueChange={setTheme}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -325,7 +283,7 @@ const SettingsPage = () => {
               <div className="space-y-2">
                 <Label htmlFor="language">{t('settings.language')}</Label>
                 <Select
-                  value={appearance.language}
+                  value={language}
                   onValueChange={handleLanguageChange}
                 >
                   <SelectTrigger>
@@ -339,18 +297,6 @@ const SettingsPage = () => {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="compactMode" className="text-base font-medium">Compact Mode</Label>
-                  <p className="text-sm text-muted-foreground">Use a more compact interface layout</p>
-                </div>
-                <Switch
-                  id="compactMode"
-                  checked={appearance.compactMode}
-                  onCheckedChange={(checked) => setAppearance(prev => ({ ...prev, compactMode: checked }))}
-                />
               </div>
               
               <Button onClick={handleSaveAppearance}>{t('settings.save')} Appearance Settings</Button>
