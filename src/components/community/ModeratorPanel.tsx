@@ -1,23 +1,44 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CheckCircle2, Ban, MessageSquare, Shield, Users, Unlock } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Ban,
+  MessageSquare,
+  Shield,
+  Users,
+  Unlock,
+} from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Avatar } from "@/components/ui/avatar";
 
 export interface Report {
   id: string;
-  contentType: 'post' | 'reply';
+  contentType: "post" | "reply";
   contentId: string;
   contentTitle?: string;
   contentPreview: string;
   reportedBy: string;
   reason: string;
   createdAt: Date;
-  status: 'pending' | 'reviewed';
+  status: "pending" | "reviewed";
 }
 
 interface CommunityMember {
@@ -32,7 +53,12 @@ interface ModeratorPanelProps {
   communityId: string;
   reports: Report[];
   members?: CommunityMember[];
-  posts?: Array<{ id: string; title: string; isLocked: boolean; areCommentsLocked: boolean }>;
+  posts?: Array<{
+    id: string;
+    title: string;
+    isLocked: boolean;
+    areCommentsLocked: boolean;
+  }>;
   onResolveReport: (reportId: string) => void;
   onLockPost: (postId: string) => void;
   onLockComments: (postId: string) => void;
@@ -42,8 +68,8 @@ interface ModeratorPanelProps {
   onUnbanUser?: (userId: string) => void;
 }
 
-const ModeratorPanel = ({ 
-  communityId, 
+const ModeratorPanel = ({
+  communityId,
   reports = [],
   members = [],
   posts = [],
@@ -53,26 +79,55 @@ const ModeratorPanel = ({
   onUnlockPost,
   onUnlockComments,
   onBanUser,
-  onUnbanUser
+  onUnbanUser,
 }: ModeratorPanelProps) => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("reports");
-  
-  const pendingReports = reports.filter(report => report.status === 'pending');
-  const resolvedReports = reports.filter(report => report.status === 'reviewed');
-  const lockedPosts = posts.filter(post => post.isLocked || post.areCommentsLocked);
+
+  const pendingReports = reports.filter(
+    (report) => report.status === "pending"
+  );
+  const resolvedReports = reports.filter(
+    (report) => report.status === "reviewed"
+  );
+  const lockedPosts = posts.filter(
+    (post) => post.isLocked || post.areCommentsLocked
+  );
 
   // Mock data for members if not provided
-  const displayMembers = members.length > 0 ? members : [
-    { id: "user-1", name: "John Doe", joinDate: new Date(2023, 1, 15), isBanned: false },
-    { id: "user-2", name: "Jane Smith", joinDate: new Date(2023, 2, 5), isBanned: true },
-    { id: "user-3", name: "Robert Johnson", joinDate: new Date(2023, 3, 20), isBanned: false },
-    { id: "user-4", name: "Lisa Brown", joinDate: new Date(2023, 4, 12), isBanned: false },
-  ];
+  const displayMembers =
+    members.length > 0
+      ? members
+      : [
+          {
+            id: "user-1",
+            name: "John Doe",
+            joinDate: new Date(2023, 1, 15),
+            isBanned: false,
+          },
+          {
+            id: "user-2",
+            name: "Jane Smith",
+            joinDate: new Date(2023, 2, 5),
+            isBanned: true,
+          },
+          {
+            id: "user-3",
+            name: "Robert Johnson",
+            joinDate: new Date(2023, 3, 20),
+            isBanned: false,
+          },
+          {
+            id: "user-4",
+            name: "Lisa Brown",
+            joinDate: new Date(2023, 4, 12),
+            isBanned: false,
+          },
+        ];
 
   const handleResolveReport = (reportId: string) => {
     onResolveReport(reportId);
-    
+
     toast({
       title: "Report resolved",
       description: "The report has been marked as reviewed.",
@@ -81,7 +136,7 @@ const ModeratorPanel = ({
 
   const handleLockPost = (postId: string) => {
     onLockPost(postId);
-    
+
     toast({
       title: "Post locked",
       description: "The post has been locked successfully.",
@@ -90,7 +145,7 @@ const ModeratorPanel = ({
 
   const handleLockComments = (postId: string) => {
     onLockComments(postId);
-    
+
     toast({
       title: "Comments locked",
       description: "Comments for this post have been locked successfully.",
@@ -100,7 +155,7 @@ const ModeratorPanel = ({
   const handleUnlockPost = (postId: string) => {
     if (onUnlockPost) {
       onUnlockPost(postId);
-      
+
       toast({
         title: "Post unlocked",
         description: "The post has been unlocked successfully.",
@@ -111,7 +166,7 @@ const ModeratorPanel = ({
   const handleUnlockComments = (postId: string) => {
     if (onUnlockComments) {
       onUnlockComments(postId);
-      
+
       toast({
         title: "Comments unlocked",
         description: "Comments for this post have been unlocked successfully.",
@@ -122,11 +177,10 @@ const ModeratorPanel = ({
   const handleBanUser = (userId: string) => {
     if (onBanUser) {
       onBanUser(userId);
-      
+
       toast({
         title: "User banned",
         description: "The user has been banned from this community.",
-        variant: "destructive"
       });
     }
   };
@@ -134,7 +188,7 @@ const ModeratorPanel = ({
   const handleUnbanUser = (userId: string) => {
     if (onUnbanUser) {
       onUnbanUser(userId);
-      
+
       toast({
         title: "User unbanned",
         description: "The user has been unbanned from this community.",
@@ -143,11 +197,11 @@ const ModeratorPanel = ({
   };
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Intl.DateTimeFormat("en-US", {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   };
 
@@ -169,7 +223,9 @@ const ModeratorPanel = ({
               <AlertTriangle className="h-4 w-4" />
               <span>Reports</span>
               {pendingReports.length > 0 && (
-                <Badge className="ml-1 bg-red-500">{pendingReports.length}</Badge>
+                <Badge className="ml-1 bg-red-500">
+                  {pendingReports.length}
+                </Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="resolved">
@@ -180,7 +236,9 @@ const ModeratorPanel = ({
               <Ban className="h-4 w-4" />
               <span>Locked</span>
               {lockedPosts.length > 0 && (
-                <Badge className="ml-1 bg-orange-500">{lockedPosts.length}</Badge>
+                <Badge className="ml-1 bg-orange-500">
+                  {lockedPosts.length}
+                </Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="members" className="flex gap-2 items-center">
@@ -188,7 +246,7 @@ const ModeratorPanel = ({
               <span>Members</span>
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="reports" className="pt-4">
             {pendingReports.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -203,28 +261,36 @@ const ModeratorPanel = ({
                       <div className="flex justify-between items-start">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
-                            <Badge variant="outline" className="bg-orange-100 text-orange-800">
-                              {report.contentType === 'post' ? 'Post' : 'Reply'}
+                            <Badge
+                              variant="outline"
+                              className="bg-orange-100 text-orange-800"
+                            >
+                              {report.contentType === "post" ? "Post" : "Reply"}
                             </Badge>
                             <span className="text-sm text-muted-foreground">
                               Reported on {formatDate(report.createdAt)}
                             </span>
                           </div>
                           <div className="font-medium">
-                            {report.contentTitle || `Reported ${report.contentType}`}
+                            {report.contentTitle ||
+                              `Reported ${report.contentType}`}
                           </div>
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent className="py-2 px-4">
                       <div className="mb-2">
-                        <div className="text-sm font-medium text-muted-foreground mb-1">Content preview:</div>
+                        <div className="text-sm font-medium text-muted-foreground mb-1">
+                          Content preview:
+                        </div>
                         <div className="text-sm border-l-2 border-gray-200 pl-3 py-1 mb-2 bg-gray-50 rounded">
                           {report.contentPreview}
                         </div>
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-muted-foreground mb-1">Reason for report:</div>
+                        <div className="text-sm font-medium text-muted-foreground mb-1">
+                          Reason for report:
+                        </div>
                         <div className="text-sm border-l-2 border-orange-200 pl-3 py-1 bg-orange-50 rounded">
                           {report.reason}
                         </div>
@@ -240,7 +306,7 @@ const ModeratorPanel = ({
                         <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
                         Mark as Resolved
                       </Button>
-                      {report.contentType === 'post' && (
+                      {report.contentType === "post" && (
                         <>
                           <Button
                             variant="outline"
@@ -268,7 +334,7 @@ const ModeratorPanel = ({
               </div>
             )}
           </TabsContent>
-          
+
           <TabsContent value="resolved" className="pt-4">
             {resolvedReports.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -278,17 +344,25 @@ const ModeratorPanel = ({
             ) : (
               <div className="space-y-3">
                 {resolvedReports.map((report) => (
-                  <div key={report.id} className="flex items-center justify-between border-b pb-3">
+                  <div
+                    key={report.id}
+                    className="flex items-center justify-between border-b pb-3"
+                  >
                     <div>
                       <div className="flex items-center gap-2 mb-0.5">
-                        <Badge variant="outline" className="bg-gray-100 text-gray-800">
-                          {report.contentType === 'post' ? 'Post' : 'Reply'}
+                        <Badge
+                          variant="outline"
+                          className="bg-gray-100 text-gray-800"
+                        >
+                          {report.contentType === "post" ? "Post" : "Reply"}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
                           {formatDate(report.createdAt)}
                         </span>
                       </div>
-                      <p className="text-sm line-clamp-1">{report.contentPreview}</p>
+                      <p className="text-sm line-clamp-1">
+                        {report.contentPreview}
+                      </p>
                     </div>
                     <Badge className="bg-green-100 text-green-800 flex items-center gap-1">
                       <CheckCircle2 className="h-3 w-3" />
@@ -299,7 +373,7 @@ const ModeratorPanel = ({
               </div>
             )}
           </TabsContent>
-          
+
           <TabsContent value="locked" className="pt-4">
             {lockedPosts.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -316,12 +390,18 @@ const ModeratorPanel = ({
                           <div className="font-medium">{post.title}</div>
                           <div className="flex gap-2 mt-1">
                             {post.isLocked && (
-                              <Badge variant="outline" className="bg-red-100 text-red-800">
+                              <Badge
+                                variant="outline"
+                                className="bg-red-100 text-red-800"
+                              >
                                 Post Locked
                               </Badge>
                             )}
                             {post.areCommentsLocked && (
-                              <Badge variant="outline" className="bg-orange-100 text-orange-800">
+                              <Badge
+                                variant="outline"
+                                className="bg-orange-100 text-orange-800"
+                              >
                                 Comments Locked
                               </Badge>
                             )}
@@ -358,7 +438,7 @@ const ModeratorPanel = ({
               </div>
             )}
           </TabsContent>
-          
+
           <TabsContent value="members" className="pt-4">
             <div className="rounded-md border">
               <Table>
@@ -386,11 +466,17 @@ const ModeratorPanel = ({
                       <TableCell>{formatDate(member.joinDate)}</TableCell>
                       <TableCell>
                         {member.isBanned ? (
-                          <Badge variant="outline" className="bg-red-100 text-red-800">
+                          <Badge
+                            variant="outline"
+                            className="bg-red-100 text-red-800"
+                          >
                             Banned
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-green-100 text-green-800">
+                          <Badge
+                            variant="outline"
+                            className="bg-green-100 text-green-800"
+                          >
                             Active
                           </Badge>
                         )}

@@ -17,6 +17,8 @@ import UserProfileDialog from "@/components/admin/UserProfileDialog";
 import RoleChangeDialog from "@/components/admin/RoleChangeDialog";
 import AdminTablePagination from "@/components/admin/AdminTablePagination";
 import AdminRoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
+import UserSuspendDialog from "@/components/admin/UserSuspendDialog";
+import UserActivateDialog from "@/components/admin/UserActivateDialog";
 
 interface AppUser {
   id: string;
@@ -39,6 +41,7 @@ const AdminUsersPage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
   const [roleChangeDialogOpen, setRoleChangeDialogOpen] = useState(false);
+  const [roleChangeTargetUser, setRoleChangeTargetUser] = useState<AppUser | null>(null);
   const [pendingAdminRoleChanges, setPendingAdminRoleChanges] = useState<
     {
       id: string;
@@ -175,11 +178,68 @@ const AdminUsersPage = () => {
   };
 
   const handleChangeRole = (user: AppUser) => {
-    setSelectedUser(user);
     setRoleChangeDialogOpen(true);
+    setRoleChangeTargetUser(user);
   };
 
   const isCurrentUser = (userEmail: string) => userEmail === currentUser;
+
+  const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
+  const [activateDialogOpen, setActivateDialogOpen] = useState(false);
+  const [userToSuspend, setUserToSuspend] = useState<AppUser | null>(null);
+  const [userToActivate, setUserToActivate] = useState<AppUser | null>(null);
+
+  const handleSuspendUser = (userId: string, reason: string) => {
+    setUsers(
+      users.map((u) =>
+        u.id === userId
+          ? {
+              ...u,
+              status: "suspended",
+              suspensionReason: reason,
+              suspendedAt: new Date(),
+              suspendedBy: currentUser,
+            }
+          : u
+      )
+    );
+    toast({
+      title: "User Suspended",
+      description: `The user has been suspended. Reason: ${reason}`,
+    });
+    logAdminAction({
+      action: "user_suspended",
+      details: `Suspended user ${userId} for reason: ${reason}`,
+      targetId: userId,
+      targetType: "user",
+    });
+  };
+
+  const handleActivateUser = (userId: string, message: string) => {
+    setUsers(
+      users.map((u) =>
+        u.id === userId
+          ? {
+              ...u,
+              status: "active",
+              suspensionReason: undefined,
+              suspendedAt: undefined,
+              suspendedBy: undefined,
+            }
+          : u
+      )
+    );
+    toast({
+      title: "User Activated",
+      description: `The user has been reactivated. Message: ${message}`,
+    });
+    logAdminAction({
+      action: "user_activated",
+      details: `Activated user ${userId} with message: ${message}`,
+      targetId: userId,
+      targetType: "user",
+    });
+  };
 
   return (
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
@@ -231,7 +291,6 @@ const AdminUsersPage = () => {
           toast({
             title: "Role Change Rejected",
             description: `The admin role change request has been rejected.`,
-            variant: "destructive",
           });
         }}
       />
@@ -315,6 +374,33 @@ const AdminUsersPage = () => {
                         Change Role
                       </Button>
                     )}
+                    {user.status === "active" && !isCurrentUser(user.email) && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => {
+                          setUserToSuspend(user);
+                          setSuspendDialogOpen(true);
+                        }}
+                      >
+                        Suspend
+                      </Button>
+                    )}
+                    {user.status === "suspended" &&
+                      !isCurrentUser(user.email) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs text-green-700 border-green-500 hover:bg-green-50"
+                          onClick={() => {
+                            setUserToActivate(user);
+                            setActivateDialogOpen(true);
+                          }}
+                        >
+                          Activate
+                        </Button>
+                      )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -356,9 +442,32 @@ const AdminUsersPage = () => {
       <RoleChangeDialog
         isOpen={roleChangeDialogOpen}
         onClose={() => setRoleChangeDialogOpen(false)}
-        user={selectedUser}
+        user={roleChangeTargetUser}
         onConfirm={handleRoleChange}
       />
+
+      {userToSuspend && (
+        <UserSuspendDialog
+          isOpen={suspendDialogOpen}
+          onClose={() => {
+            setSuspendDialogOpen(false);
+            setUserToSuspend(null);
+          }}
+          user={userToSuspend}
+          onSuspend={handleSuspendUser}
+        />
+      )}
+      {userToActivate && (
+        <UserActivateDialog
+          isOpen={activateDialogOpen}
+          onClose={() => {
+            setActivateDialogOpen(false);
+            setUserToActivate(null);
+          }}
+          user={userToActivate}
+          onActivate={handleActivateUser}
+        />
+      )}
     </div>
   );
 };

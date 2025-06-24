@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +39,7 @@ const CreateCommunityDialog = ({ trigger }: CreateCommunityDialogProps) => {
   const categories = [
     "Technology",
     "Arts & Creativity",
-    "Health & Fitness", 
+    "Health & Fitness",
     "Food & Cooking",
     "Travel",
     "Education",
@@ -49,7 +48,7 @@ const CreateCommunityDialog = ({ trigger }: CreateCommunityDialogProps) => {
     "Photography",
     "Sports",
     "Business",
-    "Science"
+    "Science",
   ];
 
   const handleTagInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -64,17 +63,16 @@ const CreateCommunityDialog = ({ trigger }: CreateCommunityDialogProps) => {
   };
 
   const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+    setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name.trim() || !description.trim() || !category) {
       toast({
         title: "Missing information",
         description: "Please fill in all required fields.",
-        variant: "destructive",
       });
       return;
     }
@@ -96,17 +94,16 @@ const CreateCommunityDialog = ({ trigger }: CreateCommunityDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create New Community</DialogTitle>
           <DialogDescription>
-            Create a space for people with shared interests to connect and discuss.
+            Create a space for people with shared interests to connect and
+            discuss.
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="community-name">Community Name *</Label>
@@ -158,7 +155,11 @@ const CreateCommunityDialog = ({ trigger }: CreateCommunityDialogProps) => {
             />
             <div className="flex flex-wrap gap-2 mt-2">
               {tags.map((tag, index) => (
-                <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="flex items-center gap-1"
+                >
                   {tag}
                   <button
                     type="button"
@@ -173,10 +174,17 @@ const CreateCommunityDialog = ({ trigger }: CreateCommunityDialogProps) => {
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" className="bg-social-primary hover:bg-social-secondary">
+            <Button
+              type="submit"
+              className="bg-social-primary hover:bg-social-secondary"
+            >
               Create Community
             </Button>
           </DialogFooter>

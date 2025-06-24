@@ -80,7 +80,6 @@ const ReportDetailsDialog = ({
       toast({
         title: "Warning Required",
         description: "Please provide a reason for the warning.",
-        variant: "destructive",
       });
       return;
     }
@@ -106,7 +105,6 @@ const ReportDetailsDialog = ({
       toast({
         title: "Suspension Reason Required",
         description: "Please provide a reason for the suspension.",
-        variant: "destructive",
       });
       return;
     }
@@ -114,7 +112,6 @@ const ReportDetailsDialog = ({
     toast({
       title: "User Suspended",
       description: `User suspended with reason: ${suspendReason}`,
-      variant: "destructive",
     });
 
     logAdminAction({

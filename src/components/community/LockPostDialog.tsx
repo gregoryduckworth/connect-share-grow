@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Dialog,
@@ -22,7 +21,13 @@ interface LockPostDialogProps {
   contentType: "post" | "comments";
 }
 
-const LockPostDialog = ({ isOpen, onClose, onConfirm, postTitle, contentType }: LockPostDialogProps) => {
+const LockPostDialog = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  postTitle,
+  contentType,
+}: LockPostDialogProps) => {
   const [reason, setReason] = useState("");
   const { toast } = useToast();
 
@@ -31,7 +36,6 @@ const LockPostDialog = ({ isOpen, onClose, onConfirm, postTitle, contentType }: 
       toast({
         title: "Reason required",
         description: "Please provide a reason for locking this content.",
-        variant: "destructive"
       });
       return;
     }
@@ -51,15 +55,20 @@ const LockPostDialog = ({ isOpen, onClose, onConfirm, postTitle, contentType }: 
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {contentType === "post" ? <Lock className="h-5 w-5" /> : <Ban className="h-5 w-5" />}
+            {contentType === "post" ? (
+              <Lock className="h-5 w-5" />
+            ) : (
+              <Ban className="h-5 w-5" />
+            )}
             Lock {contentType === "post" ? "Post" : "Comments"}
           </DialogTitle>
           <DialogDescription>
-            You are about to lock {contentType === "post" ? "the post" : "comments for"}: "{postTitle}". 
-            The author will be notified of this action.
+            You are about to lock{" "}
+            {contentType === "post" ? "the post" : "comments for"}: "{postTitle}
+            ". The author will be notified of this action.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="reason">Reason for locking *</Label>
@@ -71,7 +80,8 @@ const LockPostDialog = ({ isOpen, onClose, onConfirm, postTitle, contentType }: 
               rows={4}
             />
             <p className="text-sm text-muted-foreground">
-              This reason will be visible to the post author and other moderators.
+              This reason will be visible to the post author and other
+              moderators.
             </p>
           </div>
         </div>
@@ -81,7 +91,11 @@ const LockPostDialog = ({ isOpen, onClose, onConfirm, postTitle, contentType }: 
             Cancel
           </Button>
           <Button onClick={handleConfirm} variant="destructive">
-            {contentType === "post" ? <Lock className="h-4 w-4 mr-2" /> : <Ban className="h-4 w-4 mr-2" />}
+            {contentType === "post" ? (
+              <Lock className="h-4 w-4 mr-2" />
+            ) : (
+              <Ban className="h-4 w-4 mr-2" />
+            )}
             Lock {contentType === "post" ? "Post" : "Comments"}
           </Button>
         </DialogFooter>

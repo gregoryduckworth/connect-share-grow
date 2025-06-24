@@ -20,16 +20,20 @@ interface PendingCommunity {
 
 const AdminCommunityApprovals = () => {
   const { toast } = useToast();
-  const [selectedCommunity, setSelectedCommunity] = useState<PendingCommunity | null>(null);
+  const [selectedCommunity, setSelectedCommunity] =
+    useState<PendingCommunity | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
-  
-  const [pendingCommunities, setPendingCommunities] = useState<PendingCommunity[]>([
+
+  const [pendingCommunities, setPendingCommunities] = useState<
+    PendingCommunity[]
+  >([
     {
       id: "comm-1",
       name: "Travel Photography Group",
-      description: "A community for sharing travel photography tips, destinations, and gear recommendations.",
+      description:
+        "A community for sharing travel photography tips, destinations, and gear recommendations.",
       tags: ["Travel", "Photography", "Adventure"],
       createdBy: "SarahT",
       requestedAt: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4 hours ago
@@ -37,7 +41,8 @@ const AdminCommunityApprovals = () => {
     {
       id: "comm-2",
       name: "Machine Learning Enthusiasts",
-      description: "Discuss ML algorithms, share projects, and learn from each other's experiences in AI and machine learning.",
+      description:
+        "Discuss ML algorithms, share projects, and learn from each other's experiences in AI and machine learning.",
       tags: ["AI", "Machine Learning", "Technology", "Data Science"],
       createdBy: "AIFanatic",
       requestedAt: new Date(Date.now() - 1000 * 60 * 60 * 6), // 6 hours ago
@@ -45,7 +50,8 @@ const AdminCommunityApprovals = () => {
     {
       id: "comm-3",
       name: "Vegan Recipe Sharing",
-      description: "Share your favorite vegan recipes, cooking tips, and restaurant recommendations.",
+      description:
+        "Share your favorite vegan recipes, cooking tips, and restaurant recommendations.",
       tags: ["Vegan", "Food", "Recipes", "Cooking"],
       createdBy: "VeganChef",
       requestedAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
@@ -57,41 +63,47 @@ const AdminCommunityApprovals = () => {
     setDetailsDialogOpen(true);
   };
 
-  const handleApprove = (id: string, updatedCommunity: { name: string; description: string }) => {
-    const community = pendingCommunities.find(c => c.id === id);
+  const handleApprove = (
+    id: string,
+    updatedCommunity: { name: string; description: string }
+  ) => {
+    const community = pendingCommunities.find((c) => c.id === id);
     if (community) {
-      setPendingCommunities(pendingCommunities.filter(c => c.id !== id));
-      
+      setPendingCommunities(pendingCommunities.filter((c) => c.id !== id));
+
       toast({
         title: "Community Approved",
         description: `${updatedCommunity.name} has been approved and is now live.`,
       });
-      
+
       logAdminAction({
         action: "community_approved",
-        details: `Approved community: ${updatedCommunity.name}${updatedCommunity.name !== community.name ? ` (renamed from ${community.name})` : ''}`,
+        details: `Approved community: ${updatedCommunity.name}${
+          updatedCommunity.name !== community.name
+            ? ` (renamed from ${community.name})`
+            : ""
+        }`,
         targetId: community.id,
-        targetType: "community"
+        targetType: "community",
       });
     }
   };
 
   const handleReject = (id: string, feedback: string) => {
-    const community = pendingCommunities.find(c => c.id === id);
+    const community = pendingCommunities.find((c) => c.id === id);
     if (community) {
-      setPendingCommunities(pendingCommunities.filter(c => c.id !== id));
-      
+      setPendingCommunities(pendingCommunities.filter((c) => c.id !== id));
+
       toast({
         title: "Community Rejected",
         description: `${community.name} request has been rejected with feedback.`,
-        variant: "destructive",
       });
-      
+
       logAdminAction({
         action: "community_rejected",
         details: `Rejected community: ${community.name}. Feedback: ${feedback}`,
         targetId: community.id,
-        targetType: "community"
+        targetType: "community",
       });
     }
   };
@@ -100,16 +112,20 @@ const AdminCommunityApprovals = () => {
     <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold">Pending Community Approvals</h2>
+          <h2 className="text-2xl font-semibold">
+            Pending Community Approvals
+          </h2>
           <Badge variant="outline" className="bg-social-accent/50">
             {pendingCommunities.length} Pending
           </Badge>
         </div>
-        
+
         {pendingCommunities.length === 0 ? (
           <Card>
             <CardContent className="pt-6 text-center">
-              <p className="text-social-muted">No pending community approvals</p>
+              <p className="text-social-muted">
+                No pending community approvals
+              </p>
             </CardContent>
           </Card>
         ) : (
@@ -121,7 +137,8 @@ const AdminCommunityApprovals = () => {
                     <CardTitle>{community.name}</CardTitle>
                     <div className="flex flex-wrap gap-2">
                       <Badge variant="outline" className="bg-social-background">
-                        Requested {new Date(community.requestedAt).toLocaleDateString()}
+                        Requested{" "}
+                        {new Date(community.requestedAt).toLocaleDateString()}
                       </Badge>
                       <Badge variant="outline" className="bg-social-background">
                         By {community.createdBy}
@@ -131,24 +148,28 @@ const AdminCommunityApprovals = () => {
                 </CardHeader>
                 <CardContent className="pt-6 space-y-4">
                   <p>{community.description}</p>
-                  
+
                   <div className="flex flex-wrap gap-2">
                     {community.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="bg-social-accent/50">
+                      <Badge
+                        key={tag}
+                        variant="secondary"
+                        className="bg-social-accent/50"
+                      >
                         {tag}
                       </Badge>
                     ))}
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-2 justify-end mt-4">
-                    <Button 
+                    <Button
                       variant="outline"
                       onClick={() => handleViewDetails(community)}
                     >
                       <Eye className="h-4 w-4 mr-2" /> View Details
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="border-red-400 text-red-500 hover:bg-red-50"
                       onClick={() => {
                         setSelectedCommunity(community);
@@ -157,7 +178,7 @@ const AdminCommunityApprovals = () => {
                     >
                       <X className="h-4 w-4 mr-2" /> Reject
                     </Button>
-                    <Button 
+                    <Button
                       variant="default"
                       className="bg-green-500 hover:bg-green-600"
                       onClick={() => {
