@@ -2,7 +2,13 @@ import { useState } from "react";
 import { Search, Users, MessageCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
@@ -12,7 +18,7 @@ interface Connection {
   id: string;
   name: string;
   mutualConnections: number;
-  status: 'connected' | 'pending' | 'received';
+  status: "connected" | "pending" | "received";
   lastActive: Date;
   bio?: string;
 }
@@ -30,15 +36,15 @@ const ConnectionsPage = () => {
       mutualConnections: 12,
       status: "connected",
       lastActive: new Date(2024, 5, 20),
-      bio: "Photography enthusiast and travel blogger"
+      bio: "Photography enthusiast and travel blogger",
     },
     {
-      id: "2", 
+      id: "2",
       name: "Mike Chen",
       mutualConnections: 8,
       status: "connected",
       lastActive: new Date(2024, 5, 19),
-      bio: "Software developer and tech enthusiast"
+      bio: "Software developer and tech enthusiast",
     },
     {
       id: "3",
@@ -46,7 +52,7 @@ const ConnectionsPage = () => {
       mutualConnections: 5,
       status: "pending",
       lastActive: new Date(2024, 5, 18),
-      bio: "Digital marketing specialist"
+      bio: "Digital marketing specialist",
     },
     {
       id: "4",
@@ -54,26 +60,28 @@ const ConnectionsPage = () => {
       mutualConnections: 3,
       status: "received",
       lastActive: new Date(2024, 5, 17),
-      bio: "Graphic designer and artist"
-    }
+      bio: "Graphic designer and artist",
+    },
   ]);
 
-  const connectedUsers = connections.filter(c => c.status === 'connected');
-  const pendingRequests = connections.filter(c => c.status === 'pending');
-  const receivedRequests = connections.filter(c => c.status === 'received');
+  const connectedUsers = connections.filter((c) => c.status === "connected");
+  const pendingRequests = connections.filter((c) => c.status === "pending");
+  const receivedRequests = connections.filter((c) => c.status === "received");
 
-  const filteredConnections = connectedUsers.filter(connection =>
+  const filteredConnections = connectedUsers.filter((connection) =>
     connection.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAcceptRequest = (connectionId: string) => {
-    setConnections(connections.map(connection =>
-      connection.id === connectionId
-        ? { ...connection, status: 'connected' as const }
-        : connection
-    ));
+    setConnections(
+      connections.map((connection) =>
+        connection.id === connectionId
+          ? { ...connection, status: "connected" as const }
+          : connection
+      )
+    );
 
-    const connection = connections.find(c => c.id === connectionId);
+    const connection = connections.find((c) => c.id === connectionId);
     toast({
       title: "Connection accepted",
       description: `You are now connected with ${connection?.name}`,
@@ -81,9 +89,11 @@ const ConnectionsPage = () => {
   };
 
   const handleRejectRequest = (connectionId: string) => {
-    setConnections(connections.filter(connection => connection.id !== connectionId));
+    setConnections(
+      connections.filter((connection) => connection.id !== connectionId)
+    );
 
-    const connection = connections.find(c => c.id === connectionId);
+    const connection = connections.find((c) => c.id === connectionId);
     toast({
       title: "Connection rejected",
       description: `Request from ${connection?.name} has been declined`,
@@ -96,12 +106,20 @@ const ConnectionsPage = () => {
     setProfileDialogOpen(true);
   };
 
-  const ConnectionCard = ({ connection, showActions = false }: { connection: Connection; showActions?: boolean }) => (
+  const ConnectionCard = ({
+    connection,
+    showActions = false,
+  }: {
+    connection: Connection;
+    showActions?: boolean;
+  }) => (
     <Card className="h-full">
       <CardHeader className="pb-3">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
           <div className="flex-1">
-            <CardTitle className="text-base sm:text-lg break-words">{connection.name}</CardTitle>
+            <CardTitle className="text-base sm:text-lg break-words">
+              {connection.name}
+            </CardTitle>
             <CardDescription className="text-xs sm:text-sm mt-1 break-words">
               {connection.bio}
             </CardDescription>
@@ -113,9 +131,11 @@ const ConnectionsPage = () => {
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
-          <span className="break-words">Last active: {connection.lastActive.toLocaleDateString()}</span>
+          <span className="break-words">
+            Last active: {connection.lastActive.toLocaleDateString()}
+          </span>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-2">
           {showActions ? (
             <>
@@ -133,7 +153,7 @@ const ConnectionsPage = () => {
                 Decline
               </Button>
             </>
-          ) : connection.status === 'pending' ? (
+          ) : connection.status === "pending" ? (
             <Button
               onClick={() => handleViewProfile(connection)}
               variant="outline"
@@ -143,10 +163,7 @@ const ConnectionsPage = () => {
               View Profile
             </Button>
           ) : (
-            <Button
-              variant="outline"
-              className="flex-1 text-xs sm:text-sm"
-            >
+            <Button variant="outline" className="flex-1 text-xs sm:text-sm">
               <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Message
             </Button>
@@ -157,10 +174,14 @@ const ConnectionsPage = () => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl">
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">My Connections</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">Manage your network and connection requests</p>
+        <h1 className="text-3xl font-bold text-social-primary mb-2">
+          My Connections
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          Manage your network and connection requests
+        </p>
       </div>
 
       <div className="relative mb-6">
@@ -185,14 +206,14 @@ const ConnectionsPage = () => {
             Requests ({receivedRequests.length})
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="connected">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredConnections.map((connection) => (
               <ConnectionCard key={connection.id} connection={connection} />
             ))}
           </div>
-          
+
           {filteredConnections.length === 0 && (
             <div className="text-center py-12">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -200,28 +221,32 @@ const ConnectionsPage = () => {
             </div>
           )}
         </TabsContent>
-        
+
         <TabsContent value="pending">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {pendingRequests.map((connection) => (
               <ConnectionCard key={connection.id} connection={connection} />
             ))}
           </div>
-          
+
           {pendingRequests.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No pending requests.</p>
             </div>
           )}
         </TabsContent>
-        
+
         <TabsContent value="requests">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {receivedRequests.map((connection) => (
-              <ConnectionCard key={connection.id} connection={connection} showActions />
+              <ConnectionCard
+                key={connection.id}
+                connection={connection}
+                showActions
+              />
             ))}
           </div>
-          
+
           {receivedRequests.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No connection requests.</p>

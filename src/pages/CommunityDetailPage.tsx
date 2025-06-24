@@ -1,10 +1,16 @@
-
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, MessageSquare, Plus, Settings, ChevronRight, Home } from "lucide-react";
+import {
+  Users,
+  MessageSquare,
+  Plus,
+  Settings,
+  ChevronRight,
+  Home,
+} from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -40,36 +46,53 @@ const CommunityDetailPage = () => {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showModPanel, setShowModPanel] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  
+
   // Mock data - in a real app, this would come from an API
   const community = {
     id: communityId || "1",
     name: "Photography Enthusiasts",
-    description: "A place for photographers to share their work and discuss techniques",
+    description:
+      "A place for photographers to share their work and discuss techniques",
     memberCount: 1250,
     postCount: 423,
     tags: ["Photography", "Art", "Camera", "Editing"],
     isMember: true,
     isModerator: true,
     moderators: [
-      { id: "mod-1", name: "Sarah Johnson", role: "Lead Moderator", joinedAsModAt: new Date(2023, 0, 15) },
-      { id: "mod-2", name: "Mike Chen", role: "Moderator", joinedAsModAt: new Date(2023, 2, 20) },
-      { id: "mod-3", name: "Alex Rivera", role: "Moderator", joinedAsModAt: new Date(2023, 4, 10) }
+      {
+        id: "mod-1",
+        name: "Sarah Johnson",
+        role: "Lead Moderator",
+        joinedAsModAt: new Date(2023, 0, 15),
+      },
+      {
+        id: "mod-2",
+        name: "Mike Chen",
+        role: "Moderator",
+        joinedAsModAt: new Date(2023, 2, 20),
+      },
+      {
+        id: "mod-3",
+        name: "Alex Rivera",
+        role: "Moderator",
+        joinedAsModAt: new Date(2023, 4, 10),
+      },
     ],
     rules: [
       "Be respectful to all members",
       "No spam or self-promotion without approval",
       "Share constructive feedback on others' work",
       "Use appropriate tags for your posts",
-      "No inappropriate or offensive content"
-    ]
+      "No inappropriate or offensive content",
+    ],
   };
 
   const [posts, setPosts] = useState<PostData[]>([
     {
       id: "1",
       title: "Golden Hour Landscape Tips",
-      content: "Here are some techniques I've learned for capturing stunning golden hour landscapes...",
+      content:
+        "Here are some techniques I've learned for capturing stunning golden hour landscapes...",
       author: "Sarah Johnson",
       timestamp: new Date(2024, 5, 15, 14, 30),
       likes: 24,
@@ -78,12 +101,13 @@ const CommunityDetailPage = () => {
       isPinned: true,
       isLocked: false,
       commentsLocked: false,
-      tags: ["Landscape", "Golden Hour", "Tips"]
+      tags: ["Landscape", "Golden Hour", "Tips"],
     },
     {
       id: "2",
       title: "Street Photography Ethics",
-      content: "Let's discuss the ethical considerations when photographing strangers in public spaces...",
+      content:
+        "Let's discuss the ethical considerations when photographing strangers in public spaces...",
       author: "Mike Chen",
       timestamp: new Date(2024, 5, 14, 10, 15),
       likes: 15,
@@ -92,20 +116,22 @@ const CommunityDetailPage = () => {
       isPinned: false,
       isLocked: false,
       commentsLocked: false,
-      tags: ["Street Photography", "Ethics", "Discussion"]
-    }
+      tags: ["Street Photography", "Ethics", "Discussion"],
+    },
   ]);
 
   const handleLikePost = (postId: string) => {
-    setPosts(posts.map(post => 
-      post.id === postId 
-        ? { 
-            ...post, 
-            isLiked: !post.isLiked, 
-            likes: post.isLiked ? post.likes - 1 : post.likes + 1 
-          }
-        : post
-    ));
+    setPosts(
+      posts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              isLiked: !post.isLiked,
+              likes: post.isLiked ? post.likes - 1 : post.likes + 1,
+            }
+          : post
+      )
+    );
   };
 
   const handleCommentPost = (postId: string) => {
@@ -114,45 +140,55 @@ const CommunityDetailPage = () => {
   };
 
   const handlePinPost = (postId: string) => {
-    setPosts(posts.map(post => 
-      post.id === postId ? { ...post, isPinned: !post.isPinned } : post
-    ));
+    setPosts(
+      posts.map((post) =>
+        post.id === postId ? { ...post, isPinned: !post.isPinned } : post
+      )
+    );
   };
 
   const handleLockPost = (postId: string, reason: string) => {
-    setPosts(posts.map(post => 
-      post.id === postId 
-        ? { ...post, isLocked: true, lockReason: reason }
-        : post
-    ));
+    setPosts(
+      posts.map((post) =>
+        post.id === postId
+          ? { ...post, isLocked: true, lockReason: reason }
+          : post
+      )
+    );
   };
 
   const handleUnlockPost = (postId: string) => {
-    setPosts(posts.map(post => 
-      post.id === postId 
-        ? { ...post, isLocked: false, lockReason: undefined }
-        : post
-    ));
+    setPosts(
+      posts.map((post) =>
+        post.id === postId
+          ? { ...post, isLocked: false, lockReason: undefined }
+          : post
+      )
+    );
   };
 
   const handleLockComments = (postId: string, reason: string) => {
-    setPosts(posts.map(post => 
-      post.id === postId 
-        ? { ...post, commentsLocked: true, commentsLockReason: reason }
-        : post
-    ));
+    setPosts(
+      posts.map((post) =>
+        post.id === postId
+          ? { ...post, commentsLocked: true, commentsLockReason: reason }
+          : post
+      )
+    );
   };
 
   const handleUnlockComments = (postId: string) => {
-    setPosts(posts.map(post => 
-      post.id === postId 
-        ? { ...post, commentsLocked: false, commentsLockReason: undefined }
-        : post
-    ));
+    setPosts(
+      posts.map((post) =>
+        post.id === postId
+          ? { ...post, commentsLocked: false, commentsLockReason: undefined }
+          : post
+      )
+    );
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       {/* Breadcrumbs */}
       <div className="mb-6">
         <Breadcrumb>
@@ -193,12 +229,16 @@ const CommunityDetailPage = () => {
                 <h1 className="text-3xl font-bold text-social-primary mb-2">
                   {community.name}
                 </h1>
-                <p className="text-social-muted mb-4">{community.description}</p>
-                
+                <p className="text-social-muted mb-4">
+                  {community.description}
+                </p>
+
                 <div className="flex items-center gap-4 text-sm text-social-muted">
                   <div className="flex items-center gap-1">
                     <Users className="h-4 w-4" />
-                    <span>{community.memberCount.toLocaleString()} members</span>
+                    <span>
+                      {community.memberCount.toLocaleString()} members
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <MessageSquare className="h-4 w-4" />
@@ -206,7 +246,7 @@ const CommunityDetailPage = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex flex-wrap gap-2">
                 {community.isMember && (
                   <Button onClick={() => setShowCreatePost(true)}>
@@ -214,9 +254,9 @@ const CommunityDetailPage = () => {
                     New Post
                   </Button>
                 )}
-                
+
                 {community.isModerator && (
-                  <Button 
+                  <Button
                     variant="outline"
                     onClick={() => setShowModPanel(true)}
                   >
@@ -226,10 +266,14 @@ const CommunityDetailPage = () => {
                 )}
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-2">
               {community.tags.map((tag, index) => (
-                <Badge key={index} variant="secondary" className="bg-social-accent/50">
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="bg-social-accent/50"
+                >
                   {tag}
                 </Badge>
               ))}
@@ -247,9 +291,15 @@ const CommunityDetailPage = () => {
                     onComment={handleCommentPost}
                     onPin={community.isModerator ? handlePinPost : undefined}
                     onLock={community.isModerator ? handleLockPost : undefined}
-                    onUnlock={community.isModerator ? handleUnlockPost : undefined}
-                    onLockComments={community.isModerator ? handleLockComments : undefined}
-                    onUnlockComments={community.isModerator ? handleUnlockComments : undefined}
+                    onUnlock={
+                      community.isModerator ? handleUnlockPost : undefined
+                    }
+                    onLockComments={
+                      community.isModerator ? handleLockComments : undefined
+                    }
+                    onUnlockComments={
+                      community.isModerator ? handleUnlockComments : undefined
+                    }
                     isModerator={community.isModerator}
                     showPreview={true}
                   />
@@ -274,13 +324,15 @@ const CommunityDetailPage = () => {
                       <Users className="h-4 w-4" />
                     </div>
                     <div className="flex-1">
-                      <button 
+                      <button
                         className="font-medium text-sm hover:text-social-primary transition-colors cursor-pointer"
                         onClick={() => setSelectedUserId(moderator.id)}
                       >
                         {moderator.name}
                       </button>
-                      <p className="text-xs text-social-muted">{moderator.role}</p>
+                      <p className="text-xs text-social-muted">
+                        {moderator.role}
+                      </p>
                       <p className="text-xs text-gray-400">
                         Since {moderator.joinedAsModAt.toLocaleDateString()}
                       </p>
@@ -300,7 +352,9 @@ const CommunityDetailPage = () => {
               <ol className="space-y-2 text-sm">
                 {community.rules.map((rule, index) => (
                   <li key={index} className="flex">
-                    <span className="font-medium text-social-primary mr-2">{index + 1}.</span>
+                    <span className="font-medium text-social-primary mr-2">
+                      {index + 1}.
+                    </span>
                     <span className="text-social-muted">{rule}</span>
                   </li>
                 ))}

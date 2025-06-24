@@ -1,11 +1,23 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Bell, Shield, Palette } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -18,18 +30,18 @@ const SettingsPage = () => {
   const [profile, setProfile] = useState({
     displayName: "John Doe",
     bio: "Photography enthusiast and community moderator",
-    location: "San Francisco, CA"
+    location: "San Francisco, CA",
   });
 
   const [notifications, setNotifications] = useState({
     communityUpdates: true,
     directMessages: true,
-    connectionRequests: true
+    connectionRequests: true,
   });
 
   const [privacy, setPrivacy] = useState({
     showLocation: true,
-    allowDirectMessages: true
+    allowDirectMessages: true,
   });
 
   // Force re-render when language changes
@@ -38,74 +50,93 @@ const SettingsPage = () => {
     const handleLanguageChange = () => {
       forceUpdate({});
     };
-    
-    window.addEventListener('languageChange', handleLanguageChange);
-    return () => window.removeEventListener('languageChange', handleLanguageChange);
+
+    window.addEventListener("languageChange", handleLanguageChange);
+    return () =>
+      window.removeEventListener("languageChange", handleLanguageChange);
   }, []);
 
   const handleSaveProfile = () => {
     toast({
-      title: t('settings.profile') + " updated",
-      description: "Your profile changes have been saved successfully."
+      title: t("settings.profile") + " updated",
+      description: "Your profile changes have been saved successfully.",
     });
   };
 
   const handleSaveNotifications = () => {
     toast({
       title: "Notification preferences updated",
-      description: "Your notification settings have been saved."
+      description: "Your notification settings have been saved.",
     });
   };
 
   const handleSavePrivacy = () => {
     toast({
       title: "Privacy settings updated",
-      description: "Your privacy preferences have been saved."
+      description: "Your privacy preferences have been saved.",
     });
   };
 
   const handleSaveAppearance = () => {
     toast({
       title: "Appearance settings updated",
-      description: "Your appearance preferences have been saved."
+      description: "Your appearance preferences have been saved.",
     });
   };
 
   const handleLanguageChange = (newLanguage: string) => {
     updateLanguage(newLanguage);
     toast({
-      title: t('settings.language') + " updated",
-      description: "Language has been changed successfully."
+      title: t("settings.language") + " updated",
+      description: "Language has been changed successfully.",
     });
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       <div className="mb-6 text-left">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{t('settings.title')}</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">Manage your account preferences and privacy settings</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+          {t("settings.title")}
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          Manage your account preferences and privacy settings
+        </p>
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-6">
-          <TabsTrigger value="profile" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+          <TabsTrigger
+            value="profile"
+            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+          >
             <User className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">{t('settings.profile')}</span>
+            <span className="hidden sm:inline">{t("settings.profile")}</span>
             <span className="sm:hidden">Profile</span>
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+          <TabsTrigger
+            value="notifications"
+            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+          >
             <Bell className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">{t('settings.notifications')}</span>
+            <span className="hidden sm:inline">
+              {t("settings.notifications")}
+            </span>
             <span className="sm:hidden">Notifs</span>
           </TabsTrigger>
-          <TabsTrigger value="privacy" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+          <TabsTrigger
+            value="privacy"
+            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+          >
             <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">{t('settings.privacy')}</span>
+            <span className="hidden sm:inline">{t("settings.privacy")}</span>
             <span className="sm:hidden">Privacy</span>
           </TabsTrigger>
-          <TabsTrigger value="appearance" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+          <TabsTrigger
+            value="appearance"
+            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+          >
             <Palette className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">{t('settings.appearance')}</span>
+            <span className="hidden sm:inline">{t("settings.appearance")}</span>
             <span className="sm:hidden">Theme</span>
           </TabsTrigger>
         </TabsList>
@@ -114,7 +145,9 @@ const SettingsPage = () => {
           <Card>
             <CardHeader className="text-left">
               <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Update your personal information and bio</CardDescription>
+              <CardDescription>
+                Update your personal information and bio
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 text-left">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -123,7 +156,12 @@ const SettingsPage = () => {
                   <Input
                     id="displayName"
                     value={profile.displayName}
-                    onChange={(e) => setProfile(prev => ({ ...prev, displayName: e.target.value }))}
+                    onChange={(e) =>
+                      setProfile((prev) => ({
+                        ...prev,
+                        displayName: e.target.value,
+                      }))
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -131,23 +169,32 @@ const SettingsPage = () => {
                   <Input
                     id="location"
                     value={profile.location}
-                    onChange={(e) => setProfile(prev => ({ ...prev, location: e.target.value }))}
+                    onChange={(e) =>
+                      setProfile((prev) => ({
+                        ...prev,
+                        location: e.target.value,
+                      }))
+                    }
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="bio">Bio</Label>
                 <Textarea
                   id="bio"
                   placeholder="Tell others about yourself..."
                   value={profile.bio}
-                  onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
+                  onChange={(e) =>
+                    setProfile((prev) => ({ ...prev, bio: e.target.value }))
+                  }
                   rows={3}
                 />
               </div>
-              
-              <Button onClick={handleSaveProfile}>{t('settings.save')} Profile</Button>
+
+              <Button onClick={handleSaveProfile}>
+                {t("settings.save")} Profile
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -156,46 +203,86 @@ const SettingsPage = () => {
           <Card>
             <CardHeader className="text-left">
               <CardTitle>Notification Preferences</CardTitle>
-              <CardDescription>Choose how you want to be notified about activity</CardDescription>
+              <CardDescription>
+                Choose how you want to be notified about activity
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 text-left">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="communityUpdates" className="text-base font-medium">Community Updates</Label>
-                  <p className="text-sm text-muted-foreground">Notifications about community activity</p>
+                  <Label
+                    htmlFor="communityUpdates"
+                    className="text-base font-medium"
+                  >
+                    Community Updates
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Notifications about community activity
+                  </p>
                 </div>
                 <Switch
                   id="communityUpdates"
                   checked={notifications.communityUpdates}
-                  onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, communityUpdates: checked }))}
+                  onCheckedChange={(checked) =>
+                    setNotifications((prev) => ({
+                      ...prev,
+                      communityUpdates: checked,
+                    }))
+                  }
                 />
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="directMessages" className="text-base font-medium">Direct Messages</Label>
-                  <p className="text-sm text-muted-foreground">Notifications for new messages</p>
+                  <Label
+                    htmlFor="directMessages"
+                    className="text-base font-medium"
+                  >
+                    Direct Messages
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Notifications for new messages
+                  </p>
                 </div>
                 <Switch
                   id="directMessages"
                   checked={notifications.directMessages}
-                  onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, directMessages: checked }))}
+                  onCheckedChange={(checked) =>
+                    setNotifications((prev) => ({
+                      ...prev,
+                      directMessages: checked,
+                    }))
+                  }
                 />
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="connectionRequests" className="text-base font-medium">Connection Requests</Label>
-                  <p className="text-sm text-muted-foreground">Notifications for connection requests</p>
+                  <Label
+                    htmlFor="connectionRequests"
+                    className="text-base font-medium"
+                  >
+                    Connection Requests
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Notifications for connection requests
+                  </p>
                 </div>
                 <Switch
                   id="connectionRequests"
                   checked={notifications.connectionRequests}
-                  onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, connectionRequests: checked }))}
+                  onCheckedChange={(checked) =>
+                    setNotifications((prev) => ({
+                      ...prev,
+                      connectionRequests: checked,
+                    }))
+                  }
                 />
               </div>
-              
-              <Button onClick={handleSaveNotifications}>Save Notification Settings</Button>
+
+              <Button onClick={handleSaveNotifications}>
+                Save Notification Settings
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -204,33 +291,56 @@ const SettingsPage = () => {
           <Card>
             <CardHeader className="text-left">
               <CardTitle>Privacy Settings</CardTitle>
-              <CardDescription>Control who can see your information and contact you</CardDescription>
+              <CardDescription>
+                Control who can see your information and contact you
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 text-left">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="showLocation" className="text-base font-medium">Show Location</Label>
-                  <p className="text-sm text-muted-foreground">Display your location on your profile</p>
+                  <Label
+                    htmlFor="showLocation"
+                    className="text-base font-medium"
+                  >
+                    Show Location
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Display your location on your profile
+                  </p>
                 </div>
                 <Switch
                   id="showLocation"
                   checked={privacy.showLocation}
-                  onCheckedChange={(checked) => setPrivacy(prev => ({ ...prev, showLocation: checked }))}
+                  onCheckedChange={(checked) =>
+                    setPrivacy((prev) => ({ ...prev, showLocation: checked }))
+                  }
                 />
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="allowDirectMessages" className="text-base font-medium">Allow Direct Messages</Label>
-                  <p className="text-sm text-muted-foreground">Let others send you direct messages</p>
+                  <Label
+                    htmlFor="allowDirectMessages"
+                    className="text-base font-medium"
+                  >
+                    Allow Direct Messages
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Let others send you direct messages
+                  </p>
                 </div>
                 <Switch
                   id="allowDirectMessages"
                   checked={privacy.allowDirectMessages}
-                  onCheckedChange={(checked) => setPrivacy(prev => ({ ...prev, allowDirectMessages: checked }))}
+                  onCheckedChange={(checked) =>
+                    setPrivacy((prev) => ({
+                      ...prev,
+                      allowDirectMessages: checked,
+                    }))
+                  }
                 />
               </div>
-              
+
               <Button onClick={handleSavePrivacy}>Save Privacy Settings</Button>
             </CardContent>
           </Card>
@@ -240,15 +350,14 @@ const SettingsPage = () => {
           <Card>
             <CardHeader className="text-left">
               <CardTitle>Appearance Settings</CardTitle>
-              <CardDescription>Customize how the application looks and feels</CardDescription>
+              <CardDescription>
+                Customize how the application looks and feels
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 text-left">
               <div className="space-y-2">
                 <Label htmlFor="theme">Theme</Label>
-                <Select
-                  value={theme}
-                  onValueChange={setTheme}
-                >
+                <Select value={theme} onValueChange={setTheme}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -259,13 +368,10 @@ const SettingsPage = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="language">{t('settings.language')}</Label>
-                <Select
-                  value={language}
-                  onValueChange={handleLanguageChange}
-                >
+                <Label htmlFor="language">{t("settings.language")}</Label>
+                <Select value={language} onValueChange={handleLanguageChange}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -278,8 +384,10 @@ const SettingsPage = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
-              <Button onClick={handleSaveAppearance}>{t('settings.save')} Appearance Settings</Button>
+
+              <Button onClick={handleSaveAppearance}>
+                {t("settings.save")} Appearance Settings
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>

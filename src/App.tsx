@@ -1,9 +1,13 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import MainLayout from "@/components/layout/MainLayout";
-import AdminLayout from "@/components/layout/AdminLayout";
 
 // Pages
 import LandingPage from "@/pages/LandingPage";
@@ -41,17 +45,20 @@ function App() {
           <Routes>
             {/* Landing Page - Public Route */}
             <Route path="/landing" element={<LandingPage />} />
-            
+
             {/* Public Auth Routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            
+
             {/* Protected Admin Routes */}
-            <Route path="/admin" element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminLayout />
-              </ProtectedRoute>
-            }>
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <MainLayout />
+                </ProtectedRoute>
+              }
+            >
               <Route index element={<AdminDashboard />} />
               <Route path="users" element={<AdminUsersPage />} />
               <Route path="communities" element={<AdminCommunitiesPage />} />
@@ -61,30 +68,42 @@ function App() {
               <Route path="logs" element={<AdminLogsPage />} />
               <Route path="settings" element={<AdminSettingsPage />} />
             </Route>
-            
+
             {/* Protected Main App Routes */}
-            <Route path="/" element={
-              <ProtectedRoute>
-                <MainLayout />
-              </ProtectedRoute>
-            }>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <MainLayout />
+                </ProtectedRoute>
+              }
+            >
               <Route index element={<Index />} />
               <Route path="home" element={<Index />} />
               <Route path="communities" element={<CommunitiesPage />} />
-              <Route path="community/:communityId" element={<CommunityDetailPage />} />
-              <Route path="community/:communityId/post/:postId" element={<PostDetailPage />} />
-              <Route path="community/:communityId/moderate" element={
-                <ProtectedRoute requireModerator={true}>
-                  <ModeratePage />
-                </ProtectedRoute>
-              } />
+              <Route
+                path="community/:communityId"
+                element={<CommunityDetailPage />}
+              />
+              <Route
+                path="community/:communityId/post/:postId"
+                element={<PostDetailPage />}
+              />
+              <Route
+                path="community/:communityId/moderate"
+                element={
+                  <ProtectedRoute requireModerator={true}>
+                    <ModeratePage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="discover" element={<DiscoverPage />} />
               <Route path="chat" element={<ChatPage />} />
               <Route path="connections" element={<ConnectionsPage />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
-            
+
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
           </Routes>

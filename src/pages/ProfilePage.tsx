@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,17 +22,32 @@ const ProfilePage = () => {
     dateOfBirth: new Date(1990, 5, 15),
     avatar: null as string | null,
     communities: [
-      { name: "Photography Enthusiasts", role: "Moderator", joinedAt: new Date(2023, 0, 15) },
-      { name: "Street Photography", role: "Member", joinedAt: new Date(2023, 2, 10) },
-      { name: "Landscape Lovers", role: "Member", joinedAt: new Date(2023, 4, 5) }
-    ]
+      {
+        name: "Photography Enthusiasts",
+        role: "Moderator",
+        joinedAt: new Date(2023, 0, 15),
+      },
+      {
+        name: "Street Photography",
+        role: "Member",
+        joinedAt: new Date(2023, 2, 10),
+      },
+      {
+        name: "Landscape Lovers",
+        role: "Member",
+        joinedAt: new Date(2023, 4, 5),
+      },
+    ],
   });
 
   const calculateAge = (birthDate: Date) => {
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
     return age;
@@ -52,13 +66,13 @@ const ProfilePage = () => {
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setProfileData(prev => ({
+        setProfileData((prev) => ({
           ...prev,
-          avatar: e.target?.result as string
+          avatar: e.target?.result as string,
         }));
       };
       reader.readAsDataURL(file);
-      
+
       toast({
         title: "Avatar Updated",
         description: "Your profile picture has been updated.",
@@ -67,7 +81,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       <div className="grid gap-6">
         {/* Profile Header */}
         <Card>
@@ -77,7 +91,11 @@ const ProfilePage = () => {
                 <div className="relative">
                   <Avatar className="h-24 w-24">
                     {profileData.avatar ? (
-                      <img src={profileData.avatar} alt="Profile" className="h-full w-full object-cover" />
+                      <img
+                        src={profileData.avatar}
+                        alt="Profile"
+                        className="h-full w-full object-cover"
+                      />
                     ) : (
                       <AvatarFallback className="bg-social-primary text-white text-2xl">
                         <User className="h-12 w-12" />
@@ -103,14 +121,19 @@ const ProfilePage = () => {
                   )}
                 </div>
               </div>
-              
+
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     {isEditing ? (
                       <Input
                         value={profileData.name}
-                        onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                        onChange={(e) =>
+                          setProfileData((prev) => ({
+                            ...prev,
+                            name: e.target.value,
+                          }))
+                        }
                         className="text-2xl font-bold mb-2"
                       />
                     ) : (
@@ -118,23 +141,28 @@ const ProfilePage = () => {
                     )}
                     <p className="text-social-muted">{profileData.email}</p>
                   </div>
-                  
+
                   {isCurrentUser && (
                     <div className="flex gap-2">
                       {isEditing ? (
                         <>
                           <Button onClick={handleSave}>Save Changes</Button>
-                          <Button variant="outline" onClick={() => setIsEditing(false)}>
+                          <Button
+                            variant="outline"
+                            onClick={() => setIsEditing(false)}
+                          >
                             Cancel
                           </Button>
                         </>
                       ) : (
-                        <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
+                        <Button onClick={() => setIsEditing(true)}>
+                          Edit Profile
+                        </Button>
                       )}
                     </div>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-social-muted">
                     <Calendar className="h-4 w-4" />
@@ -146,7 +174,12 @@ const ProfilePage = () => {
                       {isEditing ? (
                         <Input
                           value={profileData.location}
-                          onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
+                          onChange={(e) =>
+                            setProfileData((prev) => ({
+                              ...prev,
+                              location: e.target.value,
+                            }))
+                          }
                           placeholder="Your location"
                         />
                       ) : (
@@ -156,7 +189,9 @@ const ProfilePage = () => {
                   </div>
                   <div className="flex items-center gap-2 text-social-muted">
                     <User className="h-4 w-4" />
-                    <span>Member since {profileData.joinDate.toLocaleDateString()}</span>
+                    <span>
+                      Member since {profileData.joinDate.toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -177,7 +212,12 @@ const ProfilePage = () => {
                   <Textarea
                     id="bio"
                     value={profileData.bio}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                    onChange={(e) =>
+                      setProfileData((prev) => ({
+                        ...prev,
+                        bio: e.target.value,
+                      }))
+                    }
                     placeholder="Tell us about yourself..."
                     rows={4}
                   />
@@ -201,14 +241,21 @@ const ProfilePage = () => {
             <CardContent>
               <div className="grid gap-4">
                 {profileData.communities.map((community, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
                     <div>
                       <h4 className="font-medium">{community.name}</h4>
                       <p className="text-sm text-gray-500">
                         Joined {community.joinedAt.toLocaleDateString()}
                       </p>
                     </div>
-                    <Badge variant={community.role === "Moderator" ? "default" : "secondary"}>
+                    <Badge
+                      variant={
+                        community.role === "Moderator" ? "default" : "secondary"
+                      }
+                    >
                       {community.role}
                     </Badge>
                   </div>

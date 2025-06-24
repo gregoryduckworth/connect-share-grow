@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -13,14 +12,12 @@ const BaseLayout = ({ children, sidebar, header }: BaseLayoutProps) => {
   return (
     <ThemeProvider>
       <SidebarProvider>
-        <div className="min-h-screen bg-background flex w-full">
+        <div className="fixed inset-0 flex bg-background">
           {sidebar}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex flex-col flex-1 min-w-0">
             {header}
             <main className="flex-1 overflow-auto">
-              <div className="p-4 md:p-6 h-full">
-                {children}
-              </div>
+              <div className="h-full w-full">{children}</div>
             </main>
           </div>
         </div>

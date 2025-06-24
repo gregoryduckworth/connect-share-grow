@@ -5,7 +5,17 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar } from "@/components/ui/avatar";
-import { Heart, MessageSquare, Pin, Lock, User, Send, Home, ChevronRight, Reply } from "lucide-react";
+import {
+  Heart,
+  MessageSquare,
+  Pin,
+  Lock,
+  User,
+  Send,
+  Home,
+  ChevronRight,
+  Reply,
+} from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -53,14 +63,17 @@ const PostDetailPage = () => {
   const { toast } = useToast();
   const [newReply, setNewReply] = useState("");
   const [replyToId, setReplyToId] = useState<string | null>(null);
-  const [replyContent, setReplyContent] = useState<{[key: string]: string}>({});
+  const [replyContent, setReplyContent] = useState<{ [key: string]: string }>(
+    {}
+  );
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   // Mock data - in a real app, this would come from an API
   const [post, setPost] = useState<PostData>({
     id: postId || "1",
     title: "Golden Hour Landscape Tips",
-    content: "Here are some techniques I've learned for capturing stunning golden hour landscapes. The key is to arrive early and scout your location during the day. Understanding how the light will hit your subject is crucial for getting that perfect shot.",
+    content:
+      "Here are some techniques I've learned for capturing stunning golden hour landscapes. The key is to arrive early and scout your location during the day. Understanding how the light will hit your subject is crucial for getting that perfect shot.",
     author: "Sarah Johnson",
     timestamp: new Date(2024, 5, 15, 14, 30),
     likes: 24,
@@ -76,7 +89,8 @@ const PostDetailPage = () => {
       {
         id: "reply-1",
         author: "Alice Cooper",
-        content: "Great tips! I especially love the advice about using graduated filters. Do you have any specific brand recommendations?",
+        content:
+          "Great tips! I especially love the advice about using graduated filters. Do you have any specific brand recommendations?",
         timestamp: new Date(2024, 5, 15, 15, 45),
         likes: 5,
         isLiked: false,
@@ -84,67 +98,70 @@ const PostDetailPage = () => {
           {
             id: "reply-1-1",
             author: "Sarah Johnson",
-            content: "I personally use Lee Filters - they're a bit pricey but the quality is excellent. Cokin is also a good budget option!",
+            content:
+              "I personally use Lee Filters - they're a bit pricey but the quality is excellent. Cokin is also a good budget option!",
             timestamp: new Date(2024, 5, 15, 16, 15),
             likes: 3,
             isLiked: false,
             parentId: "reply-1",
-            replies: []
-          }
-        ]
+            replies: [],
+          },
+        ],
       },
       {
         id: "reply-2",
         author: "Bob Wilson",
-        content: "Thanks for sharing! Do you have any recommendations for specific lens filters? I'm just starting out with landscape photography.",
+        content:
+          "Thanks for sharing! Do you have any recommendations for specific lens filters? I'm just starting out with landscape photography.",
         timestamp: new Date(2024, 5, 15, 16, 20),
         likes: 3,
         isLiked: true,
-        replies: []
+        replies: [],
       },
       {
         id: "reply-3",
         author: "Emma Davis",
-        content: "This is so helpful! I've been struggling with exposure during golden hour. Your tip about bracketing shots is game-changing.",
+        content:
+          "This is so helpful! I've been struggling with exposure during golden hour. Your tip about bracketing shots is game-changing.",
         timestamp: new Date(2024, 5, 15, 17, 10),
         likes: 2,
         isLiked: false,
-        replies: []
-      }
-    ]
+        replies: [],
+      },
+    ],
   });
 
   const handleLikePost = () => {
-    setPost(prev => ({
+    setPost((prev) => ({
       ...prev,
       isLiked: !prev.isLiked,
-      likes: prev.isLiked ? prev.likes - 1 : prev.likes + 1
+      likes: prev.isLiked ? prev.likes - 1 : prev.likes + 1,
     }));
   };
 
   const handleLikeReply = (replyId: string) => {
     const updateReplies = (replies: Reply[]): Reply[] => {
-      return replies.map(reply => {
+      return replies.map((reply) => {
         if (reply.id === replyId) {
           return {
             ...reply,
             isLiked: !reply.isLiked,
-            likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1
+            likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1,
           };
         }
         if (reply.replies.length > 0) {
           return {
             ...reply,
-            replies: updateReplies(reply.replies)
+            replies: updateReplies(reply.replies),
           };
         }
         return reply;
       });
     };
 
-    setPost(prev => ({
+    setPost((prev) => ({
       ...prev,
-      replies: updateReplies(prev.replies)
+      replies: updateReplies(prev.replies),
     }));
   };
 
@@ -160,41 +177,41 @@ const PostDetailPage = () => {
       likes: 0,
       isLiked: false,
       parentId: parentId,
-      replies: []
+      replies: [],
     };
 
     if (parentId) {
       const addReplyToParent = (replies: Reply[]): Reply[] => {
-        return replies.map(reply => {
+        return replies.map((reply) => {
           if (reply.id === parentId) {
             return {
               ...reply,
-              replies: [...reply.replies, newReplyObj]
+              replies: [...reply.replies, newReplyObj],
             };
           }
           if (reply.replies.length > 0) {
             return {
               ...reply,
-              replies: addReplyToParent(reply.replies)
+              replies: addReplyToParent(reply.replies),
             };
           }
           return reply;
         });
       };
 
-      setPost(prev => ({
+      setPost((prev) => ({
         ...prev,
         replies: addReplyToParent(prev.replies),
-        comments: prev.comments + 1
+        comments: prev.comments + 1,
       }));
 
-      setReplyContent(prev => ({ ...prev, [parentId]: "" }));
+      setReplyContent((prev) => ({ ...prev, [parentId]: "" }));
       setReplyToId(null);
     } else {
-      setPost(prev => ({
+      setPost((prev) => ({
         ...prev,
         replies: [...prev.replies, newReplyObj],
-        comments: prev.comments + 1
+        comments: prev.comments + 1,
       }));
       setNewReply("");
     }
@@ -205,8 +222,18 @@ const PostDetailPage = () => {
     });
   };
 
-  const ReplyComponent = ({ reply, depth = 0 }: { reply: Reply; depth?: number }) => (
-    <Card className={`${depth > 0 ? 'ml-8' : 'ml-4'} ${depth > 2 ? 'border-l-2 border-gray-200 pl-4' : ''}`}>
+  const ReplyComponent = ({
+    reply,
+    depth = 0,
+  }: {
+    reply: Reply;
+    depth?: number;
+  }) => (
+    <Card
+      className={`${depth > 0 ? "ml-8" : "ml-4"} ${
+        depth > 2 ? "border-l-2 border-gray-200 pl-4" : ""
+      }`}
+    >
       <CardContent className="pt-4">
         <div className="flex gap-3">
           <Avatar className="h-10 w-10 bg-social-primary text-white">
@@ -216,9 +243,13 @@ const PostDetailPage = () => {
           </Avatar>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <button 
+              <button
                 className="font-medium hover:text-social-primary transition-colors cursor-pointer"
-                onClick={() => setSelectedUserId(`user-${reply.author.toLowerCase().replace(' ', '-')}`)}
+                onClick={() =>
+                  setSelectedUserId(
+                    `user-${reply.author.toLowerCase().replace(" ", "-")}`
+                  )
+                }
               >
                 {reply.author}
               </button>
@@ -237,15 +268,19 @@ const PostDetailPage = () => {
                 }`}
                 disabled={post.commentsLocked}
               >
-                <Heart className={`h-3 w-3 ${reply.isLiked ? "fill-current" : ""}`} />
+                <Heart
+                  className={`h-3 w-3 ${reply.isLiked ? "fill-current" : ""}`}
+                />
                 {reply.likes}
               </Button>
-              
+
               {!post.commentsLocked && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setReplyToId(replyToId === reply.id ? null : reply.id)}
+                  onClick={() =>
+                    setReplyToId(replyToId === reply.id ? null : reply.id)
+                  }
                   className="flex items-center gap-1 text-sm text-gray-500"
                 >
                   <Reply className="h-3 w-3" />
@@ -253,7 +288,7 @@ const PostDetailPage = () => {
                 </Button>
               )}
             </div>
-            
+
             {/* Reply form for this specific reply */}
             {replyToId === reply.id && !post.commentsLocked && (
               <div className="mt-4 flex gap-3">
@@ -266,11 +301,16 @@ const PostDetailPage = () => {
                   <Textarea
                     placeholder={`Reply to ${reply.author}...`}
                     value={replyContent[reply.id] || ""}
-                    onChange={(e) => setReplyContent(prev => ({ ...prev, [reply.id]: e.target.value }))}
+                    onChange={(e) =>
+                      setReplyContent((prev) => ({
+                        ...prev,
+                        [reply.id]: e.target.value,
+                      }))
+                    }
                     className="flex-1"
                     rows={2}
                   />
-                  <Button 
+                  <Button
                     onClick={() => handleSubmitReply(reply.id)}
                     disabled={!replyContent[reply.id]?.trim()}
                     size="sm"
@@ -284,12 +324,16 @@ const PostDetailPage = () => {
           </div>
         </div>
       </CardContent>
-      
+
       {/* Render nested replies */}
       {reply.replies.length > 0 && (
         <div className="space-y-2 mt-2">
           {reply.replies.map((nestedReply) => (
-            <ReplyComponent key={nestedReply.id} reply={nestedReply} depth={depth + 1} />
+            <ReplyComponent
+              key={nestedReply.id}
+              reply={nestedReply}
+              depth={depth + 1}
+            />
           ))}
         </div>
       )}
@@ -297,7 +341,7 @@ const PostDetailPage = () => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       {/* Breadcrumbs */}
       <div className="mb-6">
         <Breadcrumb>
@@ -315,7 +359,9 @@ const PostDetailPage = () => {
             </BreadcrumbSeparator>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to={`/community/${communityId}`}>{post.communityName}</Link>
+                <Link to={`/community/${communityId}`}>
+                  {post.communityName}
+                </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>
@@ -330,7 +376,11 @@ const PostDetailPage = () => {
 
       <div className="max-w-4xl mx-auto">
         {/* Main Post */}
-        <Card className={`mb-6 ${post.isPinned ? "border-social-primary bg-social-accent/10" : ""}`}>
+        <Card
+          className={`mb-6 ${
+            post.isPinned ? "border-social-primary bg-social-accent/10" : ""
+          }`}
+        >
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
@@ -342,22 +392,30 @@ const PostDetailPage = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h1 className="text-2xl font-bold">{post.title}</h1>
-                    {post.isPinned && <Pin className="h-5 w-5 text-social-primary" />}
+                    {post.isPinned && (
+                      <Pin className="h-5 w-5 text-social-primary" />
+                    )}
                     {post.isLocked && <Lock className="h-5 w-5 text-red-500" />}
                   </div>
                   <p className="text-sm text-social-muted">
-                    by <button 
+                    by{" "}
+                    <button
                       className="hover:text-social-primary transition-colors cursor-pointer"
-                      onClick={() => setSelectedUserId(`user-${post.author.toLowerCase().replace(' ', '-')}`)}
+                      onClick={() =>
+                        setSelectedUserId(
+                          `user-${post.author.toLowerCase().replace(" ", "-")}`
+                        )
+                      }
                     >
                       {post.author}
-                    </button> • {post.timestamp.toLocaleDateString()}
+                    </button>{" "}
+                    • {post.timestamp.toLocaleDateString()}
                   </p>
                 </div>
               </div>
             </div>
           </CardHeader>
-          
+
           <CardContent className="pt-0">
             {post.isLocked && post.lockReason && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
@@ -367,17 +425,23 @@ const PostDetailPage = () => {
                 </p>
               </div>
             )}
-            
-            <p className="text-social-foreground mb-4 text-lg leading-relaxed">{post.content}</p>
-            
+
+            <p className="text-social-foreground mb-4 text-lg leading-relaxed">
+              {post.content}
+            </p>
+
             <div className="flex flex-wrap gap-2 mb-4">
               {post.tags.map((tag, index) => (
-                <Badge key={index} variant="secondary" className="bg-social-accent/50">
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="bg-social-accent/50"
+                >
                   {tag}
                 </Badge>
               ))}
             </div>
-            
+
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
@@ -388,10 +452,12 @@ const PostDetailPage = () => {
                 }`}
                 disabled={post.isLocked}
               >
-                <Heart className={`h-4 w-4 ${post.isLiked ? "fill-current" : ""}`} />
+                <Heart
+                  className={`h-4 w-4 ${post.isLiked ? "fill-current" : ""}`}
+                />
                 {post.likes}
               </Button>
-              
+
               <div className="flex items-center gap-2 text-social-muted">
                 <MessageSquare className="h-4 w-4" />
                 {post.comments} replies
@@ -402,8 +468,10 @@ const PostDetailPage = () => {
 
         {/* Replies Section */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Replies ({post.replies.length})</h2>
-          
+          <h2 className="text-xl font-semibold">
+            Replies ({post.replies.length})
+          </h2>
+
           {post.replies.map((reply) => (
             <ReplyComponent key={reply.id} reply={reply} />
           ))}
@@ -426,7 +494,7 @@ const PostDetailPage = () => {
                       className="flex-1"
                       rows={3}
                     />
-                    <Button 
+                    <Button
                       onClick={() => handleSubmitReply()}
                       disabled={!newReply.trim()}
                       className="self-end"

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +40,7 @@ const AdminRolesPage = () => {
         "Access admin dashboard and analytics",
         "Modify system settings",
         "Handle reports and moderation",
-        "Assign and revoke roles"
+        "Assign and revoke roles",
       ],
       userCount: 2,
       users: [
@@ -50,18 +49,18 @@ const AdminRolesPage = () => {
           name: "John Doe",
           email: "john.doe@example.com",
           joinDate: new Date(2023, 0, 15),
-          communities: ["Photography", "Tech Talk"]
+          communities: ["Photography", "Tech Talk"],
         },
         {
           id: "admin-2",
           name: "Sarah Admin",
           email: "sarah.admin@example.com",
           joinDate: new Date(2023, 1, 1),
-          communities: ["Photography", "Web Development"]
-        }
+          communities: ["Photography", "Web Development"],
+        },
       ],
       icon: <Crown className="h-5 w-5" />,
-      color: "bg-red-500"
+      color: "bg-red-500",
     },
     {
       name: "Moderator",
@@ -71,7 +70,7 @@ const AdminRolesPage = () => {
         "Lock/unlock posts and comments",
         "Manage community rules",
         "Handle community reports",
-        "Pin important posts"
+        "Pin important posts",
       ],
       userCount: 5,
       users: [
@@ -80,39 +79,39 @@ const AdminRolesPage = () => {
           name: "Jane Smith",
           email: "jane.smith@example.com",
           joinDate: new Date(2023, 1, 3),
-          communities: ["Cooking Club", "Travel Adventures"]
+          communities: ["Cooking Club", "Travel Adventures"],
         },
         {
           id: "mod-2",
           name: "Mike Chen",
           email: "mike.chen@example.com",
           joinDate: new Date(2023, 2, 10),
-          communities: ["Photography"]
+          communities: ["Photography"],
         },
         {
           id: "mod-3",
           name: "Alex Rivera",
           email: "alex.rivera@example.com",
           joinDate: new Date(2023, 3, 15),
-          communities: ["Web Development", "Tech Talk"]
+          communities: ["Web Development", "Tech Talk"],
         },
         {
           id: "mod-4",
           name: "Emma Davis",
           email: "emma.davis@example.com",
           joinDate: new Date(2023, 4, 20),
-          communities: ["Book Club"]
+          communities: ["Book Club"],
         },
         {
           id: "mod-5",
           name: "Tom Wilson",
           email: "tom.wilson@example.com",
           joinDate: new Date(2023, 5, 5),
-          communities: ["Fitness & Health"]
-        }
+          communities: ["Fitness & Health"],
+        },
       ],
       icon: <Shield className="h-5 w-5" />,
-      color: "bg-orange-500"
+      color: "bg-orange-500",
     },
     {
       name: "User",
@@ -122,7 +121,7 @@ const AdminRolesPage = () => {
         "Comment on posts",
         "Join communities",
         "Like and share content",
-        "Report inappropriate content"
+        "Report inappropriate content",
       ],
       userCount: 1247,
       users: [
@@ -131,27 +130,27 @@ const AdminRolesPage = () => {
           name: "Robert Johnson",
           email: "robert.j@example.com",
           joinDate: new Date(2023, 2, 20),
-          communities: ["Book Readers"]
+          communities: ["Book Readers"],
         },
         {
           id: "user-2",
           name: "Lisa Brown",
           email: "lisa.b@example.com",
           joinDate: new Date(2023, 3, 5),
-          communities: []
+          communities: [],
         },
         {
           id: "user-3",
           name: "Michael Wilson",
           email: "michael.w@example.com",
           joinDate: new Date(2023, 4, 12),
-          communities: ["Gaming", "Tech Talk"]
-        }
+          communities: ["Gaming", "Tech Talk"],
+        },
         // In a real app, this would be paginated
       ],
       icon: <User className="h-5 w-5" />,
-      color: "bg-blue-500"
-    }
+      color: "bg-blue-500",
+    },
   ]);
 
   const RoleCard = ({ role }: { role: Role }) => (
@@ -165,18 +164,21 @@ const AdminRolesPage = () => {
             {role.name}
           </CardTitle>
           <Badge variant="secondary">
-            {role.userCount} {role.userCount === 1 ? 'user' : 'users'}
+            {role.userCount} {role.userCount === 1 ? "user" : "users"}
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-social-muted">{role.description}</p>
-        
+
         <div>
           <h4 className="font-medium mb-2">Permissions:</h4>
           <ul className="space-y-1">
             {role.permissions.map((permission, index) => (
-              <li key={index} className="text-sm text-social-muted flex items-center gap-2">
+              <li
+                key={index}
+                className="text-sm text-social-muted flex items-center gap-2"
+              >
                 <div className="w-1.5 h-1.5 rounded-full bg-social-primary" />
                 {permission}
               </li>
@@ -214,20 +216,26 @@ const AdminRolesPage = () => {
                       </div>
                       <div>
                         <p className="font-medium">{user.name}</p>
-                        <p className="text-sm text-social-muted">{user.email}</p>
+                        <p className="text-sm text-social-muted">
+                          {user.email}
+                        </p>
                         <p className="text-xs text-gray-400">
                           Joined {user.joinDate.toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                   </div>
-                  
+
                   {user.communities && user.communities.length > 0 && (
                     <div className="mt-3">
                       <p className="text-sm font-medium mb-1">Communities:</p>
                       <div className="flex flex-wrap gap-1">
                         {user.communities.map((community, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="text-xs"
+                          >
                             {community}
                           </Badge>
                         ))}
@@ -236,7 +244,7 @@ const AdminRolesPage = () => {
                   )}
                 </Card>
               ))}
-              
+
               {role.name === "User" && role.userCount > role.users.length && (
                 <div className="text-center p-4 text-social-muted">
                   <p>Showing first {role.users.length} users</p>
@@ -251,9 +259,11 @@ const AdminRolesPage = () => {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       <div>
-        <h2 className="text-2xl font-semibold mb-2">Roles & Permissions</h2>
+        <h1 className="text-3xl font-bold text-social-primary mb-2">
+          Roles & Permissions
+        </h1>
         <p className="text-social-muted">
           Manage user roles and view their permissions across the platform
         </p>

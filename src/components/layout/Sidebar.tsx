@@ -1,4 +1,3 @@
-
 import { NavLink } from "react-router-dom";
 import { Home, Users, Compass, MessageCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -15,24 +14,38 @@ import {
 } from "@/components/ui/sidebar";
 import { t } from "@/lib/i18n";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SidebarComponent = () => {
-  const { language } = useTheme(); // This will trigger re-renders when language changes
+  const { language } = useTheme();
+  const { user } = useAuth();
 
   const mainNavItems = [
-    { title: t('home.welcome'), url: "/", icon: Home },
-    { title: t('nav.communities'), url: "/communities", icon: Users },
-    { title: t('nav.discover'), url: "/discover", icon: Compass },
+    { title: t("nav.home"), url: "/", icon: Home },
+    { title: t("nav.communities"), url: "/communities", icon: Users },
+    { title: t("nav.discover"), url: "/discover", icon: Compass },
   ];
 
   const chatNavItems = [
-    { title: t('nav.chat'), url: "/chat", icon: MessageCircle },
-    { title: t('nav.connections'), url: "/connections", icon: Users },
+    { title: t("nav.chat"), url: "/chat", icon: MessageCircle },
+    { title: t("nav.connections"), url: "/connections", icon: Users },
+  ];
+
+  // Admin section links
+  const adminNavItems = [
+    { title: "Dashboard", url: "/admin", icon: Home },
+    { title: "Users", url: "/admin/users", icon: Users },
+    { title: "Communities", url: "/admin/communities", icon: Compass },
+    { title: "Reports", url: "/admin/reports", icon: MessageCircle },
+    { title: "Logs", url: "/admin/logs", icon: MessageCircle },
+    { title: "Settings", url: "/admin/settings", icon: Compass },
+    { title: "Roles", url: "/admin/roles", icon: Users },
+    { title: "Analytics", url: "/admin/analytics", icon: Compass },
   ];
 
   return (
-    <Sidebar className="border-r border-border">
-      <SidebarHeader className="p-4 border-b border-border">
+    <Sidebar>
+      <SidebarHeader className="h-16 p-4 border-b border-border">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-foreground">ConnectSphere</h2>
           <SidebarTrigger className="md:hidden" />
@@ -41,14 +54,16 @@ const SidebarComponent = () => {
 
       <SidebarContent className="bg-background">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-foreground">{t('nav.home')}</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-foreground">
+            {t("nav.home")}
+          </SidebarGroupLabel>
           <SidebarMenu>
             {mainNavItems.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild>
-                  <NavLink 
+                  <NavLink
                     to={item.url}
-                    className={({ isActive }) => 
+                    className={({ isActive }) =>
                       `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-foreground hover:bg-accent hover:text-accent-foreground ${
                         isActive ? "bg-accent text-accent-foreground" : ""
                       }`
@@ -66,14 +81,16 @@ const SidebarComponent = () => {
         <Separator className="my-4 bg-border" />
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-foreground">{t('nav.chat')}</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-foreground">
+            {t("nav.chat")}
+          </SidebarGroupLabel>
           <SidebarMenu>
             {chatNavItems.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild>
-                  <NavLink 
+                  <NavLink
                     to={item.url}
-                    className={({ isActive }) => 
+                    className={({ isActive }) =>
                       `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-foreground hover:bg-accent hover:text-accent-foreground ${
                         isActive ? "bg-accent text-accent-foreground" : ""
                       }`
@@ -87,6 +104,39 @@ const SidebarComponent = () => {
             ))}
           </SidebarMenu>
         </SidebarGroup>
+
+        {/* Admin section only if user is admin */}
+        {user?.role === "admin" && (
+          <>
+            <Separator className="my-4 bg-border" />
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-foreground">
+                Admin
+              </SidebarGroupLabel>
+              <SidebarMenu>
+                {adminNavItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        className={({ isActive }) =>
+                          `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-foreground hover:bg-accent hover:text-accent-foreground ${
+                            isActive ? "bg-accent text-accent-foreground" : ""
+                          }`
+                        }
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span className="text-sm font-medium">
+                          {item.title}
+                        </span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroup>
+          </>
+        )}
       </SidebarContent>
     </Sidebar>
   );

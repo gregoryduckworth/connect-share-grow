@@ -1,5 +1,10 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,16 +36,19 @@ const AdminSettingsPage = () => {
   };
 
   const handleSettingChange = (key: string, value: any) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       <div className="flex items-center gap-3">
-        <Settings className="h-8 w-8 text-social-primary" />
         <div>
-          <h1 className="text-3xl font-bold text-social-primary">Admin Settings</h1>
-          <p className="text-social-muted">Configure platform settings and policies</p>
+          <h1 className="text-3xl font-bold text-social-primary">
+            Admin Settings
+          </h1>
+          <p className="text-social-muted">
+            Configure platform settings and policies
+          </p>
         </div>
       </div>
 
@@ -62,7 +70,9 @@ const AdminSettingsPage = () => {
               <Input
                 id="siteName"
                 value={settings.siteName}
-                onChange={(e) => handleSettingChange('siteName', e.target.value)}
+                onChange={(e) =>
+                  handleSettingChange("siteName", e.target.value)
+                }
               />
             </div>
             <Separator />
@@ -75,7 +85,9 @@ const AdminSettingsPage = () => {
               </div>
               <Switch
                 checked={settings.allowRegistration}
-                onCheckedChange={(checked) => handleSettingChange('allowRegistration', checked)}
+                onCheckedChange={(checked) =>
+                  handleSettingChange("allowRegistration", checked)
+                }
               />
             </div>
             <div className="flex items-center justify-between">
@@ -87,7 +99,9 @@ const AdminSettingsPage = () => {
               </div>
               <Switch
                 checked={settings.requireEmailVerification}
-                onCheckedChange={(checked) => handleSettingChange('requireEmailVerification', checked)}
+                onCheckedChange={(checked) =>
+                  handleSettingChange("requireEmailVerification", checked)
+                }
               />
             </div>
           </CardContent>
@@ -114,16 +128,25 @@ const AdminSettingsPage = () => {
               </div>
               <Switch
                 checked={settings.autoApproveCommunities}
-                onCheckedChange={(checked) => handleSettingChange('autoApproveCommunities', checked)}
+                onCheckedChange={(checked) =>
+                  handleSettingChange("autoApproveCommunities", checked)
+                }
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="maxCommunityName">Max Community Name Length</Label>
+              <Label htmlFor="maxCommunityName">
+                Max Community Name Length
+              </Label>
               <Input
                 id="maxCommunityName"
                 type="number"
                 value={settings.maxCommunityNameLength}
-                onChange={(e) => handleSettingChange('maxCommunityNameLength', parseInt(e.target.value))}
+                onChange={(e) =>
+                  handleSettingChange(
+                    "maxCommunityNameLength",
+                    parseInt(e.target.value)
+                  )
+                }
               />
             </div>
             <div className="space-y-2">
@@ -132,7 +155,12 @@ const AdminSettingsPage = () => {
                 id="maxPostTitle"
                 type="number"
                 value={settings.maxPostTitleLength}
-                onChange={(e) => handleSettingChange('maxPostTitleLength', parseInt(e.target.value))}
+                onChange={(e) =>
+                  handleSettingChange(
+                    "maxPostTitleLength",
+                    parseInt(e.target.value)
+                  )
+                }
               />
             </div>
           </CardContent>
@@ -159,26 +187,39 @@ const AdminSettingsPage = () => {
               </div>
               <Switch
                 checked={settings.moderatorRequestsEnabled}
-                onCheckedChange={(checked) => handleSettingChange('moderatorRequestsEnabled', checked)}
+                onCheckedChange={(checked) =>
+                  handleSettingChange("moderatorRequestsEnabled", checked)
+                }
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="inactiveModerator">Inactive Moderator Threshold (days)</Label>
+              <Label htmlFor="inactiveModerator">
+                Inactive Moderator Threshold (days)
+              </Label>
               <Input
                 id="inactiveModerator"
                 type="number"
                 value={settings.inactiveModerator}
-                onChange={(e) => handleSettingChange('inactiveModerator', parseInt(e.target.value))}
+                onChange={(e) =>
+                  handleSettingChange(
+                    "inactiveModerator",
+                    parseInt(e.target.value)
+                  )
+                }
               />
               <p className="text-sm text-muted-foreground">
-                Alert admins when moderators have been inactive for this many days
+                Alert admins when moderators have been inactive for this many
+                days
               </p>
             </div>
           </CardContent>
         </Card>
 
         <div className="flex justify-end">
-          <Button onClick={handleSaveSettings} className="bg-social-primary hover:bg-social-secondary">
+          <Button
+            onClick={handleSaveSettings}
+            className="bg-social-primary hover:bg-social-secondary"
+          >
             Save Settings
           </Button>
         </div>

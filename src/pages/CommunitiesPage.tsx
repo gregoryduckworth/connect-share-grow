@@ -2,7 +2,13 @@ import { useState } from "react";
 import { Search, Users, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CreateCommunityDialog from "@/components/community/CreateCommunityDialog";
@@ -39,20 +45,21 @@ const CommunitiesPage = () => {
     {
       id: "1",
       name: "Photography Enthusiasts",
-      description: "A place for photographers to share their work and discuss techniques",
+      description:
+        "A place for photographers to share their work and discuss techniques",
       memberCount: 1250,
       tags: ["Photography", "Art", "Camera"],
       isJoined: true,
-      isModerator: true
+      isModerator: true,
     },
     {
-      id: "2", 
+      id: "2",
       name: "Tech Innovators",
       description: "Discussing the latest in technology and innovation",
       memberCount: 890,
       tags: ["Technology", "Innovation", "Startups"],
       isJoined: false,
-      isModerator: false
+      isModerator: false,
     },
     {
       id: "3",
@@ -61,7 +68,7 @@ const CommunitiesPage = () => {
       memberCount: 2100,
       tags: ["Cooking", "Recipes", "Food"],
       isJoined: true,
-      isModerator: false
+      isModerator: false,
     },
     {
       id: "4",
@@ -70,7 +77,7 @@ const CommunitiesPage = () => {
       memberCount: 756,
       tags: ["Travel", "Adventure", "Culture"],
       isJoined: false,
-      isModerator: false
+      isModerator: false,
     },
     {
       id: "5",
@@ -79,7 +86,7 @@ const CommunitiesPage = () => {
       memberCount: 1543,
       tags: ["Fitness", "Health", "Wellness"],
       isJoined: true,
-      isModerator: false
+      isModerator: false,
     },
     {
       id: "6",
@@ -88,7 +95,7 @@ const CommunitiesPage = () => {
       memberCount: 432,
       tags: ["Books", "Reading", "Literature"],
       isJoined: false,
-      isModerator: false
+      isModerator: false,
     },
     {
       id: "7",
@@ -97,7 +104,7 @@ const CommunitiesPage = () => {
       memberCount: 2890,
       tags: ["Gaming", "Entertainment", "Community"],
       isJoined: false,
-      isModerator: false
+      isModerator: false,
     },
     {
       id: "8",
@@ -106,17 +113,22 @@ const CommunitiesPage = () => {
       memberCount: 1120,
       tags: ["Art", "Design", "Creative"],
       isJoined: false,
-      isModerator: false
-    }
+      isModerator: false,
+    },
   ]);
 
-  const filteredCommunities = allCommunities.filter(community =>
-    community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    community.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredCommunities = allCommunities.filter(
+    (community) =>
+      community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      community.tags.some((tag) =>
+        tag.toLowerCase().includes(searchQuery.toLowerCase())
+      )
   );
 
-  const joinedCommunities = allCommunities.filter(community => community.isJoined);
+  const joinedCommunities = allCommunities.filter(
+    (community) => community.isJoined
+  );
 
   const getCurrentPageCommunities = (communities: Community[]) => {
     const startIndex = (currentPage - 1) * communitiesPerPage;
@@ -129,18 +141,26 @@ const CommunitiesPage = () => {
   };
 
   const handleJoinCommunity = (communityId: string) => {
-    setAllCommunities(communities =>
-      communities.map(community =>
+    setAllCommunities((communities) =>
+      communities.map((community) =>
         community.id === communityId
-          ? { ...community, isJoined: !community.isJoined, memberCount: community.isJoined ? community.memberCount - 1 : community.memberCount + 1 }
+          ? {
+              ...community,
+              isJoined: !community.isJoined,
+              memberCount: community.isJoined
+                ? community.memberCount - 1
+                : community.memberCount + 1,
+            }
           : community
       )
     );
 
-    const community = allCommunities.find(c => c.id === communityId);
+    const community = allCommunities.find((c) => c.id === communityId);
     toast({
       title: community?.isJoined ? "Left community" : "Joined community",
-      description: community?.isJoined ? `You have left ${community.name}` : `Welcome to ${community?.name}!`,
+      description: community?.isJoined
+        ? `You have left ${community.name}`
+        : `Welcome to ${community?.name}!`,
     });
   };
 
@@ -159,11 +179,16 @@ const CommunitiesPage = () => {
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <CardTitle className="text-lg">
-              <Link to={`/community/${community.id}`} className="hover:text-social-primary transition-colors">
+              <Link
+                to={`/community/${community.id}`}
+                className="hover:text-social-primary transition-colors"
+              >
                 {community.name}
               </Link>
             </CardTitle>
-            <CardDescription className="mt-2">{community.description}</CardDescription>
+            <CardDescription className="mt-2">
+              {community.description}
+            </CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -172,7 +197,7 @@ const CommunitiesPage = () => {
           <Users className="h-4 w-4 mr-1" />
           {community.memberCount.toLocaleString()} members
         </div>
-        
+
         <div className="flex flex-wrap gap-2 mb-4">
           {community.tags.map((tag, index) => (
             <Badge key={index} variant="secondary" className="text-xs">
@@ -180,7 +205,7 @@ const CommunitiesPage = () => {
             </Badge>
           ))}
         </div>
-        
+
         <div className="flex gap-2">
           <Button
             onClick={() => handleJoinCommunity(community.id)}
@@ -189,13 +214,9 @@ const CommunitiesPage = () => {
           >
             {community.isJoined ? "Leave" : "Join"}
           </Button>
-          
+
           {community.isModerator && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              asChild
-            >
+            <Button variant="outline" size="sm" asChild>
               <Link to="/moderate">Moderate</Link>
             </Button>
           )}
@@ -205,11 +226,15 @@ const CommunitiesPage = () => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-social-primary mb-2">Communities</h1>
-          <p className="text-social-muted">Discover and join communities that match your interests</p>
+          <h1 className="text-3xl font-bold text-social-primary mb-2">
+            Communities
+          </h1>
+          <p className="text-social-muted">
+            Discover and join communities that match your interests
+          </p>
         </div>
         <CreateCommunityDialog
           trigger={
@@ -239,17 +264,19 @@ const CommunitiesPage = () => {
           <TabsTrigger value="all">All Communities</TabsTrigger>
           <TabsTrigger value="joined">My Communities</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="all" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
             {getCurrentPageCommunities(filteredCommunities).map((community) => (
               <CommunityCard key={community.id} community={community} />
             ))}
           </div>
-          
+
           {filteredCommunities.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-social-muted">No communities found matching your search.</p>
+              <p className="text-social-muted">
+                No communities found matching your search.
+              </p>
             </div>
           )}
 
@@ -258,13 +285,22 @@ const CommunitiesPage = () => {
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
-                    <PaginationPrevious 
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    <PaginationPrevious
+                      onClick={() =>
+                        setCurrentPage(Math.max(1, currentPage - 1))
+                      }
+                      className={
+                        currentPage === 1
+                          ? "pointer-events-none opacity-50"
+                          : "cursor-pointer"
+                      }
                     />
                   </PaginationItem>
-                  
-                  {Array.from({ length: getTotalPages(filteredCommunities) }, (_, i) => i + 1).map((page) => (
+
+                  {Array.from(
+                    { length: getTotalPages(filteredCommunities) },
+                    (_, i) => i + 1
+                  ).map((page) => (
                     <PaginationItem key={page}>
                       <PaginationLink
                         onClick={() => setCurrentPage(page)}
@@ -275,11 +311,22 @@ const CommunitiesPage = () => {
                       </PaginationLink>
                     </PaginationItem>
                   ))}
-                  
+
                   <PaginationItem>
-                    <PaginationNext 
-                      onClick={() => setCurrentPage(Math.min(getTotalPages(filteredCommunities), currentPage + 1))}
-                      className={currentPage === getTotalPages(filteredCommunities) ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    <PaginationNext
+                      onClick={() =>
+                        setCurrentPage(
+                          Math.min(
+                            getTotalPages(filteredCommunities),
+                            currentPage + 1
+                          )
+                        )
+                      }
+                      className={
+                        currentPage === getTotalPages(filteredCommunities)
+                          ? "pointer-events-none opacity-50"
+                          : "cursor-pointer"
+                      }
                     />
                   </PaginationItem>
                 </PaginationContent>
@@ -287,18 +334,20 @@ const CommunitiesPage = () => {
             </div>
           )}
         </TabsContent>
-        
+
         <TabsContent value="joined" className="mt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {joinedCommunities.map((community) => (
               <CommunityCard key={community.id} community={community} />
             ))}
           </div>
-          
+
           {joinedCommunities.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-social-muted">You haven't joined any communities yet.</p>
-              <Button className="mt-4" >
+              <p className="text-social-muted">
+                You haven't joined any communities yet.
+              </p>
+              <Button className="mt-4">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Your First Community
               </Button>

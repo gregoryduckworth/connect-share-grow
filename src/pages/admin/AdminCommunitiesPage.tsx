@@ -1,17 +1,26 @@
 import { useState } from "react";
 import {
-  Table, TableBody, TableCell, TableHead,
-  TableHeader, TableRow
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription,
-  AlertDialogFooter, AlertDialogHeader,
-  AlertDialogTitle, AlertDialogTrigger
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Search, Users, MessageSquare, Check, X } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
@@ -53,7 +62,9 @@ const AdminCommunitiesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [selectedCommunity, setSelectedCommunity] = useState<Community | PendingCommunity | null>(null);
+  const [selectedCommunity, setSelectedCommunity] = useState<
+    Community | PendingCommunity | null
+  >(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
 
   const [communities, setCommunities] = useState<Community[]>([
@@ -69,7 +80,7 @@ const AdminCommunitiesPage = () => {
       moderators: ["Sarah Johnson", "Mike Chen"],
       tags: ["Photography", "Art", "Camera"],
       createdBy: "admin",
-      requestedAt: new Date(2023, 0, 15)
+      requestedAt: new Date(2023, 0, 15),
     },
     {
       id: "comm-2",
@@ -83,7 +94,7 @@ const AdminCommunitiesPage = () => {
       moderators: ["Alex Rivera"],
       tags: ["JavaScript", "React", "Node.js"],
       createdBy: "admin",
-      requestedAt: new Date(2023, 1, 20)
+      requestedAt: new Date(2023, 1, 20),
     },
     {
       id: "comm-3",
@@ -97,11 +108,13 @@ const AdminCommunitiesPage = () => {
       moderators: ["Emma Davis"],
       tags: ["Cooking", "Recipes", "Food"],
       createdBy: "admin",
-      requestedAt: new Date(2023, 2, 10)
-    }
+      requestedAt: new Date(2023, 2, 10),
+    },
   ]);
 
-  const [pendingCommunities, setPendingCommunities] = useState<PendingCommunity[]>([
+  const [pendingCommunities, setPendingCommunities] = useState<
+    PendingCommunity[]
+  >([
     {
       id: "pending-1",
       name: "Cryptocurrency Trading",
@@ -114,13 +127,14 @@ const AdminCommunitiesPage = () => {
       moderators: [],
       tags: ["Crypto", "Trading", "Investment"],
       createdBy: "John Trader",
-      requestedAt: new Date(2024, 5, 15)
-    }
+      requestedAt: new Date(2024, 5, 15),
+    },
   ]);
 
-  const filteredCommunities = communities.filter(community =>
-    community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    community.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredCommunities = communities.filter(
+    (community) =>
+      community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      community.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredCommunities.length / pageSize);
@@ -130,11 +144,13 @@ const AdminCommunitiesPage = () => {
   );
 
   const handleSuspendCommunity = (id: string) => {
-    const community = communities.find(c => c.id === id);
+    const community = communities.find((c) => c.id === id);
     if (community) {
-      setCommunities(communities.map(c =>
-        c.id === id ? { ...c, status: "suspended" as const } : c
-      ));
+      setCommunities(
+        communities.map((c) =>
+          c.id === id ? { ...c, status: "suspended" as const } : c
+        )
+      );
 
       toast({
         title: "Community Suspended",
@@ -146,17 +162,19 @@ const AdminCommunitiesPage = () => {
         action: "community_suspended",
         details: `Suspended community: ${community.name}`,
         targetId: community.id,
-        targetType: "community"
+        targetType: "community",
       });
     }
   };
 
   const handleActivateCommunity = (id: string) => {
-    const community = communities.find(c => c.id === id);
+    const community = communities.find((c) => c.id === id);
     if (community) {
-      setCommunities(communities.map(c =>
-        c.id === id ? { ...c, status: "active" as const } : c
-      ));
+      setCommunities(
+        communities.map((c) =>
+          c.id === id ? { ...c, status: "active" as const } : c
+        )
+      );
 
       toast({
         title: "Community Activated",
@@ -167,13 +185,13 @@ const AdminCommunitiesPage = () => {
         action: "community_activated",
         details: `Activated community: ${community.name}`,
         targetId: community.id,
-        targetType: "community"
+        targetType: "community",
       });
     }
   };
 
   const handleApproveCommunity = (id: string) => {
-    const pendingCommunity = pendingCommunities.find(c => c.id === id);
+    const pendingCommunity = pendingCommunities.find((c) => c.id === id);
     if (pendingCommunity) {
       const newCommunity: Community = {
         id: pendingCommunity.id,
@@ -187,11 +205,11 @@ const AdminCommunitiesPage = () => {
         moderators: [],
         tags: pendingCommunity.tags,
         createdBy: pendingCommunity.createdBy,
-        requestedAt: pendingCommunity.requestedAt
+        requestedAt: pendingCommunity.requestedAt,
       };
 
       setCommunities([...communities, newCommunity]);
-      setPendingCommunities(pendingCommunities.filter(c => c.id !== id));
+      setPendingCommunities(pendingCommunities.filter((c) => c.id !== id));
 
       toast({
         title: "Community Approved",
@@ -202,15 +220,15 @@ const AdminCommunitiesPage = () => {
         action: "community_approved",
         details: `Approved community: ${pendingCommunity.name}`,
         targetId: pendingCommunity.id,
-        targetType: "community"
+        targetType: "community",
       });
     }
   };
 
   const handleRejectCommunity = (id: string) => {
-    const pendingCommunity = pendingCommunities.find(c => c.id === id);
+    const pendingCommunity = pendingCommunities.find((c) => c.id === id);
     if (pendingCommunity) {
-      setPendingCommunities(pendingCommunities.filter(c => c.id !== id));
+      setPendingCommunities(pendingCommunities.filter((c) => c.id !== id));
 
       toast({
         title: "Community Rejected",
@@ -222,15 +240,17 @@ const AdminCommunitiesPage = () => {
         action: "community_rejected",
         details: `Rejected community: ${pendingCommunity.name}`,
         targetId: pendingCommunity.id,
-        targetType: "community"
+        targetType: "community",
       });
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h2 className="text-2xl font-semibold">Manage Communities</h2>
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <h1 className="text-3xl font-bold text-social-primary mb-2">
+          Manage Communities
+        </h1>
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
           <Input
@@ -252,7 +272,7 @@ const AdminCommunitiesPage = () => {
                 <TableRow>
                   <TableHead>Community</TableHead>
                   <TableHead>Category</TableHead>
-                  <TableHead>Requested</TableHead> 
+                  <TableHead>Requested</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -262,17 +282,21 @@ const AdminCommunitiesPage = () => {
                     <TableCell>
                       <div>
                         <p className="font-medium">{community.name}</p>
-                        <p className="text-sm text-gray-500">{community.description}</p>
+                        <p className="text-sm text-gray-500">
+                          {community.description}
+                        </p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">{community.category}</Badge>
                     </TableCell>
-                    <TableCell>{community.requestedAt.toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {community.requestedAt.toLocaleDateString()}
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => {
                             setSelectedCommunity(community);
@@ -281,30 +305,41 @@ const AdminCommunitiesPage = () => {
                         >
                           View Details
                         </Button>
-                        
+
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button size="sm" className="bg-green-500 hover:bg-green-600">
+                            <Button
+                              size="sm"
+                              className="bg-green-500 hover:bg-green-600"
+                            >
                               <Check className="h-4 w-4 mr-1" />
                               Approve
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Approve Community</AlertDialogTitle>
+                              <AlertDialogTitle>
+                                Approve Community
+                              </AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to approve "{community.name}"? This will make it publicly available.
+                                Are you sure you want to approve "
+                                {community.name}"? This will make it publicly
+                                available.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleApproveCommunity(community.id)}>
+                              <AlertDialogAction
+                                onClick={() =>
+                                  handleApproveCommunity(community.id)
+                                }
+                              >
                                 Approve
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
-                        
+
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button size="sm" variant="destructive">
@@ -314,14 +349,21 @@ const AdminCommunitiesPage = () => {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Reject Community</AlertDialogTitle>
+                              <AlertDialogTitle>
+                                Reject Community
+                              </AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to reject "{community.name}"? This action cannot be undone.
+                                Are you sure you want to reject "
+                                {community.name}"? This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleRejectCommunity(community.id)}>
+                              <AlertDialogAction
+                                onClick={() =>
+                                  handleRejectCommunity(community.id)
+                                }
+                              >
                                 Reject
                               </AlertDialogAction>
                             </AlertDialogFooter>
@@ -356,7 +398,9 @@ const AdminCommunitiesPage = () => {
                 <TableCell>
                   <div>
                     <p className="font-medium">{community.name}</p>
-                    <p className="text-sm text-gray-500">{community.description}</p>
+                    <p className="text-sm text-gray-500">
+                      {community.description}
+                    </p>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -375,18 +419,22 @@ const AdminCommunitiesPage = () => {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge className={
-                    community.status === "active" ? "bg-green-500" :
-                    community.status === "suspended" ? "bg-red-500" :
-                    "bg-orange-500"
-                  }>
+                  <Badge
+                    className={
+                      community.status === "active"
+                        ? "bg-green-500"
+                        : community.status === "suspended"
+                        ? "bg-red-500"
+                        : "bg-orange-500"
+                    }
+                  >
                     {community.status}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => {
                         setSelectedCommunity(community);
@@ -395,7 +443,7 @@ const AdminCommunitiesPage = () => {
                     >
                       View Details
                     </Button>
-                    
+
                     {community.status === "active" ? (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -405,14 +453,21 @@ const AdminCommunitiesPage = () => {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Suspend Community</AlertDialogTitle>
+                            <AlertDialogTitle>
+                              Suspend Community
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to suspend "{community.name}"? Members won't be able to post or interact.
+                              Are you sure you want to suspend "{community.name}
+                              "? Members won't be able to post or interact.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleSuspendCommunity(community.id)}>
+                            <AlertDialogAction
+                              onClick={() =>
+                                handleSuspendCommunity(community.id)
+                              }
+                            >
                               Suspend
                             </AlertDialogAction>
                           </AlertDialogFooter>
@@ -421,20 +476,31 @@ const AdminCommunitiesPage = () => {
                     ) : (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button size="sm" className="bg-green-500 hover:bg-green-600">
+                          <Button
+                            size="sm"
+                            className="bg-green-500 hover:bg-green-600"
+                          >
                             Activate
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Activate Community</AlertDialogTitle>
+                            <AlertDialogTitle>
+                              Activate Community
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to activate "{community.name}"? This will restore full functionality.
+                              Are you sure you want to activate "
+                              {community.name}"? This will restore full
+                              functionality.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleActivateCommunity(community.id)}>
+                            <AlertDialogAction
+                              onClick={() =>
+                                handleActivateCommunity(community.id)
+                              }
+                            >
                               Activate
                             </AlertDialogAction>
                           </AlertDialogFooter>
@@ -447,13 +513,15 @@ const AdminCommunitiesPage = () => {
             ))}
           </TableBody>
         </Table>
-        
+
         {paginatedCommunities.length === 0 && (
           <div className="text-center p-8">
-            <p className="text-social-muted">No communities found matching your search.</p>
+            <p className="text-social-muted">
+              No communities found matching your search.
+            </p>
           </div>
         )}
-        
+
         {filteredCommunities.length > 0 && (
           <AdminTablePagination
             currentPage={currentPage}

@@ -35,7 +35,8 @@ const AdminReports = () => {
       id: "report-1",
       contentType: "post",
       contentId: "post-123",
-      contentPreview: "This post contains potentially inappropriate content about politics and inflammatory language that goes against community guidelines. It uses divisive rhetoric and could incite arguments.",
+      contentPreview:
+        "This post contains potentially inappropriate content about politics and inflammatory language that goes against community guidelines. It uses divisive rhetoric and could incite arguments.",
       reportedBy: "user-456",
       reason: "Contains inappropriate content",
       createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
@@ -44,14 +45,16 @@ const AdminReports = () => {
         title: "Why Current Political System is Completely Broken",
         author: "AngryUser2024",
         community: "Political Discussion",
-        fullText: "I'm so tired of all these politicians lying to us constantly. They're all corrupt and only care about their own power. The whole system needs to be torn down and rebuilt from scratch. Anyone who supports the current administration is either blind or complicit in this corruption. We need to take action now before it's too late and our democracy is completely destroyed. This is not a drill - we're heading towards a complete collapse of our society if we don't act immediately."
-      }
+        fullText:
+          "I'm so tired of all these politicians lying to us constantly. They're all corrupt and only care about their own power. The whole system needs to be torn down and rebuilt from scratch. Anyone who supports the current administration is either blind or complicit in this corruption. We need to take action now before it's too late and our democracy is completely destroyed. This is not a drill - we're heading towards a complete collapse of our society if we don't act immediately.",
+      },
     },
     {
       id: "report-2",
       contentType: "reply",
       contentId: "reply-789",
-      contentPreview: "This reply contains offensive language and personal attacks directed at other community members. The language used is clearly harassment and violates our community standards.",
+      contentPreview:
+        "This reply contains offensive language and personal attacks directed at other community members. The language used is clearly harassment and violates our community standards.",
       reportedBy: "user-101",
       reason: "Harassment",
       createdAt: new Date(Date.now() - 1000 * 60 * 60), // 1 hour ago
@@ -59,18 +62,20 @@ const AdminReports = () => {
       originalContent: {
         author: "ToxicUser123",
         parentPost: "Best Programming Languages for Beginners",
-        fullText: "You're absolutely clueless and shouldn't be giving advice to anyone. Your suggestions are terrible and show you have no idea what you're talking about. Maybe stick to something you actually understand instead of spreading misinformation. People like you are what's wrong with this community - always acting like experts when you clearly aren't. Just delete your account and save everyone the trouble of reading your garbage posts."
-      }
+        fullText:
+          "You're absolutely clueless and shouldn't be giving advice to anyone. Your suggestions are terrible and show you have no idea what you're talking about. Maybe stick to something you actually understand instead of spreading misinformation. People like you are what's wrong with this community - always acting like experts when you clearly aren't. Just delete your account and save everyone the trouble of reading your garbage posts.",
+      },
     },
     {
       id: "report-3",
       contentType: "user",
       contentId: "user-202",
-      contentPreview: "This user has been repeatedly posting spam across multiple communities including promotional links, duplicate content, and off-topic advertisements that disrupt community discussions.",
+      contentPreview:
+        "This user has been repeatedly posting spam across multiple communities including promotional links, duplicate content, and off-topic advertisements that disrupt community discussions.",
       reportedBy: "user-303",
       reason: "Spamming",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      status: "pending"
+      status: "pending",
     },
   ]);
 
@@ -80,52 +85,52 @@ const AdminReports = () => {
   };
 
   const handleResolve = (id: string) => {
-    const report = reports.find(r => r.id === id);
+    const report = reports.find((r) => r.id === id);
     if (report) {
-      setReports(reports.map(r => 
-        r.id === id ? { ...r, status: "reviewed" } : r
-      ));
-      
+      setReports(
+        reports.map((r) => (r.id === id ? { ...r, status: "reviewed" } : r))
+      );
+
       toast({
         title: "Report Resolved",
         description: `The report has been marked as resolved.`,
       });
-      
+
       logAdminAction({
         action: "report_resolved",
         details: `Resolved report for ${report.contentType}: ${report.contentId}`,
         targetId: report.contentId,
-        targetType: report.contentType
+        targetType: report.contentType,
       });
     }
   };
 
   const handleLockContent = (id: string) => {
-    const report = reports.find(r => r.id === id);
+    const report = reports.find((r) => r.id === id);
     if (report) {
-      setReports(reports.map(r => 
-        r.id === id ? { ...r, status: "reviewed" } : r
-      ));
-      
+      setReports(
+        reports.map((r) => (r.id === id ? { ...r, status: "reviewed" } : r))
+      );
+
       toast({
         title: "Content Locked",
         description: `The reported content has been locked.`,
         variant: "destructive",
       });
-      
+
       logAdminAction({
         action: "content_locked",
         details: `Locked ${report.contentType}: ${report.contentId}`,
         targetId: report.contentId,
-        targetType: report.contentType
+        targetType: report.contentType,
       });
     }
   };
 
-  const pendingReports = reports.filter(r => r.status === "pending");
-  const postReports = pendingReports.filter(r => r.contentType === "post");
-  const replyReports = pendingReports.filter(r => r.contentType === "reply");
-  const userReports = pendingReports.filter(r => r.contentType === "user");
+  const pendingReports = reports.filter((r) => r.status === "pending");
+  const postReports = pendingReports.filter((r) => r.contentType === "post");
+  const replyReports = pendingReports.filter((r) => r.contentType === "reply");
+  const userReports = pendingReports.filter((r) => r.contentType === "user");
 
   const ReportCard = ({ report }: { report: Report }) => (
     <Card key={report.id}>
@@ -141,9 +146,7 @@ const AdminReports = () => {
             <Badge variant="outline" className="bg-social-background">
               Reported {new Date(report.createdAt).toLocaleDateString()}
             </Badge>
-            <Badge variant="destructive">
-              {report.reason}
-            </Badge>
+            <Badge variant="destructive">{report.reason}</Badge>
           </div>
         </div>
       </CardHeader>
@@ -155,8 +158,13 @@ const AdminReports = () => {
               {report.contentType === "post" && (
                 <>
                   <div className="flex items-center justify-between text-sm text-gray-600">
-                    <span><strong>Title:</strong> {report.originalContent.title}</span>
-                    <span><strong>Community:</strong> {report.originalContent.community}</span>
+                    <span>
+                      <strong>Title:</strong> {report.originalContent.title}
+                    </span>
+                    <span>
+                      <strong>Community:</strong>{" "}
+                      {report.originalContent.community}
+                    </span>
                   </div>
                   <div className="text-sm text-gray-600">
                     <strong>Author:</strong> {report.originalContent.author}
@@ -166,7 +174,8 @@ const AdminReports = () => {
               {report.contentType === "reply" && (
                 <>
                   <div className="text-sm text-gray-600">
-                    <strong>Reply to:</strong> {report.originalContent.parentPost}
+                    <strong>Reply to:</strong>{" "}
+                    {report.originalContent.parentPost}
                   </div>
                   <div className="text-sm text-gray-600">
                     <strong>Author:</strong> {report.originalContent.author}
@@ -179,29 +188,26 @@ const AdminReports = () => {
             </div>
           </div>
         )}
-        
+
         <div>
           <h4 className="font-medium text-sm mb-2">Report Summary:</h4>
           <div className="p-4 rounded-md bg-red-50 border border-red-200">
             <p className="text-sm">{report.contentPreview}</p>
           </div>
         </div>
-        
+
         <div className="flex flex-wrap gap-2 justify-end mt-4">
-          <Button 
-            variant="outline"
-            onClick={() => handleViewContent(report)}
-          >
+          <Button variant="outline" onClick={() => handleViewContent(report)}>
             <Eye className="h-4 w-4 mr-2" /> View Full Details
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="border-orange-400 text-orange-500 hover:bg-orange-50"
             onClick={() => handleLockContent(report.id)}
           >
             <Lock className="h-4 w-4 mr-2" /> Lock Content
           </Button>
-          <Button 
+          <Button
             variant="default"
             className="bg-green-500 hover:bg-green-600"
             onClick={() => handleResolve(report.id)}
@@ -217,12 +223,14 @@ const AdminReports = () => {
     <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-semibold">Reports</h2>
+          <h1 className="text-3xl font-bold text-social-primary mb-2">
+            Reports
+          </h1>
           <Badge variant="outline" className="bg-social-accent/50">
             {pendingReports.length} Pending
           </Badge>
         </div>
-        
+
         {pendingReports.length === 0 ? (
           <Card>
             <CardContent className="pt-6 text-left">
@@ -232,10 +240,18 @@ const AdminReports = () => {
         ) : (
           <Tabs defaultValue="all" className="space-y-6">
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="all">All Reports ({pendingReports.length})</TabsTrigger>
-              <TabsTrigger value="posts">Posts ({postReports.length})</TabsTrigger>
-              <TabsTrigger value="replies">Replies ({replyReports.length})</TabsTrigger>
-              <TabsTrigger value="users">Users ({userReports.length})</TabsTrigger>
+              <TabsTrigger value="all">
+                All Reports ({pendingReports.length})
+              </TabsTrigger>
+              <TabsTrigger value="posts">
+                Posts ({postReports.length})
+              </TabsTrigger>
+              <TabsTrigger value="replies">
+                Replies ({replyReports.length})
+              </TabsTrigger>
+              <TabsTrigger value="users">
+                Users ({userReports.length})
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="all" className="space-y-4">

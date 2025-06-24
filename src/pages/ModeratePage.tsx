@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Users, MessageSquare, TrendingUp, Settings, UserMinus, Home, ChevronRight, Save, Plus, X } from "lucide-react";
+import {
+  Users,
+  MessageSquare,
+  TrendingUp,
+  Settings,
+  UserMinus,
+  Home,
+  ChevronRight,
+  Save,
+  Plus,
+  X,
+} from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -45,7 +55,9 @@ const ModeratePage = () => {
   const { communityId } = useParams();
   const { toast } = useToast();
   const [showRemoveDialog, setShowRemoveDialog] = useState(false);
-  const [moderatorToRemove, setModeratorToRemove] = useState<Moderator | null>(null);
+  const [moderatorToRemove, setModeratorToRemove] = useState<Moderator | null>(
+    null
+  );
   const [removalReason, setRemovalReason] = useState("");
   const [editingRules, setEditingRules] = useState(false);
 
@@ -53,7 +65,8 @@ const ModeratePage = () => {
   const community = {
     id: communityId || "1",
     name: "Photography Enthusiasts",
-    description: "A place for photographers to share their work and discuss techniques"
+    description:
+      "A place for photographers to share their work and discuss techniques",
   };
 
   const [analytics] = useState<CommunityAnalytics>({
@@ -61,7 +74,7 @@ const ModeratePage = () => {
     totalPosts: 423,
     postsThisWeek: 18,
     activeMembers: 89,
-    reportsThisWeek: 3
+    reportsThisWeek: 3,
   });
 
   const [moderators, setModerators] = useState<Moderator[]>([
@@ -70,22 +83,22 @@ const ModeratePage = () => {
       name: "Sarah Johnson",
       role: "Lead Moderator",
       joinedAsModAt: new Date(2023, 0, 15),
-      actionsThisMonth: 24
+      actionsThisMonth: 24,
     },
     {
       id: "mod-2",
       name: "Mike Chen",
       role: "Moderator",
       joinedAsModAt: new Date(2023, 2, 20),
-      actionsThisMonth: 18
+      actionsThisMonth: 18,
     },
     {
       id: "mod-3",
       name: "Alex Rivera",
       role: "Moderator",
       joinedAsModAt: new Date(2023, 4, 10),
-      actionsThisMonth: 12
-    }
+      actionsThisMonth: 12,
+    },
   ]);
 
   const [rules, setRules] = useState([
@@ -93,7 +106,7 @@ const ModeratePage = () => {
     "No spam or self-promotion without approval",
     "Share constructive feedback on others' work",
     "Use appropriate tags for your posts",
-    "No inappropriate or offensive content"
+    "No inappropriate or offensive content",
   ]);
 
   const [editedRules, setEditedRules] = useState([...rules]);
@@ -138,7 +151,7 @@ const ModeratePage = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       {/* Breadcrumbs */}
       <div className="mb-6">
         <Breadcrumb>
@@ -172,7 +185,9 @@ const ModeratePage = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-social-primary">Moderate Community</h1>
+            <h1 className="text-3xl font-bold text-social-primary">
+              Moderate Community
+            </h1>
             <p className="text-social-muted">{community.name}</p>
           </div>
           <Badge className="bg-social-primary">
@@ -187,8 +202,12 @@ const ModeratePage = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-social-muted">Total Members</p>
-                  <p className="text-2xl font-bold">{analytics.totalMembers.toLocaleString()}</p>
+                  <p className="text-sm font-medium text-social-muted">
+                    Total Members
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {analytics.totalMembers.toLocaleString()}
+                  </p>
                 </div>
                 <Users className="h-8 w-8 text-social-primary" />
               </div>
@@ -199,7 +218,9 @@ const ModeratePage = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-social-muted">Total Posts</p>
+                  <p className="text-sm font-medium text-social-muted">
+                    Total Posts
+                  </p>
                   <p className="text-2xl font-bold">{analytics.totalPosts}</p>
                 </div>
                 <MessageSquare className="h-8 w-8 text-social-primary" />
@@ -211,8 +232,12 @@ const ModeratePage = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-social-muted">Posts This Week</p>
-                  <p className="text-2xl font-bold text-green-600">+{analytics.postsThisWeek}</p>
+                  <p className="text-sm font-medium text-social-muted">
+                    Posts This Week
+                  </p>
+                  <p className="text-2xl font-bold text-green-600">
+                    +{analytics.postsThisWeek}
+                  </p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-green-600" />
               </div>
@@ -223,8 +248,12 @@ const ModeratePage = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-social-muted">Active Members</p>
-                  <p className="text-2xl font-bold">{analytics.activeMembers}</p>
+                  <p className="text-sm font-medium text-social-muted">
+                    Active Members
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {analytics.activeMembers}
+                  </p>
                 </div>
                 <Users className="h-8 w-8 text-blue-600" />
               </div>
@@ -235,8 +264,12 @@ const ModeratePage = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-social-muted">Reports This Week</p>
-                  <p className="text-2xl font-bold text-orange-600">{analytics.reportsThisWeek}</p>
+                  <p className="text-sm font-medium text-social-muted">
+                    Reports This Week
+                  </p>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {analytics.reportsThisWeek}
+                  </p>
                 </div>
                 <Settings className="h-8 w-8 text-orange-600" />
               </div>
@@ -253,14 +286,19 @@ const ModeratePage = () => {
             <CardContent>
               <div className="space-y-4">
                 {moderators.map((moderator) => (
-                  <div key={moderator.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={moderator.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-social-primary rounded-full flex items-center justify-center text-white">
                         <Users className="h-5 w-5" />
                       </div>
                       <div>
                         <p className="font-medium">{moderator.name}</p>
-                        <p className="text-sm text-social-muted">{moderator.role}</p>
+                        <p className="text-sm text-social-muted">
+                          {moderator.role}
+                        </p>
                         <p className="text-xs text-gray-400">
                           {moderator.actionsThisMonth} actions this month
                         </p>
@@ -300,7 +338,11 @@ const ModeratePage = () => {
                     }
                   }}
                 >
-                  {editingRules ? <Save className="h-4 w-4 mr-1" /> : <Settings className="h-4 w-4 mr-1" />}
+                  {editingRules ? (
+                    <Save className="h-4 w-4 mr-1" />
+                  ) : (
+                    <Settings className="h-4 w-4 mr-1" />
+                  )}
                   {editingRules ? "Save" : "Edit"}
                 </Button>
               </div>
@@ -310,7 +352,9 @@ const ModeratePage = () => {
                 <div className="space-y-3">
                   {editedRules.map((rule, index) => (
                     <div key={index} className="flex items-center gap-2">
-                      <span className="font-medium text-social-primary text-sm">{index + 1}.</span>
+                      <span className="font-medium text-social-primary text-sm">
+                        {index + 1}.
+                      </span>
                       <Input
                         value={rule}
                         onChange={(e) => {
@@ -331,7 +375,9 @@ const ModeratePage = () => {
                     </div>
                   ))}
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-social-primary text-sm">{editedRules.length + 1}.</span>
+                    <span className="font-medium text-social-primary text-sm">
+                      {editedRules.length + 1}.
+                    </span>
                     <Input
                       placeholder="Add new rule..."
                       value={newRule}
@@ -352,7 +398,9 @@ const ModeratePage = () => {
                 <ol className="space-y-2 text-sm">
                   {rules.map((rule, index) => (
                     <li key={index} className="flex">
-                      <span className="font-medium text-social-primary mr-2">{index + 1}.</span>
+                      <span className="font-medium text-social-primary mr-2">
+                        {index + 1}.
+                      </span>
                       <span className="text-social-muted">{rule}</span>
                     </li>
                   ))}
@@ -369,7 +417,9 @@ const ModeratePage = () => {
           <DialogHeader>
             <DialogTitle>Remove Moderator</DialogTitle>
             <DialogDescription>
-              Are you sure you want to request the removal of {moderatorToRemove?.name}? This action requires approval from another moderator.
+              Are you sure you want to request the removal of{" "}
+              {moderatorToRemove?.name}? This action requires approval from
+              another moderator.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -384,7 +434,10 @@ const ModeratePage = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowRemoveDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowRemoveDialog(false)}
+            >
               Cancel
             </Button>
             <Button
