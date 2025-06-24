@@ -1,26 +1,46 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Search, Users, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Users, TrendingUp, Heart, MessageSquare } from "lucide-react";
-import { Link } from "react-router-dom";
-import { api } from "@/lib/api";
-import { Post } from "@/lib/types";
-import { useToast } from "@/components/ui/use-toast";
-import { CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Plus } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import CreateCommunityDialog from "@/components/community/CreateCommunityDialog";
+import { useToast } from "@/components/ui/use-toast";
+import { Link } from "react-router-dom";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
-const Index = () => {
-  const [hotPosts, setHotPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+interface Community {
+  id: string;
+  name: string;
+  description: string;
+  memberCount: number;
+  tags: string[];
+  isJoined: boolean;
+  isModerator: boolean;
+}
+
+const CommunitiesPage = () => {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const communitiesPerPage = 6;
-  const { toast } = useToast();
 
-  // Mock data for communities (copy from CommunitiesPage)
-  const [allCommunities, setAllCommunities] = useState([
+  // Mock data - in a real app, this would come from an API
+  const [allCommunities, setAllCommunities] = useState<Community[]>([
     {
       id: "1",
       name: "Photography Enthusiasts",
@@ -42,58 +62,65 @@ const Index = () => {
     },
     {
       id: "3",
-      name: "Health and Wellness",
-      description: "Sharing tips and experiences on physical and mental health",
-      memberCount: 720,
-      tags: ["Health", "Wellness", "Fitness"],
-      isJoined: false,
+      name: "Cooking Adventures",
+      description: "Share recipes, cooking tips, and culinary experiences",
+      memberCount: 2100,
+      tags: ["Cooking", "Recipes", "Food"],
+      isJoined: true,
       isModerator: false,
     },
     {
       id: "4",
-      name: "Travel Buddies",
-      description: "For those who love to travel and explore new places",
-      memberCount: 980,
-      tags: ["Travel", "Adventure", "Exploration"],
+      name: "Travel Stories",
+      description: "Share your travel experiences and get recommendations",
+      memberCount: 756,
+      tags: ["Travel", "Adventure", "Culture"],
       isJoined: false,
       isModerator: false,
     },
     {
       id: "5",
-      name: "Foodies Unite",
-      description: "A community for food lovers to share and discover recipes",
-      memberCount: 1100,
-      tags: ["Food", "Cooking", "Recipes"],
+      name: "Fitness & Health",
+      description: "Tips, motivation, and discussions about fitness and health",
+      memberCount: 1543,
+      tags: ["Fitness", "Health", "Wellness"],
       isJoined: true,
       isModerator: false,
     },
     {
       id: "6",
       name: "Book Club",
-      description: "For readers to discuss and share their favorite books",
-      memberCount: 430,
+      description: "Monthly book discussions and reading recommendations",
+      memberCount: 432,
       tags: ["Books", "Reading", "Literature"],
+      isJoined: false,
+      isModerator: false,
+    },
+    {
+      id: "7",
+      name: "Gaming Hub",
+      description: "Discuss games, share gameplay, and find gaming partners",
+      memberCount: 2890,
+      tags: ["Gaming", "Entertainment", "Community"],
+      isJoined: false,
+      isModerator: false,
+    },
+    {
+      id: "8",
+      name: "Art & Design",
+      description: "Showcase artwork and discuss design principles",
+      memberCount: 1120,
+      tags: ["Art", "Design", "Creative"],
       isJoined: false,
       isModerator: false,
     },
   ]);
 
-  useEffect(() => {
-    const fetchHotPosts = async () => {
-      try {
-        const posts = await api.getHotPosts();
-        setHotPosts(posts);
-      } catch (error) {
-        console.error("Failed to fetch hot posts:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHotPosts();
-  }, []);
-
-  const filteredCommunities = allCommunities.filter(
+  // Only show communities the user is a member of
+  const myCommunities = allCommunities.filter(
+    (community) => community.isJoined
+  );
+  const filteredCommunities = myCommunities.filter(
     (community) =>
       community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -102,17 +129,17 @@ const Index = () => {
       )
   );
 
-  const getCurrentPageCommunities = (communities) => {
+  const getCurrentPageCommunities = (communities: Community[]) => {
     const startIndex = (currentPage - 1) * communitiesPerPage;
     const endIndex = startIndex + communitiesPerPage;
     return communities.slice(startIndex, endIndex);
   };
 
-  const getTotalPages = (communities) => {
+  const getTotalPages = (communities: Community[]) => {
     return Math.ceil(communities.length / communitiesPerPage);
   };
 
-  const handleJoinCommunity = (communityId) => {
+  const handleJoinCommunity = (communityId: string) => {
     setAllCommunities((communities) =>
       communities.map((community) =>
         community.id === communityId
@@ -126,6 +153,7 @@ const Index = () => {
           : community
       )
     );
+
     const community = allCommunities.find((c) => c.id === communityId);
     toast({
       title: community?.isJoined ? "Left community" : "Joined community",
@@ -135,171 +163,169 @@ const Index = () => {
     });
   };
 
+  const handleCreateCommunity = (communityData: Community) => {
+    // In a real app, this would make an API call
+    console.log("Creating community:", communityData);
+    toast({
+      title: "Community created!",
+      description: "Your new community has been created successfully.",
+    });
+  };
+
   return (
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
-      <div className="mb-6">
-        <h1 className="text-3xl md:text-4xl font-bold text-social-primary mb-2">
-          Welcome to ConnectSphere
-        </h1>
-        <p className="text-lg text-social-secondary mb-6">
-          Connect with friends and communities that share your interests
-        </p>
-
-        {/* Hot Topics Section */}
-        <section className="space-y-4 pb-10 border-b-2 border-dashed border-social-primary/30 mb-10">
-          <div className="flex items-center gap-2 mb-4 mt-4">
-            <TrendingUp className="h-5 w-5 text-social-primary" />
-            <h2 className="text-2xl font-bold text-social-primary">
-              Hot Topics
-            </h2>
-          </div>
-
-          {loading ? (
-            <div className="text-left">Loading hot topics...</div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {hotPosts.map((post) => (
-                <Card key={post.id} className="hover-scale text-left">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg mb-1">
-                          <Link
-                            to={`/community/${post.communityId}/post/${post.id}`}
-                            className="hover:text-social-primary transition-colors"
-                          >
-                            {post.title}
-                          </Link>
-                        </CardTitle>
-                        <div className="flex items-center gap-2 text-sm text-social-muted">
-                          <span>by {post.author}</span>
-                          <span>•</span>
-                          <Badge variant="secondary">
-                            {post.communityName}
-                          </Badge>
-                          <span>•</span>
-                          <span>{post.createdAt.toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <p className="text-social-muted mb-3 line-clamp-2">
-                      {post.content}
-                    </p>
-                    <div className="flex items-center gap-4 text-sm text-social-muted">
-                      <div className="flex items-center gap-1">
-                        <Heart className="h-4 w-4" />
-                        <span>{post.likes}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MessageSquare className="h-4 w-4" />
-                        <span>{post.replies} replies</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* All Communities Section */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 mb-4 mt-4">
-            <Users className="h-5 w-5 text-social-primary" />
-            <h2 className="text-2xl font-bold text-social-primary">
-              All Communities
-            </h2>
-          </div>
-
-          {/* Search Bar (already here) */}
-          <div className="relative mb-6 max-w-xl">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-social-muted h-4 w-4" />
-            <Input
-              placeholder="Search communities..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="pl-10"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            {getCurrentPageCommunities(filteredCommunities).map((community) => (
-              <Card
-                key={community.id}
-                className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent h-full"
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">
-                        <Link
-                          to={`/community/${community.id}`}
-                          className="hover:text-social-primary transition-colors"
-                        >
-                          {community.name}
-                        </Link>
-                      </CardTitle>
-                      <CardDescription className="mt-2">
-                        {community.description}
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center text-sm text-social-muted mb-4">
-                    <Users className="h-4 w-4 mr-1" />
-                    {community.memberCount.toLocaleString()} members
-                  </div>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {community.tags.map((tag, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => handleJoinCommunity(community.id)}
-                      variant={community.isJoined ? "outline" : "default"}
-                      className="flex-1"
-                    >
-                      {community.isJoined ? "Leave" : "Join"}
-                    </Button>
-                    {community.isModerator && (
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to="/moderate">Moderate</Link>
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          {filteredCommunities.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-social-muted">
-                No communities found matching your search.
-              </p>
-            </div>
-          )}
-          {filteredCommunities.length > communitiesPerPage && (
-            <div className="flex justify-center">
-              {/* Pagination logic here, copy from CommunitiesPage */}
-            </div>
-          )}
-        </section>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-social-primary mb-2">
+            My Communities
+          </h1>
+          <p className="text-social-muted">
+            Communities you belong to and moderate
+          </p>
+        </div>
+        <CreateCommunityDialog
+          trigger={
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Community
+            </Button>
+          }
+        />
       </div>
+
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-social-muted h-4 w-4" />
+        <Input
+          placeholder="Search communities..."
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setCurrentPage(1); // Reset to first page when searching
+          }}
+          className="pl-10"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+        {myCommunities.map((community) => (
+          <Card
+            key={community.id}
+            className="flex flex-col h-full min-h-[320px] justify-between hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent"
+          >
+            <CardHeader className="flex-1 pb-2">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <CardTitle className="text-lg">
+                    <Link
+                      to={`/community/${community.id}`}
+                      className="hover:text-social-primary transition-colors"
+                    >
+                      {community.name}
+                    </Link>
+                  </CardTitle>
+                  <CardDescription className="mt-2">
+                    {community.description}
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="flex flex-col flex-1 justify-end">
+              <div className="flex items-center text-sm text-social-muted mb-4">
+                <Users className="h-4 w-4 mr-1" />
+                {community.memberCount.toLocaleString()} members
+              </div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {community.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-auto w-full">
+                <Button
+                  onClick={() => handleJoinCommunity(community.id)}
+                  variant={community.isJoined ? "outline" : "default"}
+                  className="flex-1 min-w-0 h-10"
+                >
+                  {community.isJoined ? "Leave" : "Join"}
+                </Button>
+                {community.isModerator && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="h-10 min-w-[100px]"
+                  >
+                    <Link to="/moderate">Moderate</Link>
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {filteredCommunities.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-social-muted">
+            No communities found matching your search.
+          </p>
+        </div>
+      )}
+
+      {filteredCommunities.length > communitiesPerPage && (
+        <div className="flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  className={
+                    currentPage === 1
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+
+              {Array.from(
+                { length: getTotalPages(filteredCommunities) },
+                (_, i) => i + 1
+              ).map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    onClick={() => setCurrentPage(page)}
+                    isActive={currentPage === page}
+                    className="cursor-pointer"
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() =>
+                    setCurrentPage(
+                      Math.min(
+                        getTotalPages(filteredCommunities),
+                        currentPage + 1
+                      )
+                    )
+                  }
+                  className={
+                    currentPage === getTotalPages(filteredCommunities)
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Index;
+export default CommunitiesPage;

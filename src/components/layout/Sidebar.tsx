@@ -20,8 +20,8 @@ const SidebarComponent = () => {
   const { user } = useAuth();
 
   const mainNavItems = [
-    { title: t("nav.home"), url: "/", icon: Home },
-    { title: t("communities.joined"), url: "/communities", icon: Users },
+    { title: t("communities.joined"), url: "/", icon: Home },
+    { title: t("communities.all"), url: "/communities", icon: Users },
     { title: t("nav.discover"), url: "/discover", icon: Compass },
   ];
 

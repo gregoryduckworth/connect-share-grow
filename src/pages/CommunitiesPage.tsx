@@ -116,11 +116,8 @@ const CommunitiesPage = () => {
     },
   ]);
 
-  // Only show communities the user is a member of
-  const myCommunities = allCommunities.filter(
-    (community) => community.isJoined
-  );
-  const filteredCommunities = myCommunities.filter(
+  // Show all communities, not just joined
+  const filteredCommunities = allCommunities.filter(
     (community) =>
       community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -177,10 +174,10 @@ const CommunitiesPage = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-social-primary mb-2">
-            My Communities
+            All Communities
           </h1>
           <p className="text-social-muted">
-            Communities you belong to and moderate
+            Communities for you to connect, share, and grow together.
           </p>
         </div>
         <CreateCommunityDialog
@@ -207,7 +204,7 @@ const CommunitiesPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-        {myCommunities.map((community) => (
+        {filteredCommunities.map((community) => (
           <Card
             key={community.id}
             className="flex flex-col h-full min-h-[320px] justify-between hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent"
