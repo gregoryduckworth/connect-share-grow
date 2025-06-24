@@ -18,7 +18,7 @@ import PostDetailPage from "@/pages/PostDetailPage";
 import ModeratePage from "@/pages/ModeratePage";
 import ProfilePage from "@/pages/ProfilePage";
 import ChatPage from "@/pages/ChatPage";
-import DiscoverPage from "@/pages/DiscoverPage";
+import HotTopicsPage from "@/pages/HotTopicsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import LoginPage from "@/pages/LoginPage";
 import RegisterPage from "@/pages/RegisterPage";
@@ -97,7 +97,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="discover" element={<DiscoverPage />} />
+              <Route path="hot-topics" element={<HotTopicsPage />} />
               <Route path="chat" element={<ChatPage />} />
               <Route path="connections" element={<ConnectionsPage />} />
               <Route path="profile" element={<ProfilePage />} />

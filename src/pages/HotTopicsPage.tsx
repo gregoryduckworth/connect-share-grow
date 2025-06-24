@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
+import CommunityCard from "@/components/community/CommunityCard";
+import TrendingPostCard from "@/components/community/TrendingPostCard";
 
 interface TrendingPost {
   id: string;
@@ -125,7 +127,7 @@ const DiscoverPage = () => {
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-social-primary mb-2">
-          Discover
+          Hot Topics
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground">
           Explore trending content and growing communities
@@ -163,50 +165,17 @@ const DiscoverPage = () => {
         <TabsContent value="posts" className="space-y-4 sm:space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPosts.map((post) => (
-              <Card
+              <TrendingPostCard
                 key={post.id}
-                className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent h-full"
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
-                    <div className="flex-1">
-                      <CardTitle className="text-base sm:text-lg mb-2 break-words">
-                        <Link
-                          to={`/post/${post.id}`}
-                          className="hover:text-primary transition-colors"
-                        >
-                          {post.title}
-                        </Link>
-                      </CardTitle>
-                      <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                        <span>by {post.author}</span>
-                        <span>•</span>
-                        <span>in {post.community}</span>
-                        <span>•</span>
-                        <span>{post.createdAt.toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
-                      <div className="flex items-center gap-1">
-                        <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
-                        <span>{post.likes}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
-                        <span>{post.replies}</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm sm:text-base text-muted-foreground mb-4 break-words">
-                    {post.excerpt}
-                  </p>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/post/${post.id}`}>Read More</Link>
-                  </Button>
-                </CardContent>
-              </Card>
+                id={post.id}
+                title={post.title}
+                author={post.author}
+                community={post.community}
+                likes={post.likes}
+                replies={post.replies}
+                createdAt={post.createdAt}
+                excerpt={post.excerpt}
+              />
             ))}
           </div>
           {filteredPosts.length === 0 && (
@@ -221,55 +190,15 @@ const DiscoverPage = () => {
         <TabsContent value="communities" className="space-y-4 sm:space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCommunities.map((community) => (
-              <Card
+              <CommunityCard
                 key={community.id}
-                className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent h-full"
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <CardTitle className="text-base sm:text-lg break-words">
-                        <Link
-                          to={`/community/${community.id}`}
-                          className="hover:text-primary transition-colors"
-                        >
-                          {community.name}
-                        </Link>
-                      </CardTitle>
-                      <CardDescription className="text-xs sm:text-sm mt-2 break-words">
-                        {community.description}
-                      </CardDescription>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className="bg-green-50 text-green-700 text-xs whitespace-nowrap"
-                    >
-                      +{community.growthRate}%
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center justify-between text-xs sm:text-sm">
-                      <span className="text-muted-foreground">Members</span>
-                      <span className="font-medium">
-                        {community.memberCount.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs sm:text-sm">
-                      <span className="text-muted-foreground">Category</span>
-                      <Badge variant="secondary" className="text-xs">
-                        {community.category}
-                      </Badge>
-                    </div>
-                  </div>
-                  <Button className="w-full text-xs sm:text-sm" asChild>
-                    <Link to={`/community/${community.id}`}>
-                      Join Community
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+                id={community.id}
+                name={community.name}
+                description={community.description}
+                memberCount={community.memberCount}
+                growthRate={community.growthRate}
+                category={community.category}
+              />
             ))}
           </div>
           {filteredCommunities.length === 0 && (

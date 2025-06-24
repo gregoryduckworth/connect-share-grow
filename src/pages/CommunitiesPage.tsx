@@ -22,6 +22,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import CommunityCard from "@/components/community/CommunityCard";
 
 interface Community {
   id: string;
@@ -205,60 +206,17 @@ const CommunitiesPage = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         {filteredCommunities.map((community) => (
-          <Card
+          <CommunityCard
             key={community.id}
-            className="flex flex-col h-full min-h-[320px] justify-between hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent"
-          >
-            <CardHeader className="flex-1 pb-2">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="text-lg">
-                    <Link
-                      to={`/community/${community.id}`}
-                      className="hover:text-social-primary transition-colors"
-                    >
-                      {community.name}
-                    </Link>
-                  </CardTitle>
-                  <CardDescription className="mt-2">
-                    {community.description}
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="flex flex-col flex-1 justify-end">
-              <div className="flex items-center text-sm text-social-muted mb-4">
-                <Users className="h-4 w-4 mr-1" />
-                {community.memberCount.toLocaleString()} members
-              </div>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {community.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2 mt-auto w-full">
-                <Button
-                  onClick={() => handleJoinCommunity(community.id)}
-                  variant={community.isJoined ? "outline" : "default"}
-                  className="flex-1 min-w-0 h-10"
-                >
-                  {community.isJoined ? "Leave" : "Join"}
-                </Button>
-                {community.isModerator && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                    className="h-10 min-w-[100px]"
-                  >
-                    <Link to="/moderate">Moderate</Link>
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+            id={community.id}
+            name={community.name}
+            description={community.description}
+            memberCount={community.memberCount}
+            tags={community.tags}
+            isJoined={community.isJoined}
+            isModerator={community.isModerator}
+            onJoinLeave={handleJoinCommunity}
+          />
         ))}
       </div>
 

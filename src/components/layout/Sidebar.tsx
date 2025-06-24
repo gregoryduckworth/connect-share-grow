@@ -22,7 +22,7 @@ const SidebarComponent = () => {
   const mainNavItems = [
     { title: t("communities.joined"), url: "/", icon: Home },
     { title: t("communities.all"), url: "/communities", icon: Users },
-    { title: t("nav.discover"), url: "/discover", icon: Compass },
+    { title: t("nav.hotTopics"), url: "/hot-topics", icon: Compass },
   ];
 
   const chatNavItems = [
