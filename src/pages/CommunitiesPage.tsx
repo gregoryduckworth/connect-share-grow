@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CreateCommunityDialog from "@/components/community/CreateCommunityDialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Link } from "react-router-dom";
@@ -117,17 +116,17 @@ const CommunitiesPage = () => {
     },
   ]);
 
-  const filteredCommunities = allCommunities.filter(
+  // Only show communities the user is a member of
+  const myCommunities = allCommunities.filter(
+    (community) => community.isJoined
+  );
+  const filteredCommunities = myCommunities.filter(
     (community) =>
       community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       community.tags.some((tag) =>
         tag.toLowerCase().includes(searchQuery.toLowerCase())
       )
-  );
-
-  const joinedCommunities = allCommunities.filter(
-    (community) => community.isJoined
   );
 
   const getCurrentPageCommunities = (communities: Community[]) => {
@@ -164,7 +163,7 @@ const CommunitiesPage = () => {
     });
   };
 
-  const handleCreateCommunity = (communityData: any) => {
+  const handleCreateCommunity = (communityData: Community) => {
     // In a real app, this would make an API call
     console.log("Creating community:", communityData);
     toast({
@@ -178,10 +177,10 @@ const CommunitiesPage = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-social-primary mb-2">
-            Communities
+            My Communities
           </h1>
           <p className="text-social-muted">
-            Discover and join communities that match your interests
+            Communities you belong to and moderate
           </p>
         </div>
         <CreateCommunityDialog
@@ -207,206 +206,124 @@ const CommunitiesPage = () => {
         />
       </div>
 
-      <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="all">All Communities</TabsTrigger>
-          <TabsTrigger value="joined">My Communities</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            {getCurrentPageCommunities(filteredCommunities).map((community) => (
-              <Card
-                key={community.id}
-                className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent h-full"
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">
-                        <Link
-                          to={`/community/${community.id}`}
-                          className="hover:text-social-primary transition-colors"
-                        >
-                          {community.name}
-                        </Link>
-                      </CardTitle>
-                      <CardDescription className="mt-2">
-                        {community.description}
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center text-sm text-social-muted mb-4">
-                    <Users className="h-4 w-4 mr-1" />
-                    {community.memberCount.toLocaleString()} members
-                  </div>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {community.tags.map((tag, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => handleJoinCommunity(community.id)}
-                      variant={community.isJoined ? "outline" : "default"}
-                      className="flex-1"
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+        {myCommunities.map((community) => (
+          <Card
+            key={community.id}
+            className="flex flex-col h-full min-h-[320px] justify-between hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent"
+          >
+            <CardHeader className="flex-1 pb-2">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <CardTitle className="text-lg">
+                    <Link
+                      to={`/community/${community.id}`}
+                      className="hover:text-social-primary transition-colors"
                     >
-                      {community.isJoined ? "Leave" : "Join"}
-                    </Button>
-                    {community.isModerator && (
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to="/moderate">Moderate</Link>
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                      {community.name}
+                    </Link>
+                  </CardTitle>
+                  <CardDescription className="mt-2">
+                    {community.description}
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="flex flex-col flex-1 justify-end">
+              <div className="flex items-center text-sm text-social-muted mb-4">
+                <Users className="h-4 w-4 mr-1" />
+                {community.memberCount.toLocaleString()} members
+              </div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {community.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-auto w-full">
+                <Button
+                  onClick={() => handleJoinCommunity(community.id)}
+                  variant={community.isJoined ? "outline" : "default"}
+                  className="flex-1 min-w-0 h-10"
+                >
+                  {community.isJoined ? "Leave" : "Join"}
+                </Button>
+                {community.isModerator && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="h-10 min-w-[100px]"
+                  >
+                    <Link to="/moderate">Moderate</Link>
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-          {filteredCommunities.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-social-muted">
-                No communities found matching your search.
-              </p>
-            </div>
-          )}
+      {filteredCommunities.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-social-muted">
+            No communities found matching your search.
+          </p>
+        </div>
+      )}
 
-          {filteredCommunities.length > communitiesPerPage && (
-            <div className="flex justify-center">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() =>
-                        setCurrentPage(Math.max(1, currentPage - 1))
-                      }
-                      className={
-                        currentPage === 1
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }
-                    />
-                  </PaginationItem>
+      {filteredCommunities.length > communitiesPerPage && (
+        <div className="flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  className={
+                    currentPage === 1
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
 
-                  {Array.from(
-                    { length: getTotalPages(filteredCommunities) },
-                    (_, i) => i + 1
-                  ).map((page) => (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        onClick={() => setCurrentPage(page)}
-                        isActive={currentPage === page}
-                        className="cursor-pointer"
-                      >
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  ))}
+              {Array.from(
+                { length: getTotalPages(filteredCommunities) },
+                (_, i) => i + 1
+              ).map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    onClick={() => setCurrentPage(page)}
+                    isActive={currentPage === page}
+                    className="cursor-pointer"
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
 
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() =>
-                        setCurrentPage(
-                          Math.min(
-                            getTotalPages(filteredCommunities),
-                            currentPage + 1
-                          )
-                        )
-                      }
-                      className={
-                        currentPage === getTotalPages(filteredCommunities)
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="joined" className="mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {joinedCommunities.map((community) => (
-              <Card
-                key={community.id}
-                className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent h-full"
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">
-                        <Link
-                          to={`/community/${community.id}`}
-                          className="hover:text-social-primary transition-colors"
-                        >
-                          {community.name}
-                        </Link>
-                      </CardTitle>
-                      <CardDescription className="mt-2">
-                        {community.description}
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center text-sm text-social-muted mb-4">
-                    <Users className="h-4 w-4 mr-1" />
-                    {community.memberCount.toLocaleString()} members
-                  </div>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {community.tags.map((tag, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => handleJoinCommunity(community.id)}
-                      variant={community.isJoined ? "outline" : "default"}
-                      className="flex-1"
-                    >
-                      {community.isJoined ? "Leave" : "Join"}
-                    </Button>
-                    {community.isModerator && (
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to="/moderate">Moderate</Link>
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {joinedCommunities.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-social-muted">
-                You haven't joined any communities yet.
-              </p>
-              <Button className="mt-4">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Your First Community
-              </Button>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() =>
+                    setCurrentPage(
+                      Math.min(
+                        getTotalPages(filteredCommunities),
+                        currentPage + 1
+                      )
+                    )
+                  }
+                  className={
+                    currentPage === getTotalPages(filteredCommunities)
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   );
 };
