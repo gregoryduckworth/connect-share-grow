@@ -26,6 +26,7 @@ import { Search, Users, MessageSquare, Check, X } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import CommunityDetailsDialog from "@/components/admin/CommunityDetailsDialog";
 import AdminTablePagination from "@/components/admin/AdminTablePagination";
+import CommunityApprovalDialog from "@/components/admin/CommunityApprovalDialog";
 
 interface Community {
   id: string;
@@ -66,6 +67,9 @@ const AdminCommunitiesPage = () => {
     Community | PendingCommunity | null
   >(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
+  const [approvalCommunity, setApprovalCommunity] =
+    useState<PendingCommunity | null>(null);
 
   const [communities, setCommunities] = useState<Community[]>([
     {
@@ -190,13 +194,16 @@ const AdminCommunitiesPage = () => {
     }
   };
 
-  const handleApproveCommunity = (id: string) => {
+  const handleApproveCommunity = (
+    id: string,
+    updated: { name: string; description: string; adminMessage?: string }
+  ) => {
     const pendingCommunity = pendingCommunities.find((c) => c.id === id);
     if (pendingCommunity) {
       const newCommunity: Community = {
         id: pendingCommunity.id,
-        name: pendingCommunity.name,
-        description: pendingCommunity.description,
+        name: updated.name,
+        description: updated.description,
         memberCount: 1,
         postCount: 0,
         category: pendingCommunity.category,
@@ -207,18 +214,22 @@ const AdminCommunitiesPage = () => {
         createdBy: pendingCommunity.createdBy,
         requestedAt: pendingCommunity.requestedAt,
       };
-
       setCommunities([...communities, newCommunity]);
       setPendingCommunities(pendingCommunities.filter((c) => c.id !== id));
-
       toast({
         title: "Community Approved",
-        description: `${pendingCommunity.name} has been approved and is now active.`,
+        description:
+          `${updated.name} has been approved and is now active.` +
+          (updated.adminMessage ? `\nMessage: ${updated.adminMessage}` : ""),
       });
-
       logAdminAction({
         action: "community_approved",
-        details: `Approved community: ${pendingCommunity.name}`,
+        details:
+          `Approved community: ${updated.name}` +
+          (updated.name !== pendingCommunity.name
+            ? ` (renamed from ${pendingCommunity.name})`
+            : "") +
+          (updated.adminMessage ? ` | Message: ${updated.adminMessage}` : ""),
         targetId: pendingCommunity.id,
         targetType: "community",
       });
@@ -306,39 +317,17 @@ const AdminCommunitiesPage = () => {
                           View Details
                         </Button>
 
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              size="sm"
-                              className="bg-green-500 hover:bg-green-600"
-                            >
-                              <Check className="h-4 w-4 mr-1" />
-                              Approve
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Approve Community
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to approve "
-                                {community.name}"? This will make it publicly
-                                available.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() =>
-                                  handleApproveCommunity(community.id)
-                                }
-                              >
-                                Approve
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <Button
+                          size="sm"
+                          className="bg-green-500 hover:bg-green-600"
+                          onClick={() => {
+                            setApprovalCommunity({ ...community }); // ensures latest data is passed
+                            setApprovalDialogOpen(true);
+                          }}
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          Approve
+                        </Button>
 
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
@@ -541,6 +530,13 @@ const AdminCommunitiesPage = () => {
         isOpen={detailsDialogOpen}
         onClose={() => setDetailsDialogOpen(false)}
         community={selectedCommunity}
+      />
+
+      <CommunityApprovalDialog
+        isOpen={approvalDialogOpen}
+        onClose={() => setApprovalDialogOpen(false)}
+        community={approvalCommunity}
+        onApprove={handleApproveCommunity}
       />
     </div>
   );

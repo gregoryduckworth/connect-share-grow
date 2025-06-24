@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -26,29 +25,37 @@ interface CommunityApprovalDialogProps {
   isOpen: boolean;
   onClose: () => void;
   community: PendingCommunity | null;
-  onApprove: (id: string, updatedCommunity: { name: string; description: string }) => void;
+  onApprove: (
+    id: string,
+    updatedCommunity: {
+      name: string;
+      description: string;
+      adminMessage?: string;
+    }
+  ) => void;
 }
 
-const CommunityApprovalDialog = ({ 
-  isOpen, 
-  onClose, 
-  community, 
-  onApprove 
+const CommunityApprovalDialog = ({
+  isOpen,
+  onClose,
+  community,
+  onApprove,
 }: CommunityApprovalDialogProps) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [adminMessage, setAdminMessage] = useState("");
 
   // Reset form when community changes
-  useState(() => {
+  useEffect(() => {
     if (community) {
       setName(community.name);
       setDescription(community.description);
     }
-  });
+  }, [community]);
 
   const handleApprove = () => {
     if (community) {
-      onApprove(community.id, { name, description });
+      onApprove(community.id, { name, description, adminMessage });
       onClose();
     }
   };
@@ -64,7 +71,7 @@ const CommunityApprovalDialog = ({
             Review and edit the community details before approval.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="name">Community Name</Label>
@@ -75,7 +82,7 @@ const CommunityApprovalDialog = ({
               placeholder="Enter community name"
             />
           </div>
-          
+
           <div className="grid gap-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
@@ -86,13 +93,13 @@ const CommunityApprovalDialog = ({
               rows={3}
             />
           </div>
-          
+
           <div className="grid gap-2">
             <Label>Tags</Label>
             <div className="flex flex-wrap gap-2">
               {community.tags.map((tag) => (
-                <span 
-                  key={tag} 
+                <span
+                  key={tag}
                   className="px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-sm"
                 >
                   {tag}
@@ -100,18 +107,36 @@ const CommunityApprovalDialog = ({
               ))}
             </div>
           </div>
-          
+
           <div className="grid gap-2">
             <Label>Created By</Label>
-            <p className="text-sm text-muted-foreground">{community.createdBy}</p>
+            <p className="text-sm text-muted-foreground">
+              {community.createdBy}
+            </p>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="admin-message">
+              Message to Applicant (optional)
+            </Label>
+            <Textarea
+              id="admin-message"
+              value={adminMessage}
+              onChange={(e) => setAdminMessage(e.target.value)}
+              placeholder="Add a message for the applicant (optional)"
+              rows={2}
+            />
           </div>
         </div>
-        
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleApprove} disabled={!name.trim() || !description.trim()}>
+          <Button
+            onClick={handleApprove}
+            disabled={!name.trim() || !description.trim()}
+          >
             Approve Community
           </Button>
         </DialogFooter>
