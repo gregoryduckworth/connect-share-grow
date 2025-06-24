@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -328,9 +329,11 @@ const AdminUsers = () => {
       </Card>
 
       {selectedUser && (
-        <UserProfileDialog user={selectedUser}>
-          <></>
-        </UserProfileDialog>
+        <UserProfileDialog 
+          user={selectedUser}
+          isOpen={!!selectedUser}
+          onClose={() => setSelectedUser(null)}
+        />
       )}
 
       {roleChangeUser && (

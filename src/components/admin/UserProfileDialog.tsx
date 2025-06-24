@@ -6,7 +6,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,10 +25,11 @@ interface UserProfileDialogProps {
     suspendedAt?: Date;
     suspendedBy?: string;
   };
-  children: React.ReactNode;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-const UserProfileDialog = ({ user, children }: UserProfileDialogProps) => {
+const UserProfileDialog = ({ user, isOpen, onClose }: UserProfileDialogProps) => {
   // Mock user activity data
   const userStats = {
     totalPosts: 127,
@@ -42,10 +42,7 @@ const UserProfileDialog = ({ user, children }: UserProfileDialogProps) => {
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
