@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   Command,
   CommandEmpty,
@@ -41,7 +40,6 @@ import {
 import {
   Users,
   MessageSquare,
-  UserPlus,
   TrendingUp,
   Calendar,
   RotateCcw,

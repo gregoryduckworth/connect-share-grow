@@ -1,23 +1,7 @@
 import { useState } from "react";
-import {
-  Search,
-  TrendingUp,
-  Users,
-  MessageSquare,
-  Calendar,
-} from "lucide-react";
+import { Search, TrendingUp, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link } from "react-router-dom";
 import CommunityCard from "@/components/community/CommunityCard";
 import TrendingPostCard from "@/components/community/TrendingPostCard";
 
