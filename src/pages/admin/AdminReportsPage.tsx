@@ -135,12 +135,15 @@ const AdminReportsPage = () => {
             <div className="p-4 rounded-md bg-muted/50 border space-y-2">
               {report.contentType === "post" && (
                 <>
-                  <div className="flex items-center justify-between text-sm text-gray-600">
+                  <div className="text-sm text-gray-600">
                     <span>
                       <strong>Title:</strong> {report.originalContent.title}
                     </span>
+                  </div>
+                  <div className="text-sm text-gray-600">
                     <span>
-                      <strong>Community:</strong> {report.originalContent.community}
+                      <strong>Community:</strong>{" "}
+                      {report.originalContent.community}
                     </span>
                   </div>
                   <div className="text-sm text-gray-600">
@@ -151,16 +154,14 @@ const AdminReportsPage = () => {
               {report.contentType === "reply" && (
                 <>
                   <div className="text-sm text-gray-600">
-                    <strong>Reply to:</strong> {report.originalContent.parentPost}
+                    <strong>Reply to:</strong>{" "}
+                    {report.originalContent.parentPost}
                   </div>
                   <div className="text-sm text-gray-600">
                     <strong>Author:</strong> {report.originalContent.author}
                   </div>
                 </>
               )}
-              <div className="pt-2 border-t">
-                <p className="text-sm">{report.originalContent.fullText}</p>
-              </div>
             </div>
           </div>
         )}

@@ -25,6 +25,16 @@ interface Report {
   reason: string;
   createdAt: Date;
   status: "pending" | "reviewed";
+  originalContent?: {
+    // For posts
+    title?: string;
+    community?: string;
+    // For replies
+    parentPost?: string;
+    // For both
+    author?: string;
+    fullText: string;
+  };
 }
 
 interface ReportDetailsDialogProps {
@@ -138,7 +148,26 @@ const ReportDetailsDialog = ({
     }
   };
 
+  // Prefer originalContent from report if available
   const getDetailedContent = () => {
+    if (report.originalContent) {
+      if (report.contentType === "post") {
+        return {
+          title: report.originalContent.title,
+          author: report.originalContent.author,
+          community: report.originalContent.community,
+          content: report.originalContent.fullText,
+        };
+      }
+      if (report.contentType === "reply") {
+        return {
+          parentPost: report.originalContent.parentPost,
+          author: report.originalContent.author,
+          content: report.originalContent.fullText,
+        };
+      }
+    }
+    // fallback to old mock if not present
     switch (report.contentType) {
       case "post":
         return {
@@ -222,6 +251,12 @@ const ReportDetailsDialog = ({
                   {report.contentId}
                 </span>
               </div>
+              <div>
+                <h4 className="font-semibold text-sm text-gray-700 mb-1 mt-2">Report Summary</h4>
+                <div className="p-3 rounded-md bg-red-50 border border-red-200">
+                  <p className="text-sm">{report.contentPreview}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -287,18 +322,19 @@ const ReportDetailsDialog = ({
                       <p className="text-sm">{detailedContent.content}</p>
                     </div>
                   </div>
-                  
-                  <div>
-                    <h4 className="font-semibold text-sm text-gray-700 mb-2">Metadata</h4>
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      {Object.entries(detailedContent.metadata).map(([key, value]) => (
-                        <div key={key} className="text-center">
-                          <p className="text-gray-600 capitalize">{key}</p>
-                          <p className="font-semibold">{value}</p>
-                        </div>
-                      ))}
+                  {detailedContent.metadata && (
+                    <div>
+                      <h4 className="font-semibold text-sm text-gray-700 mb-2">Metadata</h4>
+                      <div className="grid grid-cols-3 gap-4 text-sm">
+                        {Object.entries(detailedContent.metadata).map(([key, value]) => (
+                          <div key={key} className="text-center">
+                            <p className="text-gray-600 capitalize">{key}</p>
+                            <p className="font-semibold">{value}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </>
               )}
             </CardContent>
