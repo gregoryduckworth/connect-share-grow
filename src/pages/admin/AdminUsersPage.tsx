@@ -1,5 +1,3 @@
-
-
 import { useState } from "react";
 import { 
   Table, TableBody, TableCell, TableHead, 
@@ -146,7 +144,7 @@ const AdminUsersPage = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>User</TableHead>
+              <TableHead className="w-64">User</TableHead>
               <TableHead className="hidden md:table-cell">Email</TableHead>
               <TableHead className="hidden md:table-cell">Joined</TableHead>
               <TableHead>Role</TableHead>
@@ -157,12 +155,12 @@ const AdminUsersPage = () => {
           <TableBody>
             {paginatedUsers.map((user) => (
               <TableRow key={user.id}>
-                <TableCell>
+                <TableCell className="w-64">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-social-primary flex items-center justify-center text-white">
+                    <div className="w-8 h-8 rounded-full bg-social-primary flex items-center justify-center text-white flex-shrink-0">
                       <User className="h-4 w-4" />
                     </div>
-                    <span className="font-medium">{user.name}</span>
+                    <span className="font-medium truncate">{user.name}</span>
                   </div>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">{user.email}</TableCell>
@@ -254,4 +252,3 @@ const AdminUsersPage = () => {
 };
 
 export default AdminUsersPage;
-

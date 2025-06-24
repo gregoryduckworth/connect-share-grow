@@ -14,10 +14,13 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { t } from "@/lib/i18n";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const SidebarComponent = () => {
+  const { language } = useTheme(); // This will trigger re-renders when language changes
+
   const mainNavItems = [
-    { title: "What's New", url: "/", icon: Home },
+    { title: t('home.welcome'), url: "/", icon: Home },
     { title: t('nav.communities'), url: "/communities", icon: Users },
     { title: t('nav.discover'), url: "/discover", icon: Compass },
   ];
@@ -38,7 +41,7 @@ const SidebarComponent = () => {
 
       <SidebarContent className="bg-background">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-foreground">Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-foreground">{t('nav.home')}</SidebarGroupLabel>
           <SidebarMenu>
             {mainNavItems.map((item) => (
               <SidebarMenuItem key={item.title}>
@@ -51,10 +54,8 @@ const SidebarComponent = () => {
                       }`
                     }
                   >
-                    <>
-                      <item.icon className="h-4 w-4" />
-                      <span className="text-sm font-medium">{item.title}</span>
-                    </>
+                    <item.icon className="h-4 w-4" />
+                    <span className="text-sm font-medium">{item.title}</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -65,7 +66,7 @@ const SidebarComponent = () => {
         <Separator className="my-4 bg-border" />
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-foreground">Communication</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-foreground">{t('nav.chat')}</SidebarGroupLabel>
           <SidebarMenu>
             {chatNavItems.map((item) => (
               <SidebarMenuItem key={item.title}>
@@ -78,10 +79,8 @@ const SidebarComponent = () => {
                       }`
                     }
                   >
-                    <>
-                      <item.icon className="h-4 w-4" />
-                      <span className="text-sm font-medium">{item.title}</span>
-                    </>
+                    <item.icon className="h-4 w-4" />
+                    <span className="text-sm font-medium">{item.title}</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>

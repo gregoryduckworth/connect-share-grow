@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +6,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Check, X, Shield, Eye } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import CommunityDetailsDialog from "./CommunityDetailsDialog";
+import CommunityApprovalDialog from "./CommunityApprovalDialog";
+import CommunityRejectionDialog from "./CommunityRejectionDialog";
 
 interface PendingCommunity {
   id: string;
@@ -21,6 +22,9 @@ const AdminCommunityApprovals = () => {
   const { toast } = useToast();
   const [selectedCommunity, setSelectedCommunity] = useState<PendingCommunity | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
+  const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
+  
   const [pendingCommunities, setPendingCommunities] = useState<PendingCommunity[]>([
     {
       id: "comm-1",
@@ -53,39 +57,39 @@ const AdminCommunityApprovals = () => {
     setDetailsDialogOpen(true);
   };
 
-  const handleApprove = (id: string) => {
+  const handleApprove = (id: string, updatedCommunity: { name: string; description: string }) => {
     const community = pendingCommunities.find(c => c.id === id);
     if (community) {
       setPendingCommunities(pendingCommunities.filter(c => c.id !== id));
       
       toast({
         title: "Community Approved",
-        description: `${community.name} has been approved and is now live.`,
+        description: `${updatedCommunity.name} has been approved and is now live.`,
       });
       
       logAdminAction({
         action: "community_approved",
-        details: `Approved community: ${community.name}`,
+        details: `Approved community: ${updatedCommunity.name}${updatedCommunity.name !== community.name ? ` (renamed from ${community.name})` : ''}`,
         targetId: community.id,
         targetType: "community"
       });
     }
   };
 
-  const handleReject = (id: string) => {
+  const handleReject = (id: string, feedback: string) => {
     const community = pendingCommunities.find(c => c.id === id);
     if (community) {
       setPendingCommunities(pendingCommunities.filter(c => c.id !== id));
       
       toast({
         title: "Community Rejected",
-        description: `${community.name} request has been rejected.`,
+        description: `${community.name} request has been rejected with feedback.`,
         variant: "destructive",
       });
       
       logAdminAction({
         action: "community_rejected",
-        details: `Rejected community: ${community.name}`,
+        details: `Rejected community: ${community.name}. Feedback: ${feedback}`,
         targetId: community.id,
         targetType: "community"
       });
@@ -146,14 +150,20 @@ const AdminCommunityApprovals = () => {
                     <Button 
                       variant="outline" 
                       className="border-red-400 text-red-500 hover:bg-red-50"
-                      onClick={() => handleReject(community.id)}
+                      onClick={() => {
+                        setSelectedCommunity(community);
+                        setRejectionDialogOpen(true);
+                      }}
                     >
                       <X className="h-4 w-4 mr-2" /> Reject
                     </Button>
                     <Button 
                       variant="default"
                       className="bg-green-500 hover:bg-green-600"
-                      onClick={() => handleApprove(community.id)}
+                      onClick={() => {
+                        setSelectedCommunity(community);
+                        setApprovalDialogOpen(true);
+                      }}
                     >
                       <Check className="h-4 w-4 mr-2" /> Approve
                     </Button>
@@ -169,6 +179,20 @@ const AdminCommunityApprovals = () => {
         isOpen={detailsDialogOpen}
         onClose={() => setDetailsDialogOpen(false)}
         community={selectedCommunity}
+      />
+
+      <CommunityApprovalDialog
+        isOpen={approvalDialogOpen}
+        onClose={() => setApprovalDialogOpen(false)}
+        community={selectedCommunity}
+        onApprove={handleApprove}
+      />
+
+      <CommunityRejectionDialog
+        isOpen={rejectionDialogOpen}
+        onClose={() => setRejectionDialogOpen(false)}
+        community={selectedCommunity}
+        onReject={handleReject}
       />
     </>
   );

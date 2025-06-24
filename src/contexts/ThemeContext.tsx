@@ -73,6 +73,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
   }, [theme]);
 
+  // Listen for language changes to trigger re-renders
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      setLanguageState(getCurrentLanguage());
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange);
+    return () => window.removeEventListener('languageChange', handleLanguageChange);
+  }, []);
+
   return (
     <ThemeContext.Provider value={{ theme, language, setTheme, updateLanguage }}>
       {children}
