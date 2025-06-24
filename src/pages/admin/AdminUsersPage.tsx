@@ -1,4 +1,5 @@
 
+
 import { useState } from "react";
 import { 
   Table, TableBody, TableCell, TableHead, 
@@ -188,15 +189,14 @@ const AdminUsersPage = () => {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <UserProfileDialog user={user}>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="text-xs"
-                      >
-                        View Profile
-                      </Button>
-                    </UserProfileDialog>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-xs"
+                      onClick={() => setSelectedUser(user)}
+                    >
+                      View Profile
+                    </Button>
                     {!isCurrentUser(user.email) && (
                       <Button
                         variant="outline"
@@ -235,6 +235,14 @@ const AdminUsersPage = () => {
         )}
       </div>
 
+      {selectedUser && (
+        <UserProfileDialog
+          user={selectedUser}
+          isOpen={!!selectedUser}
+          onClose={() => setSelectedUser(null)}
+        />
+      )}
+
       <RoleChangeDialog
         isOpen={roleChangeDialogOpen}
         onClose={() => setRoleChangeDialogOpen(false)}
@@ -246,3 +254,4 @@ const AdminUsersPage = () => {
 };
 
 export default AdminUsersPage;
+
