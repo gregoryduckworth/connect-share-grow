@@ -1,13 +1,14 @@
 
 import { Outlet } from "react-router-dom";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import Sidebar from "./Sidebar";
 import UserMenu from "./UserMenu";
 import NotificationBell from "./NotificationBell";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const MainLayout = () => {
-  // Mock user data
   const user = {
     name: "John Doe",
     email: "john.doe@example.com"
@@ -17,23 +18,28 @@ const MainLayout = () => {
     <ThemeProvider>
       <SidebarProvider>
         <div className="min-h-screen bg-background flex w-full">
-          {/* Sidebar */}
           <Sidebar />
 
-          {/* Main content */}
           <div className="flex-1 flex flex-col min-w-0">
-            {/* Top bar */}
-            <div className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6 flex-shrink-0">
-              <div className="flex-1" />
+            <div className="h-16 bg-background border-b border-border flex items-center justify-between px-4 md:px-6 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <SidebarTrigger asChild>
+                  <Button variant="ghost" size="icon" className="md:hidden">
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                </SidebarTrigger>
+                <div className="flex-1" />
+              </div>
               <div className="flex items-center gap-2">
                 <NotificationBell />
                 <UserMenu user={user} />
               </div>
             </div>
 
-            {/* Page content - fills remaining space and scrollable */}
             <div className="flex-1 overflow-auto">
-              <Outlet />
+              <div className="p-4 md:p-6">
+                <Outlet />
+              </div>
             </div>
           </div>
         </div>

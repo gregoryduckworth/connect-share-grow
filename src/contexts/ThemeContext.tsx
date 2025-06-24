@@ -50,7 +50,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const updateLanguage = (newLanguage: string) => {
     setLanguage(newLanguage);
     setLanguageState(newLanguage);
-    // Force re-render by updating a state value
     window.dispatchEvent(new Event('languageChange'));
   };
 
@@ -63,7 +62,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       applyTheme('system');
     }
 
-    // Listen for system theme changes
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleSystemThemeChange = () => {
       if (theme === 'system') {

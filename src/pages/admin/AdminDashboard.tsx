@@ -2,9 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Users, MessageSquare, Shield, TrendingUp, AlertTriangle, Settings } from "lucide-react";
-import AdminCommunityApprovals from "@/components/admin/AdminCommunityApprovals";
-import AdminReports from "@/components/admin/AdminReports";
+import { Users, MessageSquare, Shield, TrendingUp, AlertTriangle, Settings, ChevronRight } from "lucide-react";
 import InactiveModeratorAlert from "@/components/admin/InactiveModeratorAlert";
 
 const AdminDashboard = () => {
@@ -12,18 +10,16 @@ const AdminDashboard = () => {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-social-primary">Admin Dashboard</h2>
-          <p className="text-social-muted">Manage your platform and monitor activity</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Admin Dashboard</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage your platform and monitor activity</p>
         </div>
       </div>
 
-      {/* Quick Stats and Actions */}
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Quick Actions */}
         <Card className="md:col-span-1">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Users className="h-5 w-5 text-social-primary" />
+              <Users className="h-5 w-5 text-primary" />
               Quick Actions
             </CardTitle>
             <CardDescription>Common administrative tasks</CardDescription>
@@ -50,11 +46,10 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Moderation */}
         <Card className="md:col-span-1">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Shield className="h-5 w-5 text-social-primary" />
+              <Shield className="h-5 w-5 text-primary" />
               Moderation
             </CardTitle>
             <CardDescription>Content and user moderation tools</CardDescription>
@@ -82,7 +77,6 @@ const AdminDashboard = () => {
         </Card>
       </div>
 
-      {/* Platform Health */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-3">
@@ -92,7 +86,7 @@ const AdminDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2,847</div>
+            <div className="text-xl sm:text-2xl font-bold">2,847</div>
             <p className="text-xs text-green-500">+12% from last month</p>
             <p className="text-xs text-muted-foreground mt-1">Total registered users</p>
           </CardContent>
@@ -106,7 +100,7 @@ const AdminDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">23</div>
+            <div className="text-xl sm:text-2xl font-bold">23</div>
             <p className="text-xs text-blue-500">+3 this week</p>
             <p className="text-xs text-muted-foreground mt-1">Communities with recent activity</p>
           </CardContent>
@@ -120,7 +114,7 @@ const AdminDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">Good</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-500">Good</div>
             <div className="mt-2 space-y-1">
               <div className="text-xs">Uptime: 99.9%</div>
               <div className="text-xs">Response time: 120ms</div>
@@ -129,13 +123,54 @@ const AdminDashboard = () => {
         </Card>
       </div>
 
-      {/* Inactive Moderator Alert */}
       <InactiveModeratorAlert />
 
-      {/* Community Approvals and Reports */}
       <div className="grid gap-6 md:grid-cols-2">
-        <AdminCommunityApprovals />
-        <AdminReports />
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-primary" />
+              Community Approvals
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-2xl font-bold">2</p>
+                <p className="text-sm text-muted-foreground">Communities pending approval</p>
+              </div>
+              <Link to="/admin/communities">
+                <Button variant="outline" size="sm">
+                  View All
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              Reports
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-2xl font-bold">5</p>
+                <p className="text-sm text-muted-foreground">Reports requiring attention</p>
+              </div>
+              <Link to="/admin/reports">
+                <Button variant="outline" size="sm">
+                  Review All
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -21,13 +21,12 @@ interface AdminSidebarProps {
 const AdminSidebar = ({ onCloseMobile }: AdminSidebarProps) => {
   const location = useLocation();
 
-  // Mock counts for sidebar badges - these should match actual data
   const getCounts = () => {
     return {
-      communities: 2, // pending approvals
-      reports: 5, // pending reports
-      users: 847, // total users
-      logs: 15 // recent audit logs
+      communities: 2,
+      reports: 5,
+      users: 847,
+      logs: 15
     };
   };
 
@@ -85,23 +84,21 @@ const AdminSidebar = ({ onCloseMobile }: AdminSidebarProps) => {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col h-full">
-      {/* Header */}
-      <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-        <h2 className="text-xl font-bold text-social-primary">Admin Panel</h2>
+    <div className="w-64 bg-background border-r border-border flex flex-col h-full">
+      <div className="p-4 border-b border-border flex items-center justify-between">
+        <h2 className="text-xl font-bold text-foreground">Admin Panel</h2>
         {onCloseMobile && (
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={onCloseMobile}
-            className="lg:hidden"
+            className="md:hidden"
           >
             <X className="h-4 w-4" />
           </Button>
         )}
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -113,14 +110,14 @@ const AdminSidebar = ({ onCloseMobile }: AdminSidebarProps) => {
                 variant={isActive ? "default" : "ghost"}
                 className={`w-full justify-start gap-3 ${
                   isActive 
-                    ? "bg-social-primary text-white" 
-                    : "text-gray-700 hover:bg-gray-100"
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-foreground hover:bg-accent hover:text-accent-foreground"
                 }`}
               >
                 <Icon className="h-4 w-4" />
                 <span className="flex-1 text-left">{item.name}</span>
                 {item.badge && (
-                  <Badge className="bg-red-500 text-white text-xs">
+                  <Badge className="bg-destructive text-destructive-foreground text-xs">
                     {item.badge}
                   </Badge>
                 )}

@@ -1,10 +1,10 @@
 
 import { useState } from "react";
-import { Search, Users, UserCheck, UserPlus, X, Check } from "lucide-react";
+import { Search, Users, MessageCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
@@ -12,80 +12,68 @@ import UserProfileDialog from "@/components/user/UserProfileDialog";
 interface Connection {
   id: string;
   name: string;
-  email: string;
   mutualConnections: number;
-  status: 'connected' | 'pending' | 'suggested';
-  connectionDate?: Date;
+  status: 'connected' | 'pending' | 'received';
+  lastActive: Date;
+  bio?: string;
 }
 
 const ConnectionsPage = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<Connection | null>(null);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
   const [connections, setConnections] = useState<Connection[]>([
     {
       id: "1",
       name: "Sarah Johnson",
-      email: "sarah.johnson@example.com",
       mutualConnections: 12,
-      status: 'connected',
-      connectionDate: new Date(2024, 3, 15)
+      status: "connected",
+      lastActive: new Date(2024, 5, 20),
+      bio: "Photography enthusiast and travel blogger"
     },
     {
-      id: "2",
+      id: "2", 
       name: "Mike Chen",
-      email: "mike.chen@example.com", 
       mutualConnections: 8,
-      status: 'connected',
-      connectionDate: new Date(2024, 4, 2)
+      status: "connected",
+      lastActive: new Date(2024, 5, 19),
+      bio: "Software developer and tech enthusiast"
     },
     {
       id: "3",
       name: "Emily Rodriguez",
-      email: "emily.rodriguez@example.com",
       mutualConnections: 5,
-      status: 'pending'
+      status: "pending",
+      lastActive: new Date(2024, 5, 18),
+      bio: "Digital marketing specialist"
     },
     {
       id: "4",
       name: "David Kim",
-      email: "david.kim@example.com",
-      mutualConnections: 15,
-      status: 'suggested'
-    },
-    {
-      id: "5",
-      name: "Lisa Thompson",
-      email: "lisa.thompson@example.com",
       mutualConnections: 3,
-      status: 'pending'
-    },
-    {
-      id: "6",
-      name: "Alex Rivera",
-      email: "alex.rivera@example.com",
-      mutualConnections: 7,
-      status: 'suggested'
+      status: "received",
+      lastActive: new Date(2024, 5, 17),
+      bio: "Graphic designer and artist"
     }
   ]);
 
-  const filteredConnections = connections.filter(connection =>
-    connection.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    connection.email.toLowerCase().includes(searchQuery.toLowerCase())
+  const connectedUsers = connections.filter(c => c.status === 'connected');
+  const pendingRequests = connections.filter(c => c.status === 'pending');
+  const receivedRequests = connections.filter(c => c.status === 'received');
+
+  const filteredConnections = connectedUsers.filter(connection =>
+    connection.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const connectedUsers = filteredConnections.filter(c => c.status === 'connected');
-  const pendingRequests = filteredConnections.filter(c => c.status === 'pending');
-  const suggestedConnections = filteredConnections.filter(c => c.status === 'suggested');
-
-  const handleAcceptConnection = (connectionId: string) => {
-    setConnections(connections.map(conn => 
-      conn.id === connectionId 
-        ? { ...conn, status: 'connected' as const, connectionDate: new Date() }
-        : conn
+  const handleAcceptRequest = (connectionId: string) => {
+    setConnections(connections.map(connection =>
+      connection.id === connectionId
+        ? { ...connection, status: 'connected' as const }
+        : connection
     ));
-    
+
     const connection = connections.find(c => c.id === connectionId);
     toast({
       title: "Connection accepted",
@@ -93,116 +81,76 @@ const ConnectionsPage = () => {
     });
   };
 
-  const handleDeclineConnection = (connectionId: string) => {
-    setConnections(connections.filter(conn => conn.id !== connectionId));
-    
+  const handleRejectRequest = (connectionId: string) => {
+    setConnections(connections.filter(connection => connection.id !== connectionId));
+
     const connection = connections.find(c => c.id === connectionId);
     toast({
-      title: "Connection declined",
-      description: `Connection request from ${connection?.name} declined`,
+      title: "Connection rejected",
+      description: `Request from ${connection?.name} has been declined`,
+      variant: "destructive",
     });
   };
 
-  const handleSendConnectionRequest = (connectionId: string) => {
-    setConnections(connections.map(conn => 
-      conn.id === connectionId 
-        ? { ...conn, status: 'pending' as const }
-        : conn
-    ));
-    
-    const connection = connections.find(c => c.id === connectionId);
-    toast({
-      title: "Connection request sent",
-      description: `Connection request sent to ${connection?.name}`,
-    });
+  const handleViewProfile = (connection: Connection) => {
+    setSelectedUser(connection);
+    setProfileDialogOpen(true);
   };
 
-  const handleRemoveConnection = (connectionId: string) => {
-    setConnections(connections.filter(conn => conn.id !== connectionId));
-    
-    const connection = connections.find(c => c.id === connectionId);
-    toast({
-      title: "Connection removed",
-      description: `You are no longer connected with ${connection?.name}`,
-    });
-  };
-
-  const ConnectionCard = ({ connection, showActions = true }: { connection: Connection; showActions?: boolean }) => (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-center gap-4">
-          <Avatar className="h-12 w-12">
-            <AvatarFallback>
-              {connection.name.split(' ').map(n => n[0]).join('')}
-            </AvatarFallback>
-          </Avatar>
-          
+  const ConnectionCard = ({ connection, showActions = false }: { connection: Connection; showActions?: boolean }) => (
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
           <div className="flex-1">
-            <h3 className="font-semibold">
-              <button 
-                className="hover:text-social-primary transition-colors cursor-pointer"
-                onClick={() => setSelectedUserId(connection.id)}
-              >
-                {connection.name}
-              </button>
-            </h3>
-            <p className="text-sm text-social-muted">{connection.email}</p>
-            <p className="text-xs text-social-muted mt-1">
-              {connection.mutualConnections} mutual connections
-            </p>
-            {connection.connectionDate && (
-              <p className="text-xs text-social-muted">
-                Connected on {connection.connectionDate.toLocaleDateString()}
-              </p>
-            )}
+            <CardTitle className="text-base sm:text-lg break-words">{connection.name}</CardTitle>
+            <CardDescription className="text-xs sm:text-sm mt-1 break-words">
+              {connection.bio}
+            </CardDescription>
           </div>
-          
-          {showActions && (
-            <div className="flex gap-2">
-              {connection.status === 'connected' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleRemoveConnection(connection.id)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-              
-              {connection.status === 'pending' && (
-                <>
-                  <Button
-                    size="sm"
-                    onClick={() => handleAcceptConnection(connection.id)}
-                  >
-                    <Check className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDeclineConnection(connection.id)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedUserId(connection.id)}
-                  >
-                    View Profile
-                  </Button>
-                </>
-              )}
-              
-              {connection.status === 'suggested' && (
-                <Button
-                  size="sm"
-                  onClick={() => handleSendConnectionRequest(connection.id)}
-                >
-                  <UserPlus className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
+          <Badge variant="outline" className="text-xs whitespace-nowrap">
+            {connection.mutualConnections} mutual
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+          <span className="break-words">Last active: {connection.lastActive.toLocaleDateString()}</span>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row gap-2">
+          {showActions ? (
+            <>
+              <Button
+                onClick={() => handleAcceptRequest(connection.id)}
+                className="flex-1 text-xs sm:text-sm"
+              >
+                Accept
+              </Button>
+              <Button
+                onClick={() => handleRejectRequest(connection.id)}
+                variant="outline"
+                className="flex-1 text-xs sm:text-sm"
+              >
+                Decline
+              </Button>
+            </>
+          ) : connection.status === 'pending' ? (
+            <Button
+              onClick={() => handleViewProfile(connection)}
+              variant="outline"
+              className="flex-1 text-xs sm:text-sm"
+            >
+              <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              View Profile
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className="flex-1 text-xs sm:text-sm"
+            >
+              <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              Message
+            </Button>
           )}
         </div>
       </CardContent>
@@ -210,14 +158,14 @@ const ConnectionsPage = () => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-4 py-6 max-w-6xl">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-social-primary mb-2">Connections</h1>
-        <p className="text-social-muted">Manage your network and discover new connections</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">My Connections</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Manage your network and connection requests</p>
       </div>
 
       <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-social-muted h-4 w-4" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input
           placeholder="Search connections..."
           value={searchQuery}
@@ -227,72 +175,72 @@ const ConnectionsPage = () => {
       </div>
 
       <Tabs defaultValue="connected" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="connected" className="flex items-center gap-2">
-            <UserCheck className="h-4 w-4" />
+        <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsTrigger value="connected" className="text-xs sm:text-sm">
             Connected ({connectedUsers.length})
           </TabsTrigger>
-          <TabsTrigger value="pending" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Requests ({pendingRequests.length})
+          <TabsTrigger value="pending" className="text-xs sm:text-sm">
+            Pending ({pendingRequests.length})
           </TabsTrigger>
-          <TabsTrigger value="suggested" className="flex items-center gap-2">
-            <UserPlus className="h-4 w-4" />
-            Suggested ({suggestedConnections.length})
+          <TabsTrigger value="requests" className="text-xs sm:text-sm">
+            Requests ({receivedRequests.length})
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="connected" className="mt-6">
-          <div className="space-y-4">
-            {connectedUsers.map((connection) => (
+        <TabsContent value="connected">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {filteredConnections.map((connection) => (
               <ConnectionCard key={connection.id} connection={connection} />
             ))}
-            
-            {connectedUsers.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-social-muted">No connections found.</p>
-              </div>
-            )}
           </div>
+          
+          {filteredConnections.length === 0 && (
+            <div className="text-center py-12">
+              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No connections found.</p>
+            </div>
+          )}
         </TabsContent>
         
-        <TabsContent value="pending" className="mt-6">
-          <div className="space-y-4">
+        <TabsContent value="pending">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {pendingRequests.map((connection) => (
               <ConnectionCard key={connection.id} connection={connection} />
             ))}
-            
-            {pendingRequests.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-social-muted">No pending connection requests.</p>
-              </div>
-            )}
           </div>
+          
+          {pendingRequests.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No pending requests.</p>
+            </div>
+          )}
         </TabsContent>
         
-        <TabsContent value="suggested" className="mt-6">
-          <div className="space-y-4">
-            {suggestedConnections.map((connection) => (
-              <ConnectionCard key={connection.id} connection={connection} />
+        <TabsContent value="requests">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {receivedRequests.map((connection) => (
+              <ConnectionCard key={connection.id} connection={connection} showActions />
             ))}
-            
-            {suggestedConnections.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-social-muted">No suggested connections at the moment.</p>
-              </div>
-            )}
           </div>
+          
+          {receivedRequests.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No connection requests.</p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
-      {/* User Profile Dialog */}
-      {selectedUserId && (
+      {selectedUser && (
         <UserProfileDialog
-          userId={selectedUserId}
-          isOpen={!!selectedUserId}
-          onClose={() => setSelectedUserId(null)}
+          user={selectedUser}
+          isOpen={profileDialogOpen}
+          onClose={() => {
+            setProfileDialogOpen(false);
+            setSelectedUser(null);
+          }}
           currentUserId="current-user-id"
-          showConnectionButton={false}
+          hideConnectionRequest={true}
         />
       )}
     </div>

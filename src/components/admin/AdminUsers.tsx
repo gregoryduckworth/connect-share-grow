@@ -126,18 +126,18 @@ const AdminUsers = () => {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800';
-      case 'moderator': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'admin': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+      case 'moderator': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'suspended': return 'bg-yellow-100 text-yellow-800';
-      case 'banned': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+      case 'suspended': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'banned': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
     }
   };
 
@@ -149,9 +149,9 @@ const AdminUsers = () => {
             status: 'suspended' as const,
             suspensionDetails: {
               reason: "Violation of community guidelines",
-              adminName: "Current Admin",
+              adminName: "Admin User",
               suspendedAt: new Date(),
-              expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+              expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
             }
           }
         : user
@@ -212,7 +212,7 @@ const AdminUsers = () => {
         <CardContent>
           <div className="mb-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Search users..."
                 value={searchQuery}
@@ -240,11 +240,11 @@ const AdminUsers = () => {
                   <TableRow key={user.id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{user.name}</div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
+                        <div className="font-medium break-words">{user.name}</div>
+                        <div className="text-sm text-muted-foreground break-words">{user.email}</div>
                         {user.suspensionDetails && (
-                          <div className="text-xs text-orange-600 mt-1">
-                            Suspended by {user.suspensionDetails.adminName}: {user.suspensionDetails.reason}
+                          <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                            <div className="break-words">Suspended by {user.suspensionDetails.adminName}: {user.suspensionDetails.reason}</div>
                             {user.suspensionDetails.expiresAt && (
                               <div>Expires: {user.suspensionDetails.expiresAt.toLocaleDateString()}</div>
                             )}
@@ -265,7 +265,7 @@ const AdminUsers = () => {
                     <TableCell>{user.joinDate.toLocaleDateString()}</TableCell>
                     <TableCell>{user.postCount}</TableCell>
                     <TableCell>
-                      <span className={user.reportCount > 0 ? 'text-red-600 font-semibold' : ''}>
+                      <span className={user.reportCount > 0 ? 'text-red-600 dark:text-red-400 font-semibold' : ''}>
                         {user.reportCount}
                       </span>
                     </TableCell>
@@ -300,7 +300,7 @@ const AdminUsers = () => {
                           {user.status !== 'banned' && (
                             <DropdownMenuItem 
                               onClick={() => handleBanUser(user.id)}
-                              className="text-red-600"
+                              className="text-red-600 focus:text-red-600"
                             >
                               <Ban className="h-4 w-4 mr-2" />
                               Ban
@@ -321,19 +321,20 @@ const AdminUsers = () => {
             pageSize={pageSize}
             totalItems={filteredUsers.length}
             onPageChange={setCurrentPage}
-            onPageSizeChange={() => {}} // Not implemented in this component
+            onPageSizeChange={() => {}}
           />
         </CardContent>
       </Card>
 
-      {/* User Profile Dialog */}
       {selectedUser && (
-        <UserProfileDialog user={selectedUser}>
-          <div />
-        </UserProfileDialog>
+        <UserProfileDialog 
+          user={selectedUser}
+          isOpen={!!selectedUser}
+          onClose={() => setSelectedUser(null)}
+          currentUserId="admin-user-id"
+        />
       )}
 
-      {/* Role Change Dialog */}
       {roleChangeUser && (
         <RoleChangeDialog
           user={roleChangeUser}

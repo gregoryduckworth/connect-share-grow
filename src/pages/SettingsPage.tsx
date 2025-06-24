@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,10 +17,8 @@ const SettingsPage = () => {
   const { theme, language, setTheme, updateLanguage } = useTheme();
   const [profile, setProfile] = useState({
     displayName: "John Doe",
-    email: "john.doe@example.com",
     bio: "Photography enthusiast and community moderator",
-    location: "San Francisco, CA",
-    website: "https://johndoe.photography"
+    location: "San Francisco, CA"
   });
 
   const [notifications, setNotifications] = useState({
@@ -85,27 +82,31 @@ const SettingsPage = () => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="mb-6 text-left">
-        <h1 className="text-3xl font-bold text-social-primary mb-2">{t('settings.title')}</h1>
-        <p className="text-social-muted">Manage your account preferences and privacy settings</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{t('settings.title')}</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Manage your account preferences and privacy settings</p>
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="profile" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            {t('settings.profile')}
+        <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsTrigger value="profile" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <User className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">{t('settings.profile')}</span>
+            <span className="sm:hidden">Profile</span>
           </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <Bell className="h-4 w-4" />
-            {t('settings.notifications')}
+          <TabsTrigger value="notifications" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Bell className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">{t('settings.notifications')}</span>
+            <span className="sm:hidden">Notifs</span>
           </TabsTrigger>
-          <TabsTrigger value="privacy" className="flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            {t('settings.privacy')}
+          <TabsTrigger value="privacy" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">{t('settings.privacy')}</span>
+            <span className="sm:hidden">Privacy</span>
           </TabsTrigger>
-          <TabsTrigger value="appearance" className="flex items-center gap-2">
-            <Palette className="h-4 w-4" />
-            {t('settings.appearance')}
+          <TabsTrigger value="appearance" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <Palette className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">{t('settings.appearance')}</span>
+            <span className="sm:hidden">Theme</span>
           </TabsTrigger>
         </TabsList>
 
@@ -126,12 +127,11 @@ const SettingsPage = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="location">Location</Label>
                   <Input
-                    id="email"
-                    type="email"
-                    value={profile.email}
-                    onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
+                    id="location"
+                    value={profile.location}
+                    onChange={(e) => setProfile(prev => ({ ...prev, location: e.target.value }))}
                   />
                 </div>
               </div>
@@ -145,26 +145,6 @@ const SettingsPage = () => {
                   onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
                   rows={3}
                 />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    value={profile.location}
-                    onChange={(e) => setProfile(prev => ({ ...prev, location: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="website">Website</Label>
-                  <Input
-                    id="website"
-                    type="url"
-                    value={profile.website}
-                    onChange={(e) => setProfile(prev => ({ ...prev, website: e.target.value }))}
-                  />
-                </div>
               </div>
               
               <Button onClick={handleSaveProfile}>{t('settings.save')} Profile</Button>

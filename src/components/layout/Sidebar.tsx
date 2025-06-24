@@ -11,12 +11,13 @@ import {
   SidebarMenuButton,
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { t } from "@/lib/i18n";
 
 const SidebarComponent = () => {
   const mainNavItems = [
-    { title: t('nav.home'), url: "/", icon: Home },
+    { title: "What's New", url: "/", icon: Home },
     { title: t('nav.communities'), url: "/communities", icon: Users },
     { title: t('nav.discover'), url: "/discover", icon: Compass },
   ];
@@ -27,14 +28,17 @@ const SidebarComponent = () => {
   ];
 
   return (
-    <Sidebar>
-      <SidebarHeader className="p-4">
-        <h2 className="text-xl font-bold text-social-primary">ConnectSphere</h2>
+    <Sidebar className="border-r border-border">
+      <SidebarHeader className="p-4 border-b border-border">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-foreground">ConnectSphere</h2>
+          <SidebarTrigger className="md:hidden" />
+        </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="bg-background">
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-foreground">Navigation</SidebarGroupLabel>
           <SidebarMenu>
             {mainNavItems.map((item) => (
               <SidebarMenuItem key={item.title}>
@@ -42,11 +46,13 @@ const SidebarComponent = () => {
                   <NavLink 
                     to={item.url}
                     className={({ isActive }) => 
-                      isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+                      `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-foreground hover:bg-accent hover:text-accent-foreground ${
+                        isActive ? "bg-accent text-accent-foreground" : ""
+                      }`
                     }
                   >
-                    <item.icon />
-                    <span>{item.title}</span>
+                    <item.icon className="h-4 w-4" />
+                    <span className="text-sm font-medium">{item.title}</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -54,10 +60,10 @@ const SidebarComponent = () => {
           </SidebarMenu>
         </SidebarGroup>
 
-        <Separator className="my-4" />
+        <Separator className="my-4 bg-border" />
 
         <SidebarGroup>
-          <SidebarGroupLabel>Communication</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-foreground">Communication</SidebarGroupLabel>
           <SidebarMenu>
             {chatNavItems.map((item) => (
               <SidebarMenuItem key={item.title}>
@@ -65,11 +71,13 @@ const SidebarComponent = () => {
                   <NavLink 
                     to={item.url}
                     className={({ isActive }) => 
-                      isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+                      `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-foreground hover:bg-accent hover:text-accent-foreground ${
+                        isActive ? "bg-accent text-accent-foreground" : ""
+                      }`
                     }
                   >
-                    <item.icon />
-                    <span>{item.title}</span>
+                    <item.icon className="h-4 w-4" />
+                    <span className="text-sm font-medium">{item.title}</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
