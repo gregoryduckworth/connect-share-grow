@@ -69,21 +69,19 @@ const AdminLayout = () => {
             </div>
           </header>
           
-          <main className="flex-1 overflow-auto">
-            <div className="p-6">
-              <Alert className="mb-6 border-blue-200 bg-blue-50">
-                <Info className="h-4 w-4 text-blue-500" />
-                <AlertTitle className="text-blue-700">Demo User Credentials</AlertTitle>
-                <AlertDescription className="text-sm">
-                  <p className="mb-1"><strong>Admin:</strong> admin@example.com / password123</p>
-                  <p className="mb-1"><strong>Moderator:</strong> mod@example.com / password123</p>
-                  <p><strong>Regular User:</strong> user@example.com / password123</p>
-                </AlertDescription>
-              </Alert>
-              
-              <div className="h-full">
-                <Outlet />
-              </div>
+          <main className="flex-1 min-h-0 p-6">
+            <Alert className="mb-6 border-blue-200 bg-blue-50">
+              <Info className="h-4 w-4 text-blue-500" />
+              <AlertTitle className="text-blue-700">Demo User Credentials</AlertTitle>
+              <AlertDescription className="text-sm">
+                <p className="mb-1"><strong>Admin:</strong> admin@example.com / password123</p>
+                <p className="mb-1"><strong>Moderator:</strong> mod@example.com / password123</p>
+                <p><strong>Regular User:</strong> user@example.com / password123</p>
+              </AlertDescription>
+            </Alert>
+            
+            <div className="h-full">
+              <Outlet />
             </div>
           </main>
         </div>

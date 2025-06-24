@@ -1,37 +1,28 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Users, Plus, Check, X, MessageCircle } from "lucide-react";
+import { Users, Check, X, MessageCircle, User } from "lucide-react";
 import { api } from "@/lib/api";
-import { Connection, User } from "@/lib/types";
+import { Connection } from "@/lib/types";
 import { useNavigate } from "react-router-dom";
+import UserProfileDialog from "@/components/user/UserProfileDialog";
 
 const ConnectionsPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState("");
-  const [connectionMessage, setConnectionMessage] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [connectionsData, usersData] = await Promise.all([
-          api.getConnections("user-1"), // Current user ID
-          api.getUsers()
-        ]);
+        const connectionsData = await api.getConnections("user-1"); // Current user ID
         setConnections(connectionsData);
-        setUsers(usersData);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -41,47 +32,6 @@ const ConnectionsPage = () => {
 
     fetchData();
   }, []);
-
-  const handleCreateConnection = async () => {
-    if (!selectedUserId || !connectionMessage.trim()) {
-      toast({
-        title: "Error",
-        description: "Please select a user and provide a message.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const selectedUser = users.find(u => u.id === selectedUserId);
-    if (!selectedUser) return;
-
-    try {
-      const newConnection = await api.createConnectionRequest({
-        fromUserId: "user-1", // Current user ID
-        toUserId: selectedUserId,
-        fromUserName: "John Doe", // Current user name
-        toUserName: selectedUser.name,
-        message: connectionMessage
-      });
-
-      setConnections([...connections, newConnection]);
-      setIsCreateDialogOpen(false);
-      setSelectedUserId("");
-      setConnectionMessage("");
-
-      toast({
-        title: "Connection Request Sent",
-        description: `Your connection request to ${selectedUser.name} has been sent.`,
-      });
-    } catch (error) {
-      console.error("Failed to create connection:", error);
-      toast({
-        title: "Error",
-        description: "Failed to send connection request.",
-        variant: "destructive"
-      });
-    }
-  };
 
   const handleRespondToConnection = async (connectionId: string, response: "accepted" | "declined") => {
     try {
@@ -108,6 +58,10 @@ const ConnectionsPage = () => {
 
   const handleStartChat = (connectionId: string) => {
     navigate(`/chat?connection=${connectionId}`);
+  };
+
+  const handleViewProfile = (userId: string) => {
+    setSelectedUserId(userId);
   };
 
   const pendingRequests = connections.filter(c => c.status === "pending");
@@ -156,9 +110,12 @@ const ConnectionsPage = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="text-left">
-                      <h3 className="font-semibold">
+                      <button
+                        onClick={() => handleViewProfile(connection.fromUserId === "user-1" ? connection.toUserId : connection.fromUserId)}
+                        className="font-semibold text-social-primary hover:underline"
+                      >
                         {connection.fromUserId === "user-1" ? connection.toUserName : connection.fromUserName}
-                      </h3>
+                      </button>
                       <p className="text-sm text-gray-600 mb-2">{connection.message}</p>
                       <p className="text-xs text-gray-400">
                         Connected on {connection.respondedAt?.toLocaleDateString()}
@@ -194,7 +151,12 @@ const ConnectionsPage = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="text-left">
-                      <h3 className="font-semibold">{connection.fromUserName}</h3>
+                      <button
+                        onClick={() => handleViewProfile(connection.fromUserId)}
+                        className="font-semibold text-social-primary hover:underline"
+                      >
+                        {connection.fromUserName}
+                      </button>
                       <p className="text-sm text-gray-600 mb-2">{connection.message}</p>
                       <p className="text-xs text-gray-400">
                         Requested on {connection.requestedAt.toLocaleDateString()}
@@ -216,6 +178,14 @@ const ConnectionsPage = () => {
                       >
                         <X className="h-4 w-4 mr-1" />
                         Decline
+                      </Button>
+                      <Button 
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleViewProfile(connection.fromUserId)}
+                      >
+                        <User className="h-4 w-4 mr-1" />
+                        Profile
                       </Button>
                     </div>
                   </div>
@@ -241,7 +211,12 @@ const ConnectionsPage = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="text-left">
-                      <h3 className="font-semibold">{connection.toUserName}</h3>
+                      <button
+                        onClick={() => handleViewProfile(connection.toUserId)}
+                        className="font-semibold text-social-primary hover:underline"
+                      >
+                        {connection.toUserName}
+                      </button>
                       <p className="text-sm text-gray-600 mb-2">{connection.message}</p>
                       <p className="text-xs text-gray-400">
                         Sent on {connection.requestedAt.toLocaleDateString()}
@@ -255,6 +230,15 @@ const ConnectionsPage = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {selectedUserId && (
+        <UserProfileDialog
+          userId={selectedUserId}
+          isOpen={!!selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+          currentUserId="user-1"
+        />
+      )}
     </div>
   );
 };

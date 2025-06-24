@@ -29,11 +29,9 @@ const MainLayout = () => {
             </div>
           </div>
 
-          {/* Page content - full width, no container padding */}
-          <div className="flex-1 overflow-auto">
-            <div className="h-full">
-              <Outlet />
-            </div>
+          {/* Page content - fills remaining space */}
+          <div className="flex-1 min-h-0">
+            <Outlet />
           </div>
         </div>
       </div>

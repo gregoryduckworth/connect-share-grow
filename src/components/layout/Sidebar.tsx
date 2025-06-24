@@ -2,6 +2,7 @@
 import { NavLink } from "react-router-dom";
 import { Home, Users, Compass, MessageCircle } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,10 +24,13 @@ import {
 } from "@/components/ui/sidebar";
 
 const SidebarComponent = () => {
-  const navItems = [
-    { title: "Home", url: "/", icon: Home },
+  const mainNavItems = [
+    { title: "What's new?", url: "/", icon: Home },
     { title: "Communities", url: "/communities", icon: Users },
     { title: "Discover", url: "/discover", icon: Compass },
+  ];
+
+  const chatNavItems = [
     { title: "Chat", url: "/chat", icon: MessageCircle },
     { title: "Connections", url: "/connections", icon: Users },
   ];
@@ -41,7 +45,30 @@ const SidebarComponent = () => {
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarMenu>
-            {navItems.map((item) => (
+            {mainNavItems.map((item) => (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton asChild>
+                  <NavLink 
+                    to={item.url}
+                    className={({ isActive }) => 
+                      isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+                    }
+                  >
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <Separator className="my-4" />
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Communication</SidebarGroupLabel>
+          <SidebarMenu>
+            {chatNavItems.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild>
                   <NavLink 

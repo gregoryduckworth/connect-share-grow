@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Bell, Shield, Palette } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { t, setLanguage, getSupportedLanguages } from "@/lib/i18n";
 
 const SettingsPage = () => {
   const { toast } = useToast();
@@ -22,8 +23,6 @@ const SettingsPage = () => {
   });
 
   const [notifications, setNotifications] = useState({
-    emailNotifications: true,
-    pushNotifications: true,
     communityUpdates: true,
     directMessages: true,
     connectionRequests: true
@@ -44,7 +43,7 @@ const SettingsPage = () => {
 
   const handleSaveProfile = () => {
     toast({
-      title: "Profile updated",
+      title: t('settings.profile') + " updated",
       description: "Your profile changes have been saved successfully."
     });
   };
@@ -64,16 +63,42 @@ const SettingsPage = () => {
   };
 
   const handleSaveAppearance = () => {
+    // Apply theme changes
+    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
+    
+    if (appearance.theme === "light") {
+      root.classList.add("light");
+    } else if (appearance.theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      // System theme
+      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        root.classList.add("dark");
+      } else {
+        root.classList.add("light");
+      }
+    }
+
     toast({
       title: "Appearance settings updated",
       description: "Your appearance preferences have been saved."
     });
   };
 
+  const handleLanguageChange = (newLanguage: string) => {
+    setAppearance(prev => ({ ...prev, language: newLanguage }));
+    setLanguage(newLanguage);
+    toast({
+      title: t('settings.language') + " updated",
+      description: "Language has been changed successfully."
+    });
+  };
+
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
       <div className="mb-6 text-left">
-        <h1 className="text-3xl font-bold text-social-primary mb-2">Settings</h1>
+        <h1 className="text-3xl font-bold text-social-primary mb-2">{t('settings.title')}</h1>
         <p className="text-social-muted">Manage your account preferences and privacy settings</p>
       </div>
 
@@ -81,19 +106,19 @@ const SettingsPage = () => {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
-            Profile
+            {t('settings.profile')}
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
-            Notifications
+            {t('settings.notifications')}
           </TabsTrigger>
           <TabsTrigger value="privacy" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
-            Privacy
+            {t('settings.privacy')}
           </TabsTrigger>
           <TabsTrigger value="appearance" className="flex items-center gap-2">
             <Palette className="h-4 w-4" />
-            Appearance
+            {t('settings.appearance')}
           </TabsTrigger>
         </TabsList>
 
@@ -155,7 +180,7 @@ const SettingsPage = () => {
                 </div>
               </div>
               
-              <Button onClick={handleSaveProfile}>Save Profile</Button>
+              <Button onClick={handleSaveProfile}>{t('settings.save')} Profile</Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -167,30 +192,6 @@ const SettingsPage = () => {
               <CardDescription>Choose how you want to be notified about activity</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 text-left">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="emailNotifications" className="text-base font-medium">Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive notifications via email</p>
-                </div>
-                <Switch
-                  id="emailNotifications"
-                  checked={notifications.emailNotifications}
-                  onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, emailNotifications: checked }))}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="pushNotifications" className="text-base font-medium">Push Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive browser push notifications</p>
-                </div>
-                <Switch
-                  id="pushNotifications"
-                  checked={notifications.pushNotifications}
-                  onCheckedChange={(checked) => setNotifications(prev => ({ ...prev, pushNotifications: checked }))}
-                />
-              </div>
-              
               <div className="flex items-center justify-between">
                 <div>
                   <Label htmlFor="communityUpdates" className="text-base font-medium">Community Updates</Label>
@@ -322,19 +323,20 @@ const SettingsPage = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="language">Language</Label>
+                <Label htmlFor="language">{t('settings.language')}</Label>
                 <Select
                   value={appearance.language}
-                  onValueChange={(value) => setAppearance(prev => ({ ...prev, language: value }))}
+                  onValueChange={handleLanguageChange}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="es">Español</SelectItem>
-                    <SelectItem value="fr">Français</SelectItem>
-                    <SelectItem value="de">Deutsch</SelectItem>
+                    {getSupportedLanguages().map((lang) => (
+                      <SelectItem key={lang.code} value={lang.code}>
+                        {lang.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -351,7 +353,7 @@ const SettingsPage = () => {
                 />
               </div>
               
-              <Button onClick={handleSaveAppearance}>Save Appearance Settings</Button>
+              <Button onClick={handleSaveAppearance}>{t('settings.save')} Appearance Settings</Button>
             </CardContent>
           </Card>
         </TabsContent>
