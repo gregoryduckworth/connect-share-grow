@@ -51,8 +51,10 @@ const SidebarComponent = () => {
                       }`
                     }
                   >
-                    <item.icon className="h-4 w-4" />
-                    <span className="text-sm font-medium">{item.title}</span>
+                    <>
+                      <item.icon className="h-4 w-4" />
+                      <span className="text-sm font-medium">{item.title}</span>
+                    </>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -76,8 +78,10 @@ const SidebarComponent = () => {
                       }`
                     }
                   >
-                    <item.icon className="h-4 w-4" />
-                    <span className="text-sm font-medium">{item.title}</span>
+                    <>
+                      <item.icon className="h-4 w-4" />
+                      <span className="text-sm font-medium">{item.title}</span>
+                    </>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
