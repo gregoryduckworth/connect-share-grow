@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -98,9 +98,32 @@ const ChatPage = () => {
     },
   ]);
 
-  const filteredChats = chats.filter((chat) =>
+  // Helper for avatar fallback
+  function getInitials(name: string) {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  }
+
+  const [showChatList, setShowChatList] = useState(true);
+
+  // Sort chats: unread first, then by most recent
+  const sortedChats = useMemo(() => {
+    return [...chats]
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .sort(
+        (a, b) => (b.unreadCount > 0 ? 1 : 0) - (a.unreadCount > 0 ? 1 : 0)
+      );
+  }, [chats]);
+  const filteredChats = sortedChats.filter((chat) =>
     chat.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  // Responsive: hide chat list on mobile when a chat is selected
+  useEffect(() => {
+    if (window.innerWidth < 1024 && selectedChat) setShowChatList(false);
+  }, [selectedChat]);
 
   const handleStartIndividualChat = (friendId: string) => {
     const friend = friends.find((f) => f.id === friendId);
@@ -167,147 +190,157 @@ const ChatPage = () => {
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-8rem)]">
         {/* Chat List */}
-        <div className="lg:col-span-1">
-          <Card className="h-full">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle>Messages</CardTitle>
-                <Dialog
-                  open={newChatDialogOpen}
-                  onOpenChange={setNewChatDialogOpen}
-                >
-                  <DialogTrigger asChild>
-                    <Button size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      New Chat
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Start New Chat</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <h4 className="font-medium mb-2">
-                          Start Individual Chat
-                        </h4>
-                        <div className="space-y-2 max-h-40 overflow-y-auto">
-                          {friends.map((friend) => (
-                            <div
-                              key={friend.id}
-                              className="flex items-center justify-between p-2 hover:bg-gray-50 rounded cursor-pointer"
-                              onClick={() =>
-                                handleStartIndividualChat(friend.id)
-                              }
-                            >
-                              <div className="flex items-center gap-3">
-                                <Avatar className="h-8 w-8 bg-social-primary text-white">
-                                  <div className="flex h-full w-full items-center justify-center">
-                                    <User className="h-4 w-4" />
-                                  </div>
-                                </Avatar>
-                                <div>
-                                  <p className="font-medium text-sm">
-                                    {friend.name}
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    {friend.email}
-                                  </p>
-                                </div>
-                              </div>
-                              <div
-                                className={`w-2 h-2 rounded-full ${
-                                  friend.isOnline
-                                    ? "bg-green-500"
-                                    : "bg-gray-300"
-                                }`}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="border-t pt-4">
-                        <h4 className="font-medium mb-2">Create Group Chat</h4>
-                        <Input
-                          placeholder="Group name..."
-                          value={groupName}
-                          onChange={(e) => setGroupName(e.target.value)}
-                          className="mb-3"
-                        />
-                        <div className="space-y-2 max-h-40 overflow-y-auto">
-                          {friends.map((friend) => (
-                            <div
-                              key={friend.id}
-                              className="flex items-center space-x-2"
-                            >
-                              <Checkbox
-                                id={friend.id}
-                                checked={selectedFriends.includes(friend.id)}
-                                onCheckedChange={(checked) =>
-                                  handleFriendSelection(
-                                    friend.id,
-                                    checked as boolean
-                                  )
-                                }
-                              />
-                              <label
-                                htmlFor={friend.id}
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                              >
-                                {friend.name}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                        <Button
-                          onClick={handleStartGroupChat}
-                          disabled={
-                            selectedFriends.length === 0 || !groupName.trim()
-                          }
-                          className="w-full mt-3"
-                        >
-                          <Users className="h-4 w-4 mr-2" />
-                          Create Group
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search conversations..."
-                  className="pl-8"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </CardHeader>
-
-            <CardContent className="p-0">
-              <div className="space-y-1">
-                {filteredChats.map((chat) => (
-                  <div
-                    key={chat.id}
-                    className={`p-3 cursor-pointer hover:bg-gray-50 ${
-                      selectedChat === chat.id ? "bg-social-accent/20" : ""
-                    }`}
-                    onClick={() => setSelectedChat(chat.id)}
+        {showChatList && (
+          <div className="lg:col-span-1">
+            <Card className="h-full border border-border">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle>Messages</CardTitle>
+                  <Dialog
+                    open={newChatDialogOpen}
+                    onOpenChange={setNewChatDialogOpen}
                   >
-                    <div className="flex items-center gap-3">
+                    <DialogTrigger asChild>
+                      <Button size="sm">
+                        <Plus className="h-4 w-4 mr-2" />
+                        New Chat
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Start New Chat</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="font-medium mb-2">
+                            Start Individual Chat
+                          </h4>
+                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                            {friends.map((friend) => (
+                              <div
+                                key={friend.id}
+                                className="flex items-center justify-between p-2 hover:bg-gray-50 rounded cursor-pointer"
+                                onClick={() =>
+                                  handleStartIndividualChat(friend.id)
+                                }
+                              >
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-8 w-8 bg-social-primary text-white">
+                                    <div className="flex h-full w-full items-center justify-center">
+                                      <User className="h-4 w-4" />
+                                    </div>
+                                  </Avatar>
+                                  <div>
+                                    <p className="font-medium text-sm">
+                                      {friend.name}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {friend.email}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div
+                                  className={`w-2 h-2 rounded-full ${
+                                    friend.isOnline
+                                      ? "bg-green-500"
+                                      : "bg-gray-300"
+                                  }`}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="border-t pt-4">
+                          <h4 className="font-medium mb-2">
+                            Create Group Chat
+                          </h4>
+                          <Input
+                            placeholder="Group name..."
+                            value={groupName}
+                            onChange={(e) => setGroupName(e.target.value)}
+                            className="mb-3"
+                          />
+                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                            {friends.map((friend) => (
+                              <div
+                                key={friend.id}
+                                className="flex items-center space-x-2"
+                              >
+                                <Checkbox
+                                  id={friend.id}
+                                  checked={selectedFriends.includes(friend.id)}
+                                  onCheckedChange={(checked) =>
+                                    handleFriendSelection(
+                                      friend.id,
+                                      checked as boolean
+                                    )
+                                  }
+                                />
+                                <label
+                                  htmlFor={friend.id}
+                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                >
+                                  {friend.name}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                          <Button
+                            onClick={handleStartGroupChat}
+                            disabled={
+                              selectedFriends.length === 0 || !groupName.trim()
+                            }
+                            className="w-full mt-3"
+                          >
+                            <Users className="h-4 w-4 mr-2" />
+                            Create Group
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search conversations..."
+                    className="pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div
+                  className="space-y-1 max-h-[60vh] overflow-y-auto"
+                  role="listbox"
+                  aria-label="Chat list"
+                >
+                  {filteredChats.map((chat) => (
+                    <div
+                      key={chat.id}
+                      className={`p-3 cursor-pointer flex items-center gap-3 border bg-white
+                        ${
+                          selectedChat === chat.id
+                            ? "border border-border bg-purple-50 scale-[1.03] rounded-none"
+                            : "border-transparent bg-white rounded-lg"
+                        }
+                      `}
+                      onClick={() => setSelectedChat(chat.id)}
+                      aria-selected={selectedChat === chat.id}
+                      aria-label={`Open chat with ${chat.name}`}
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ")
+                          setSelectedChat(chat.id);
+                      }}
+                    >
                       <Avatar className="h-10 w-10 bg-social-primary text-white">
-                        <div className="flex h-full w-full items-center justify-center">
-                          {chat.type === "group" ? (
-                            <Users className="h-5 w-5" />
-                          ) : (
-                            <User className="h-5 w-5" />
-                          )}
+                        <div className="flex h-full w-full items-center justify-center font-bold">
+                          {getInitials(chat.name)}
                         </div>
                       </Avatar>
-
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <p className="font-medium text-sm truncate">
@@ -320,18 +353,21 @@ const ChatPage = () => {
                             })}
                           </span>
                         </div>
-
                         <div className="flex items-center justify-between">
                           <p className="text-sm text-gray-500 truncate">
-                            {chat.lastMessage}
+                            {chat.type === "group" &&
+                            chat.lastMessage.includes(":")
+                              ? chat.lastMessage
+                              : chat.type === "group"
+                              ? `${chat.participants[0]}: ${chat.lastMessage}`
+                              : chat.lastMessage}
                           </p>
                           {chat.unreadCount > 0 && (
-                            <Badge className="bg-social-primary text-xs px-2">
+                            <Badge className="bg-muted text-primary rounded-full px-2 py-0.5 text-xs font-semibold ml-2">
                               {chat.unreadCount}
                             </Badge>
                           )}
                         </div>
-
                         {chat.type === "group" && (
                           <p className="text-xs text-gray-400">
                             {chat.participants.length} participants
@@ -339,25 +375,26 @@ const ChatPage = () => {
                         )}
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-
-              {filteredChats.length === 0 && (
-                <div className="text-center p-8">
-                  <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-500 mb-2">No conversations found</p>
-                  <p className="text-sm text-gray-400">
-                    Start a chat with your friends!
-                  </p>
+                  ))}
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                {/* Mobile close button */}
+                <div className="block lg:hidden p-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowChatList(false)}
+                    aria-label="Hide chat list"
+                  >
+                    Hide
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Chat Window */}
-        <div className="lg:col-span-2">
+        <div className={`lg:col-span-2 ${!showChatList ? "col-span-1" : ""}`}>
           <Card className="h-full">
             {selectedChatData ? (
               <ChatInterface
