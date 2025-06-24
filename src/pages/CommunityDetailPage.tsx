@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ const CommunityDetailPage = () => {
   const { toast } = useToast();
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showModPanel, setShowModPanel] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   
   // Mock data - in a real app, this would come from an API
   const community = {
@@ -272,11 +274,12 @@ const CommunityDetailPage = () => {
                       <Users className="h-4 w-4" />
                     </div>
                     <div className="flex-1">
-                      <UserProfileDialog username={moderator.name}>
-                        <button className="font-medium text-sm hover:text-social-primary transition-colors cursor-pointer">
-                          {moderator.name}
-                        </button>
-                      </UserProfileDialog>
+                      <button 
+                        className="font-medium text-sm hover:text-social-primary transition-colors cursor-pointer"
+                        onClick={() => setSelectedUserId(moderator.id)}
+                      >
+                        {moderator.name}
+                      </button>
                       <p className="text-xs text-social-muted">{moderator.role}</p>
                       <p className="text-xs text-gray-400">
                         Since {moderator.joinedAsModAt.toLocaleDateString()}
@@ -306,6 +309,16 @@ const CommunityDetailPage = () => {
           </Card>
         </div>
       </div>
+
+      {/* User Profile Dialog */}
+      {selectedUserId && (
+        <UserProfileDialog
+          userId={selectedUserId}
+          isOpen={!!selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+          currentUserId="current-user-id"
+        />
+      )}
     </div>
   );
 };

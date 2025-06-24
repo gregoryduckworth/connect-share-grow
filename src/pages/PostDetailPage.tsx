@@ -54,6 +54,7 @@ const PostDetailPage = () => {
   const [newReply, setNewReply] = useState("");
   const [replyToId, setReplyToId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState<{[key: string]: string}>({});
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   // Mock data - in a real app, this would come from an API
   const [post, setPost] = useState<PostData>({
@@ -215,11 +216,12 @@ const PostDetailPage = () => {
           </Avatar>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <UserProfileDialog username={reply.author}>
-                <button className="font-medium hover:text-social-primary transition-colors cursor-pointer">
-                  {reply.author}
-                </button>
-              </UserProfileDialog>
+              <button 
+                className="font-medium hover:text-social-primary transition-colors cursor-pointer"
+                onClick={() => setSelectedUserId(`user-${reply.author.toLowerCase().replace(' ', '-')}`)}
+              >
+                {reply.author}
+              </button>
               <span className="text-sm text-gray-500">
                 {reply.timestamp.toLocaleDateString()}
               </span>
@@ -344,11 +346,12 @@ const PostDetailPage = () => {
                     {post.isLocked && <Lock className="h-5 w-5 text-red-500" />}
                   </div>
                   <p className="text-sm text-social-muted">
-                    by <UserProfileDialog username={post.author}>
-                      <button className="hover:text-social-primary transition-colors cursor-pointer">
-                        {post.author}
-                      </button>
-                    </UserProfileDialog> • {post.timestamp.toLocaleDateString()}
+                    by <button 
+                      className="hover:text-social-primary transition-colors cursor-pointer"
+                      onClick={() => setSelectedUserId(`user-${post.author.toLowerCase().replace(' ', '-')}`)}
+                    >
+                      {post.author}
+                    </button> • {post.timestamp.toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -446,6 +449,16 @@ const PostDetailPage = () => {
           )}
         </div>
       </div>
+
+      {/* User Profile Dialog */}
+      {selectedUserId && (
+        <UserProfileDialog
+          userId={selectedUserId}
+          isOpen={!!selectedUserId}
+          onClose={() => setSelectedUserId(null)}
+          currentUserId="current-user-id"
+        />
+      )}
     </div>
   );
 };
