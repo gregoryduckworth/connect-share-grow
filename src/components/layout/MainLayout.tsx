@@ -1,9 +1,9 @@
 import { Outlet } from "react-router-dom";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import Sidebar from "./Sidebar";
 import UserMenu from "./UserMenu";
 import NotificationBell from "./NotificationBell";
-import BaseLayout from "./BaseLayout";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 const MainLayout = () => {
   const user = {
@@ -25,9 +25,21 @@ const MainLayout = () => {
   );
 
   return (
-    <BaseLayout sidebar={<Sidebar />} header={header}>
-      <Outlet />
-    </BaseLayout>
+    <ThemeProvider>
+      <SidebarProvider>
+        <div className="fixed inset-0 flex bg-background">
+          <Sidebar />
+          <div className="flex flex-col flex-1 min-w-0">
+            {header}
+            <main className="flex-1 overflow-auto">
+              <div className="h-full w-full">
+                <Outlet />
+              </div>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
+    </ThemeProvider>
   );
 };
 
