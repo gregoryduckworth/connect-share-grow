@@ -26,6 +26,7 @@ const CommunitiesPage = () => {
   const [sortBy, setSortBy] = useState("members");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
+  // Enhanced mock data with more communities
   const [communities] = useState<Community[]>([
     {
       id: "1",
@@ -71,6 +72,50 @@ const CommunitiesPage = () => {
       isJoined: false,
       lastActivity: new Date(2024, 5, 22)
     },
+    {
+      id: "5",
+      name: "Travel Adventures",
+      description: "Share your travel experiences and get recommendations for new destinations",
+      memberCount: 3200,
+      postCount: 1205,
+      category: "Travel",
+      tags: ["Travel", "Adventure", "Culture"],
+      isJoined: true,
+      lastActivity: new Date(2024, 5, 23)
+    },
+    {
+      id: "6",
+      name: "Gaming Central",
+      description: "Discuss the latest games, share reviews, and find gaming buddies",
+      memberCount: 4500,
+      postCount: 2100,
+      category: "Gaming",
+      tags: ["Gaming", "Reviews", "Multiplayer"],
+      isJoined: false,
+      lastActivity: new Date(2024, 5, 24)
+    },
+    {
+      id: "7",
+      name: "Cooking & Recipes",
+      description: "Share recipes, cooking tips, and food photography",
+      memberCount: 2800,
+      postCount: 890,
+      category: "Food & Cooking",
+      tags: ["Cooking", "Recipes", "Food"],
+      isJoined: true,
+      lastActivity: new Date(2024, 5, 21)
+    },
+    {
+      id: "8",
+      name: "Music Lovers",
+      description: "Discover new music, share your favorites, and discuss artists",
+      memberCount: 1900,
+      postCount: 670,
+      category: "Music",
+      tags: ["Music", "Artists", "Albums"],
+      isJoined: false,
+      lastActivity: new Date(2024, 5, 20)
+    }
   ]);
 
   const sortCommunities = (communities: Community[]) => {
@@ -175,7 +220,7 @@ const CommunitiesPage = () => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="min-h-full p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <h1 className="text-3xl font-bold text-social-primary">Communities</h1>
         <CreateCommunityDialog 
