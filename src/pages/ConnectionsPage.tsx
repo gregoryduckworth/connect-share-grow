@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
+import InfoCard from "@/components/ui/InfoCard";
 
 interface Connection {
   id: string;
@@ -105,72 +106,6 @@ const ConnectionsPage = () => {
     setProfileDialogOpen(true);
   };
 
-  const ConnectionCard = ({
-    connection,
-    showActions = false,
-  }: {
-    connection: Connection;
-    showActions?: boolean;
-  }) => (
-    <Card className="flex flex-col h-full border-2 transition-shadow hover:shadow-xl hover:scale-[1.03] hover:border-purple-400 hover:bg-purple-50 focus-within:border-purple-500 focus-within:bg-purple-50">
-      <CardHeader className="flex-1 pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <CardTitle className="text-base sm:text-lg break-words">
-              {connection.name}
-            </CardTitle>
-            <CardDescription className="text-xs sm:text-sm mt-1 break-words">
-              {connection.bio}
-            </CardDescription>
-          </div>
-          <Badge variant="outline" className="text-xs whitespace-nowrap">
-            {connection.mutualConnections} mutual
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-col flex-1 justify-end space-y-3">
-        <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
-          <span className="break-words">
-            Last active: {connection.lastActive.toLocaleDateString()}
-          </span>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 mt-auto w-full">
-          {showActions ? (
-            <>
-              <Button
-                onClick={() => handleAcceptRequest(connection.id)}
-                className="flex-1 text-xs sm:text-sm"
-              >
-                Accept
-              </Button>
-              <Button
-                onClick={() => handleRejectRequest(connection.id)}
-                variant="outline"
-                className="flex-1 text-xs sm:text-sm"
-              >
-                Decline
-              </Button>
-            </>
-          ) : connection.status === "pending" ? (
-            <Button
-              onClick={() => handleViewProfile(connection)}
-              variant="outline"
-              className="flex-1 text-xs sm:text-sm"
-            >
-              <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              View Profile
-            </Button>
-          ) : (
-            <Button variant="outline" className="flex-1 text-xs sm:text-sm">
-              <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Message
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-
   return (
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       <div className="mb-6">
@@ -217,7 +152,35 @@ const ConnectionsPage = () => {
         <TabsContent value="connected">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredConnections.map((connection) => (
-              <ConnectionCard key={connection.id} connection={connection} />
+              <InfoCard
+                key={connection.id}
+                title={connection.name}
+                description={connection.bio}
+                headerRight={
+                  <Badge
+                    variant="outline"
+                    className="text-xs whitespace-nowrap"
+                  >
+                    {connection.mutualConnections} mutual
+                  </Badge>
+                }
+                contentTop={
+                  <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
+                    <span className="break-words">
+                      Last active: {connection.lastActive.toLocaleDateString()}
+                    </span>
+                  </div>
+                }
+                actions={
+                  <Button
+                    variant="outline"
+                    className="flex-1 text-xs sm:text-sm"
+                  >
+                    <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    Message
+                  </Button>
+                }
+              />
             ))}
           </div>
 
@@ -232,7 +195,36 @@ const ConnectionsPage = () => {
         <TabsContent value="pending">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {pendingRequests.map((connection) => (
-              <ConnectionCard key={connection.id} connection={connection} />
+              <InfoCard
+                key={connection.id}
+                title={connection.name}
+                description={connection.bio}
+                headerRight={
+                  <Badge
+                    variant="outline"
+                    className="text-xs whitespace-nowrap"
+                  >
+                    {connection.mutualConnections} mutual
+                  </Badge>
+                }
+                contentTop={
+                  <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
+                    <span className="break-words">
+                      Last active: {connection.lastActive.toLocaleDateString()}
+                    </span>
+                  </div>
+                }
+                actions={
+                  <Button
+                    onClick={() => handleViewProfile(connection)}
+                    variant="outline"
+                    className="flex-1 text-xs sm:text-sm"
+                  >
+                    <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    View Profile
+                  </Button>
+                }
+              />
             ))}
           </div>
 
@@ -246,10 +238,42 @@ const ConnectionsPage = () => {
         <TabsContent value="requests">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {receivedRequests.map((connection) => (
-              <ConnectionCard
+              <InfoCard
                 key={connection.id}
-                connection={connection}
-                showActions
+                title={connection.name}
+                description={connection.bio}
+                headerRight={
+                  <Badge
+                    variant="outline"
+                    className="text-xs whitespace-nowrap"
+                  >
+                    {connection.mutualConnections} mutual
+                  </Badge>
+                }
+                contentTop={
+                  <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
+                    <span className="break-words">
+                      Last active: {connection.lastActive.toLocaleDateString()}
+                    </span>
+                  </div>
+                }
+                actions={
+                  <>
+                    <Button
+                      onClick={() => handleAcceptRequest(connection.id)}
+                      className="flex-1 text-xs sm:text-sm"
+                    >
+                      Accept
+                    </Button>
+                    <Button
+                      onClick={() => handleRejectRequest(connection.id)}
+                      variant="outline"
+                      className="flex-1 text-xs sm:text-sm"
+                    >
+                      Decline
+                    </Button>
+                  </>
+                }
               />
             ))}
           </div>

@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import CommunityCard from "@/components/community/CommunityCard";
+import InfoCard from "@/components/ui/InfoCard";
 
 interface TrendingPost {
   id: string;
@@ -167,55 +168,47 @@ const DiscoverPage = () => {
         <TabsContent value="posts" className="space-y-4 sm:space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPosts.map((post) => (
-              <Card
+              <InfoCard
                 key={post.id}
-                className="flex flex-col h-full border-2 transition-shadow hover:shadow-xl hover:scale-[1.03] hover:border-purple-400 hover:bg-purple-50 focus-within:border-purple-500 focus-within:bg-purple-50"
-              >
-                <CardHeader className="flex-1 pb-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <CardTitle className="text-base sm:text-lg break-words">
-                        <Link
-                          to={`/post/${post.id}`}
-                          className="hover:text-primary transition-colors"
-                        >
-                          {post.title}
-                        </Link>
-                      </CardTitle>
-                      <CardDescription className="text-xs sm:text-sm mt-1 break-words">
-                        {post.excerpt}
-                      </CardDescription>
+                title={
+                  <Link
+                    to={`/post/${post.id}`}
+                    className="hover:text-primary transition-colors"
+                  >
+                    {post.title}
+                  </Link>
+                }
+                description={post.excerpt}
+                headerRight={
+                  <div className="flex flex-col items-end gap-2 min-w-[60px]">
+                    <div className="flex items-center gap-1 text-xs">
+                      <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+                      <span>{post.likes}</span>
                     </div>
-                    <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
-                      <div className="flex items-center gap-1">
-                        <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
-                        <span>{post.likes}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
-                        <span>{post.replies}</span>
-                      </div>
+                    <div className="flex items-center gap-1 text-xs">
+                      <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
+                      <span>{post.replies}</span>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-1 justify-end space-y-3">
+                }
+                contentTop={
                   <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
                     <span className="break-words">
                       by {post.author} • in {post.community} •{" "}
                       {post.createdAt.toLocaleDateString()}
                     </span>
                   </div>
-                  <div className="flex mt-auto w-full">
-                    <Button
-                      variant="outline"
-                      className="flex-1 text-xs sm:text-sm"
-                    >
-                      <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                      Read More
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+                }
+                actions={
+                  <Button
+                    variant="outline"
+                    className="flex-1 text-xs sm:text-sm"
+                  >
+                    <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    Message
+                  </Button>
+                }
+              />
             ))}
           </div>
           {filteredPosts.length === 0 && (
