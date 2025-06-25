@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { api } from "@/lib/api";
+import { PostDetailData } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,26 +40,6 @@ interface Reply {
   replies: Reply[];
 }
 
-interface PostData {
-  id: string;
-  title: string;
-  content: string;
-  author: string;
-  timestamp: Date;
-  likes: number;
-  comments: number;
-  isLiked: boolean;
-  isPinned: boolean;
-  isLocked: boolean;
-  commentsLocked: boolean;
-  tags: string[];
-  lockReason?: string;
-  commentsLockReason?: string;
-  replies: Reply[];
-  communityId: string;
-  communityName: string;
-}
-
 const PostDetailPage = () => {
   const { communityId, postId } = useParams();
   const { toast } = useToast();
@@ -68,68 +50,17 @@ const PostDetailPage = () => {
   );
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
-  // Mock data - in a real app, this would come from an API
-  const [post, setPost] = useState<PostData>({
-    id: postId || "1",
-    title: "Golden Hour Landscape Tips",
-    content:
-      "Here are some techniques I've learned for capturing stunning golden hour landscapes. The key is to arrive early and scout your location during the day. Understanding how the light will hit your subject is crucial for getting that perfect shot.",
-    author: "Sarah Johnson",
-    timestamp: new Date(2024, 5, 15, 14, 30),
-    likes: 24,
-    comments: 8,
-    isLiked: false,
-    isPinned: true,
-    isLocked: false,
-    commentsLocked: false,
-    tags: ["Landscape", "Golden Hour", "Tips"],
-    communityId: communityId || "1",
-    communityName: "Photography Enthusiasts",
-    replies: [
-      {
-        id: "reply-1",
-        author: "Alice Cooper",
-        content:
-          "Great tips! I especially love the advice about using graduated filters. Do you have any specific brand recommendations?",
-        timestamp: new Date(2024, 5, 15, 15, 45),
-        likes: 5,
-        isLiked: false,
-        replies: [
-          {
-            id: "reply-1-1",
-            author: "Sarah Johnson",
-            content:
-              "I personally use Lee Filters - they're a bit pricey but the quality is excellent. Cokin is also a good budget option!",
-            timestamp: new Date(2024, 5, 15, 16, 15),
-            likes: 3,
-            isLiked: false,
-            parentId: "reply-1",
-            replies: [],
-          },
-        ],
-      },
-      {
-        id: "reply-2",
-        author: "Bob Wilson",
-        content:
-          "Thanks for sharing! Do you have any recommendations for specific lens filters? I'm just starting out with landscape photography.",
-        timestamp: new Date(2024, 5, 15, 16, 20),
-        likes: 3,
-        isLiked: true,
-        replies: [],
-      },
-      {
-        id: "reply-3",
-        author: "Emma Davis",
-        content:
-          "This is so helpful! I've been struggling with exposure during golden hour. Your tip about bracketing shots is game-changing.",
-        timestamp: new Date(2024, 5, 15, 17, 10),
-        likes: 2,
-        isLiked: false,
-        replies: [],
-      },
-    ],
-  });
+  const [post, setPost] = useState<PostDetailData | null>(null);
+
+  useEffect(() => {
+    if (postId) {
+      api.getPostDetail(postId).then(setPost);
+    }
+  }, [postId]);
+
+  if (!post) {
+    return null; // or a loading spinner, or any placeholder you prefer
+  }
 
   const handleLikePost = () => {
     setPost((prev) => ({

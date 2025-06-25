@@ -1,5 +1,3 @@
-
-// Centralized type definitions
 export interface Post {
   id: string;
   title: string;
@@ -54,7 +52,13 @@ export interface Reply {
 
 export interface Notification {
   id: string;
-  type: "reply" | "comment" | "mention" | "system" | "connection_request" | "connection_accepted";
+  type:
+    | "reply"
+    | "comment"
+    | "mention"
+    | "system"
+    | "connection_request"
+    | "connection_accepted";
   title: string;
   message: string;
   timestamp: Date;
@@ -67,7 +71,11 @@ export interface Notification {
 
 export interface AdminNotification {
   id: string;
-  type: "community_approval" | "user_report" | "moderator_inactive" | "system_alert";
+  type:
+    | "community_approval"
+    | "user_report"
+    | "moderator_inactive"
+    | "system_alert";
   title: string;
   message: string;
   timestamp: Date;
@@ -109,4 +117,35 @@ export interface ChatMessage {
   content: string;
   sentAt: Date;
   isRead: boolean;
+}
+
+export interface PostDetailReply {
+  id: string;
+  author: string;
+  content: string;
+  timestamp: Date;
+  likes: number;
+  isLiked: boolean;
+  parentId?: string;
+  replies: PostDetailReply[];
+}
+
+export interface PostDetailData {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  timestamp: Date;
+  likes: number;
+  comments: number;
+  isLiked: boolean;
+  isPinned: boolean;
+  isLocked: boolean;
+  commentsLocked: boolean;
+  tags: string[];
+  lockReason?: string;
+  commentsLockReason?: string;
+  replies: PostDetailReply[];
+  communityId: string;
+  communityName: string;
 }

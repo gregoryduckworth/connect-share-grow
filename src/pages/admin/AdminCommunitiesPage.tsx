@@ -433,15 +433,20 @@ const AdminCommunitiesPage = () => {
       )}
 
       {/* All Communities */}
-      <AdminTable
-        columns={allColumns}
-        data={paginatedCommunities}
-        emptyMessage={
-          <div className="text-center p-8 text-social-muted">
-            No communities found matching your search.
-          </div>
-        }
-      />
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-social-primary">
+          All Communities
+        </h3>
+        <AdminTable
+          columns={allColumns}
+          data={paginatedCommunities}
+          emptyMessage={
+            <div className="text-center p-8 text-social-muted">
+              No communities found matching your search.
+            </div>
+          }
+        />
+      </div>
       {filteredCommunities.length > 0 && (
         <AdminTablePagination
           currentPage={currentPage}
