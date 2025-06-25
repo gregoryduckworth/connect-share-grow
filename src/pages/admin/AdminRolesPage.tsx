@@ -1,8 +1,9 @@
+import { Shield, User, Crown } from "lucide-react";
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Shield, User, Users, Crown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +12,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { api } from "@/lib/api";
 
 interface RoleUser {
   id: string;
@@ -31,14 +31,15 @@ interface Role {
   color: string;
 }
 
+type ApiRole = Omit<Role, "icon"> & { icon: string };
+
 const AdminRolesPage = () => {
   const [roles, setRoles] = useState<Role[]>([]);
 
   useEffect(() => {
-    api.getAdminRoles().then((data) => {
-      // Map icon string to actual icon component
+    api.getAdminRoles().then((data: ApiRole[]) => {
       setRoles(
-        data.map((role: any) => ({
+        data.map((role) => ({
           ...role,
           icon:
             role.icon === "admin" ? (
@@ -91,7 +92,7 @@ const AdminRolesPage = () => {
         <Dialog>
           <DialogTrigger asChild>
             <Button variant="outline" className="w-full mt-4">
-              <Users className="h-4 w-4 mr-2" />
+              <User className="h-4 w-4 mr-2" />
               View All {role.name}s
             </Button>
           </DialogTrigger>

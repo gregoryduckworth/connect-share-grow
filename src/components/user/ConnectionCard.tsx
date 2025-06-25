@@ -22,7 +22,7 @@ interface ConnectionCardProps {
   showActions?: boolean;
   onAccept?: (id: string) => void;
   onReject?: (id: string) => void;
-  onViewProfile?: (connection: any) => void;
+  onViewProfile?: (connection: ConnectionCardProps["connection"]) => void;
 }
 
 const ConnectionCard: React.FC<ConnectionCardProps> = ({

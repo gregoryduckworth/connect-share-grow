@@ -306,7 +306,6 @@ const AdminUsersPage = () => {
                 </Button>
                 {!isCurrentUser(user.email) && (
                   <Button
-                    variant=""
                     size="sm"
                     onClick={() => handleChangeRole(user)}
                     className="text-xs"

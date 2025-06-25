@@ -8,7 +8,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-interface Column<T> {
+interface Column<T extends { id: string | number }> {
   header: React.ReactNode;
   accessor: keyof T | ((row: T) => React.ReactNode);
   className?: string;
@@ -16,7 +16,7 @@ interface Column<T> {
   headerClassName?: string;
 }
 
-interface AdminTableProps<T> {
+interface AdminTableProps<T extends { id: string | number }> {
   columns: Column<T>[];
   data: T[];
   emptyMessage?: React.ReactNode;
@@ -75,7 +75,7 @@ function AdminTable<T extends { id: string | number }>(
                   >
                     {typeof col.accessor === "function"
                       ? col.accessor(row)
-                      : (row as any)[col.accessor]}
+                      : String(row[col.accessor as keyof T])}
                   </TableCell>
                 ))}
               </TableRow>
