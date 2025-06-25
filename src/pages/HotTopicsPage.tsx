@@ -152,20 +152,14 @@ const DiscoverPage = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="posts" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger
-            value="posts"
-            className="flex items-center gap-2 text-xs sm:text-sm"
-          >
-            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+      <Tabs defaultValue="posts">
+        <TabsList>
+          <TabsTrigger value="posts">
+            <TrendingUp className="h-4 w-4 mr-2" />
             Trending Posts
           </TabsTrigger>
-          <TabsTrigger
-            value="communities"
-            className="flex items-center gap-2 text-xs sm:text-sm"
-          >
-            <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+          <TabsTrigger value="communities">
+            <Users className="h-4 w-4 mr-2" />
             Growing Communities
           </TabsTrigger>
         </TabsList>
@@ -175,9 +169,9 @@ const DiscoverPage = () => {
             {filteredPosts.map((post) => (
               <Card
                 key={post.id}
-                className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent h-full"
+                className="flex flex-col h-full border-2 transition-shadow hover:shadow-xl hover:scale-[1.03] hover:border-purple-400 hover:bg-purple-50 focus-within:border-purple-500 focus-within:bg-purple-50"
               >
-                <CardHeader className="pb-3">
+                <CardHeader className="flex-1 pb-3">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
                     <div className="flex-1">
                       <CardTitle className="text-base sm:text-lg mb-2 break-words">
@@ -208,13 +202,15 @@ const DiscoverPage = () => {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex flex-col flex-1 justify-end">
                   <p className="text-sm sm:text-base text-muted-foreground mb-4 break-words">
                     {post.excerpt}
                   </p>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/post/${post.id}`}>Read More</Link>
-                  </Button>
+                  <div className="flex mt-auto w-full">
+                    <Button className="w-full h-10" asChild>
+                      <Link to={`/post/${post.id}`}>Read More</Link>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}

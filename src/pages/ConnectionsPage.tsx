@@ -182,14 +182,23 @@ const ConnectionsPage = () => {
         </p>
       </div>
 
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-        <Input
-          placeholder="Search connections..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
+      <div className="relative mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="flex-1 relative">
+          <div
+            className="absolute inset-0 pointer-events-none rounded-lg border border-purple-200 bg-gradient-to-r from-purple-100/40 to-blue-100/20"
+            style={{ zIndex: 0 }}
+          />
+          <div className="flex items-center gap-2 relative z-10 p-1 rounded-lg bg-white/90 border border-purple-200 w-full focus-within:border-purple-500 focus-within:shadow-lg focus-within:shadow-purple-200/40 transition-colors">
+            <Search className="ml-3 text-social-primary h-5 w-5" />
+            <Input
+              placeholder="Search connections..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-2 py-3 border-0 bg-transparent focus:ring-0 focus:outline-none shadow-none min-w-0 flex-1"
+              style={{ boxShadow: "none" }}
+            />
+          </div>
+        </div>
       </div>
 
       <Tabs defaultValue="connected" className="w-full">
