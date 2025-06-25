@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminTable from "@/components/admin/AdminTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import CommunityApprovalDialog from "@/components/admin/CommunityApprovalDialog"
 import CommunityRejectionDialog from "@/components/admin/CommunityRejectionDialog";
 import CommunitySuspendDialog from "@/components/admin/CommunitySuspendDialog";
 import CommunityActivateDialog from "@/components/admin/CommunityActivateDialog";
+import { api } from "@/lib/api";
 
 interface Community {
   id: string;
@@ -67,69 +68,17 @@ const AdminCommunitiesPage = () => {
     null
   );
 
-  const [communities, setCommunities] = useState<Community[]>([
-    {
-      id: "comm-1",
-      name: "Photography Enthusiasts",
-      description: "A place for photographers to share their work",
-      memberCount: 1250,
-      postCount: 423,
-      category: "Art & Design",
-      createdAt: new Date(2023, 0, 15),
-      status: "active",
-      moderators: ["Sarah Johnson", "Mike Chen"],
-      tags: ["Photography", "Art", "Camera"],
-      createdBy: "admin",
-      requestedAt: new Date(2023, 0, 15),
-    },
-    {
-      id: "comm-2",
-      name: "Web Development",
-      description: "Modern web development practices",
-      memberCount: 2100,
-      postCount: 867,
-      category: "Technology",
-      createdAt: new Date(2023, 1, 20),
-      status: "active",
-      moderators: ["Alex Rivera"],
-      tags: ["JavaScript", "React", "Node.js"],
-      createdBy: "admin",
-      requestedAt: new Date(2023, 1, 20),
-    },
-    {
-      id: "comm-3",
-      name: "Cooking Club",
-      description: "Share recipes and cooking tips",
-      memberCount: 890,
-      postCount: 234,
-      category: "Food & Drink",
-      createdAt: new Date(2023, 2, 10),
-      status: "suspended",
-      moderators: ["Emma Davis"],
-      tags: ["Cooking", "Recipes", "Food"],
-      createdBy: "admin",
-      requestedAt: new Date(2023, 2, 10),
-    },
-  ]);
-
+  // Centralized community mocks from api.ts
+  const [communities, setCommunities] = useState<Community[]>([]);
   const [pendingCommunities, setPendingCommunities] = useState<
     PendingCommunity[]
-  >([
-    {
-      id: "pending-1",
-      name: "Cryptocurrency Trading",
-      description: "Discussion about crypto trading strategies",
-      memberCount: 0,
-      postCount: 0,
-      category: "Finance",
-      createdAt: new Date(2024, 5, 15),
-      status: "pending",
-      moderators: [],
-      tags: ["Crypto", "Trading", "Investment"],
-      createdBy: "John Trader",
-      requestedAt: new Date(2024, 5, 15),
-    },
-  ]);
+  >([]);
+
+  // Load mock data from api.ts
+  useEffect(() => {
+    api.getAdminCommunities().then(setCommunities);
+    api.getPendingCommunities().then(setPendingCommunities);
+  }, []);
 
   const filteredCommunities = communities.filter(
     (community) =>

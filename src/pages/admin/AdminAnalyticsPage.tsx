@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { api } from "@/lib/api";
+import { useEffect, useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -53,58 +54,19 @@ const AdminAnalyticsPage = () => {
   const [timeRange, setTimeRange] = useState("30");
   const [open, setOpen] = useState(false);
 
-  // Mock data for communities
-  const communities = [
-    {
-      id: "comm-1",
-      name: "Photography Enthusiasts",
-      members: 128,
-      posts: 342,
-      comments: 1456,
-    },
-    {
-      id: "comm-2",
-      name: "Tech Talk",
-      members: 256,
-      posts: 789,
-      comments: 2890,
-    },
-    {
-      id: "comm-3",
-      name: "Book Readers",
-      members: 96,
-      posts: 156,
-      comments: 678,
-    },
-    {
-      id: "comm-4",
-      name: "Travel Adventures",
-      members: 78,
-      posts: 234,
-      comments: 890,
-    },
-    {
-      id: "comm-5",
-      name: "Fitness & Health",
-      members: 189,
-      posts: 445,
-      comments: 1234,
-    },
-  ];
+  // Centralized analytics data from api.ts
+  const [communities, setCommunities] = useState([]);
+  const [platformStats, setPlatformStats] = useState(null);
+  const [activityData, setActivityData] = useState([]);
+  const [sizeDistribution, setSizeDistribution] = useState([]);
 
-  // Mock analytics data
-  const platformStats = {
-    totalUsers: 2847,
-    totalCommunities: 12,
-    totalPosts: 5673,
-    totalComments: 18429,
-    activeUsers: 1892,
-    newUsersThisMonth: 342,
-    reportsCount: 23,
-    moderatorsCount: 15,
-  };
+  useEffect(() => {
+    api.getAnalyticsCommunities().then(setCommunities);
+    api.getPlatformStats().then(setPlatformStats);
+    api.getActivityData().then(setActivityData);
+    api.getSizeDistribution().then(setSizeDistribution);
+  }, []);
 
-  // Community breakdown data
   const communityBreakdown = useMemo(() => {
     if (selectedCommunity === "all") {
       return communities.map((community) => ({
@@ -125,21 +87,7 @@ const AdminAnalyticsPage = () => {
           engagement: ((community.comments / community.posts) * 100).toFixed(1),
         }));
     }
-  }, [selectedCommunity]);
-
-  // Mock time-series data
-  const activityData = [
-    { date: "2024-06-01", users: 120, posts: 45, comments: 180 },
-    { date: "2024-06-07", users: 135, posts: 52, comments: 210 },
-    { date: "2024-06-14", users: 142, posts: 48, comments: 195 },
-    { date: "2024-06-21", users: 158, posts: 61, comments: 240 },
-  ];
-
-  const sizeDistribution = [
-    { name: "Small (0-50)", value: 3, color: "#8884d8" },
-    { name: "Medium (51-150)", value: 6, color: "#82ca9d" },
-    { name: "Large (151+)", value: 3, color: "#ffc658" },
-  ];
+  }, [selectedCommunity, communities]);
 
   const resetFilters = () => {
     setSelectedCommunity("all");
@@ -252,7 +200,7 @@ const AdminAnalyticsPage = () => {
       </div>
 
       {/* Platform Overview Metrics */}
-      {selectedCommunity === "all" && (
+      {selectedCommunity === "all" && platformStats && (
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <AdminMetricsCard

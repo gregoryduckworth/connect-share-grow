@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { api } from "@/lib/api";
 
 interface RoleUser {
   id: string;
@@ -31,127 +32,26 @@ interface Role {
 }
 
 const AdminRolesPage = () => {
-  const [roles] = useState<Role[]>([
-    {
-      name: "Admin",
-      description: "Full system access with all administrative privileges",
-      permissions: [
-        "Manage all users and communities",
-        "Access admin dashboard and analytics",
-        "Modify system settings",
-        "Handle reports and moderation",
-        "Assign and revoke roles",
-      ],
-      userCount: 2,
-      users: [
-        {
-          id: "admin-1",
-          name: "John Doe",
-          email: "john.doe@example.com",
-          joinDate: new Date(2023, 0, 15),
-          communities: ["Photography", "Tech Talk"],
-        },
-        {
-          id: "admin-2",
-          name: "Sarah Admin",
-          email: "sarah.admin@example.com",
-          joinDate: new Date(2023, 1, 1),
-          communities: ["Photography", "Web Development"],
-        },
-      ],
-      icon: <Crown className="h-5 w-5" />,
-      color: "bg-red-500",
-    },
-    {
-      name: "Moderator",
-      description: "Community moderation and user management capabilities",
-      permissions: [
-        "Moderate community content",
-        "Lock/unlock posts and comments",
-        "Manage community rules",
-        "Handle community reports",
-        "Pin important posts",
-      ],
-      userCount: 5,
-      users: [
-        {
-          id: "mod-1",
-          name: "Jane Smith",
-          email: "jane.smith@example.com",
-          joinDate: new Date(2023, 1, 3),
-          communities: ["Cooking Club", "Travel Adventures"],
-        },
-        {
-          id: "mod-2",
-          name: "Mike Chen",
-          email: "mike.chen@example.com",
-          joinDate: new Date(2023, 2, 10),
-          communities: ["Photography"],
-        },
-        {
-          id: "mod-3",
-          name: "Alex Rivera",
-          email: "alex.rivera@example.com",
-          joinDate: new Date(2023, 3, 15),
-          communities: ["Web Development", "Tech Talk"],
-        },
-        {
-          id: "mod-4",
-          name: "Emma Davis",
-          email: "emma.davis@example.com",
-          joinDate: new Date(2023, 4, 20),
-          communities: ["Book Club"],
-        },
-        {
-          id: "mod-5",
-          name: "Tom Wilson",
-          email: "tom.wilson@example.com",
-          joinDate: new Date(2023, 5, 5),
-          communities: ["Fitness & Health"],
-        },
-      ],
-      icon: <Shield className="h-5 w-5" />,
-      color: "bg-orange-500",
-    },
-    {
-      name: "User",
-      description: "Standard user with basic community participation rights",
-      permissions: [
-        "Create and edit own posts",
-        "Comment on posts",
-        "Join communities",
-        "Like and share content",
-        "Report inappropriate content",
-      ],
-      userCount: 1247,
-      users: [
-        {
-          id: "user-1",
-          name: "Robert Johnson",
-          email: "robert.j@example.com",
-          joinDate: new Date(2023, 2, 20),
-          communities: ["Book Readers"],
-        },
-        {
-          id: "user-2",
-          name: "Lisa Brown",
-          email: "lisa.b@example.com",
-          joinDate: new Date(2023, 3, 5),
-          communities: [],
-        },
-        {
-          id: "user-3",
-          name: "Michael Wilson",
-          email: "michael.w@example.com",
-          joinDate: new Date(2023, 4, 12),
-          communities: ["Gaming", "Tech Talk"],
-        },
-        // In a real app, this would be paginated
-      ],
-      icon: <User className="h-5 w-5" />,
-      color: "bg-blue-500",
-    },
-  ]);
+  const [roles, setRoles] = useState<Role[]>([]);
+
+  useEffect(() => {
+    api.getAdminRoles().then((data) => {
+      // Map icon string to actual icon component
+      setRoles(
+        data.map((role: any) => ({
+          ...role,
+          icon:
+            role.icon === "admin" ? (
+              <Crown className="h-5 w-5" />
+            ) : role.icon === "moderator" ? (
+              <Shield className="h-5 w-5" />
+            ) : (
+              <User className="h-5 w-5" />
+            ),
+        }))
+      );
+    });
+  }, []);
 
   const RoleCard = ({ role }: { role: Role }) => (
     <Card className="flex flex-col h-full">

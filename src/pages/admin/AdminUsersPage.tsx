@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import AdminTable from "@/components/admin/AdminTable";
 import AdminRoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
 import UserSuspendDialog from "@/components/admin/UserSuspendDialog";
 import UserActivateDialog from "@/components/admin/UserActivateDialog";
+import { api } from "@/lib/api";
 
 interface AppUser {
   id: string;
@@ -36,83 +37,14 @@ const AdminUsersPage = () => {
   const [roleChangeDialogOpen, setRoleChangeDialogOpen] = useState(false);
   const [roleChangeTargetUser, setRoleChangeTargetUser] =
     useState<AppUser | null>(null);
-  const [pendingAdminRoleChanges, setPendingAdminRoleChanges] = useState<
-    {
-      id: string;
-      user: AppUser;
-      requestedBy: string;
-      requestedAt: Date;
-      newRole: "admin" | "user" | "moderator";
-    }[]
-  >([
-    {
-      id: "mock-1",
-      user: {
-        id: "user-2",
-        name: "Jane Smith",
-        email: "jane.smith@example.com",
-        joinDate: new Date(2023, 1, 3),
-        role: "moderator",
-        status: "active",
-        communities: ["Cooking Club", "Travel Adventures"],
-      },
-      requestedBy: "admin@example.com",
-      requestedAt: new Date(),
-      newRole: "admin",
-    },
-  ]);
+  const [pendingAdminRoleChanges, setPendingAdminRoleChanges] = useState([]);
+  const [users, setUsers] = useState<AppUser[]>([]);
 
-  const [users, setUsers] = useState<AppUser[]>([
-    {
-      id: "user-1",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      joinDate: new Date(2023, 0, 15),
-      role: "admin",
-      status: "active",
-      communities: ["Photography", "Tech Talk"],
-    },
-    {
-      id: "user-2",
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      joinDate: new Date(2023, 1, 3),
-      role: "moderator",
-      status: "active",
-      communities: ["Cooking Club", "Travel Adventures"],
-    },
-    {
-      id: "user-3",
-      name: "Robert Johnson",
-      email: "robert.j@example.com",
-      joinDate: new Date(2023, 2, 20),
-      role: "user",
-      status: "active",
-      communities: ["Book Readers"],
-    },
-    {
-      id: "user-4",
-      name: "Lisa Brown",
-      email: "lisa.b@example.com",
-      joinDate: new Date(2023, 3, 5),
-      role: "user",
-      status: "suspended",
-      communities: [],
-      suspensionReason:
-        "Repeated violation of community guidelines and inappropriate behavior",
-      suspendedAt: new Date(2024, 5, 10),
-      suspendedBy: "admin@example.com",
-    },
-    {
-      id: "user-5",
-      name: "Michael Wilson",
-      email: "michael.w@example.com",
-      joinDate: new Date(2023, 4, 12),
-      role: "user",
-      status: "active",
-      communities: ["Gaming", "Tech Talk"],
-    },
-  ]);
+  // Load users and pending role changes from api.ts
+  useEffect(() => {
+    api.getAdminUsers().then(setUsers);
+    api.getPendingAdminRoleChanges().then(setPendingAdminRoleChanges);
+  }, []);
 
   const filteredUsers = users.filter(
     (user) =>

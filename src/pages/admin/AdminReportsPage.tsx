@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,59 +7,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, Eye, AlertTriangle, Lock } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import ReportDetailsDialog from "@/components/admin/ReportDetailsDialog";
+import { api } from "@/lib/api";
 
 const AdminReportsPage = () => {
   const { toast } = useToast();
   const [selectedReport, setSelectedReport] = useState(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
-  const [reports, setReports] = useState([
-    {
-      id: "report-1",
-      contentType: "post",
-      contentId: "post-123",
-      contentPreview:
-        "This post contains potentially inappropriate content about politics and inflammatory language that goes against community guidelines. It uses divisive rhetoric and could incite arguments.",
-      reportedBy: "user-456",
-      reason: "Contains inappropriate content",
-      createdAt: new Date(Date.now() - 1000 * 60 * 30),
-      status: "pending",
-      originalContent: {
-        title: "Why Current Political System is Completely Broken",
-        author: "AngryUser2024",
-        community: "Political Discussion",
-        fullText:
-          "I'm so tired of all these politicians lying to us constantly. They're all corrupt and only care about their own power. The whole system needs to be torn down and rebuilt from scratch. Anyone who supports the current administration is either blind or complicit in this corruption. We need to take action now before it's too late and our democracy is completely destroyed. This is not a drill - we're heading towards a complete collapse of our society if we don't act immediately.",
-      },
-    },
-    {
-      id: "report-2",
-      contentType: "reply",
-      contentId: "reply-789",
-      contentPreview:
-        "This reply contains offensive language and personal attacks directed at other community members. The language used is clearly harassment and violates our community standards.",
-      reportedBy: "user-101",
-      reason: "Harassment",
-      createdAt: new Date(Date.now() - 1000 * 60 * 60),
-      status: "pending",
-      originalContent: {
-        author: "ToxicUser123",
-        parentPost: "Best Programming Languages for Beginners",
-        fullText:
-          "You're absolutely clueless and shouldn't be giving advice to anyone. Your suggestions are terrible and show you have no idea what you're talking about. Maybe stick to something you actually understand instead of spreading misinformation. People like you are what's wrong with this community - always acting like experts when you clearly aren't. Just delete your account and save everyone the trouble of reading your garbage posts.",
-      },
-    },
-    {
-      id: "report-3",
-      contentType: "user",
-      contentId: "user-202",
-      contentPreview:
-        "This user has been repeatedly posting spam across multiple communities including promotional links, duplicate content, and off-topic advertisements that disrupt community discussions.",
-      reportedBy: "user-303",
-      reason: "Spamming",
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-      status: "pending",
-    },
-  ]);
+  const [reports, setReports] = useState([]);
+
+  // Load reports from api.ts
+  useEffect(() => {
+    api.getAdminReports().then(setReports);
+  }, []);
 
   const handleViewContent = (report) => {
     setSelectedReport(report);
