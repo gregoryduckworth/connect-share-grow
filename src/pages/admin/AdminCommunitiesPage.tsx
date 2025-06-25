@@ -298,38 +298,58 @@ const AdminCommunitiesPage = () => {
       {/* Pending Approvals */}
       {pendingCommunities.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Pending Community Approvals</h3>
-          <div className="border rounded-md">
+          <h3 className="text-lg font-semibold text-social-primary">
+            Pending Community Approvals
+          </h3>
+          <div className="border-2 border-purple-200 rounded-2xl shadow-lg overflow-hidden bg-white/95">
             <Table>
-              <TableHeader>
+              <TableHeader className="bg-gradient-to-r from-purple-100/80 to-blue-100/60">
                 <TableRow>
-                  <TableHead>Community</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Requested</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide">
+                    Community
+                  </TableHead>
+                  <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide">
+                    Category
+                  </TableHead>
+                  <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide">
+                    Requested
+                  </TableHead>
+                  <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide text-right">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {pendingCommunities.map((community) => (
-                  <TableRow key={community.id}>
-                    <TableCell>
+                  <TableRow
+                    key={community.id}
+                    className="hover:bg-gradient-to-r hover:from-purple-50/60 hover:to-blue-50/40 transition-colors group"
+                  >
+                    <TableCell className="py-4 px-6 align-top">
                       <div>
-                        <p className="font-medium">{community.name}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="font-semibold text-lg text-foreground group-hover:text-purple-700 transition-colors">
+                          {community.name}
+                        </p>
+                        <p className="text-sm text-social-muted">
                           {community.description}
                         </p>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{community.category}</Badge>
+                    <TableCell className="py-4 px-6 align-top">
+                      <Badge
+                        variant="outline"
+                        className="bg-purple-100 text-purple-700 border-purple-200 group-hover:bg-purple-200"
+                      >
+                        {community.category}
+                      </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-4 px-6 align-top">
                       {community.requestedAt.toLocaleDateString()}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="py-4 px-6 align-top text-right">
                       <div className="flex justify-end gap-2">
                         <Button
-                          variant="outline"
+                          variant="default"
                           size="sm"
                           onClick={() => {
                             setSelectedCommunity(community);
@@ -343,7 +363,7 @@ const AdminCommunitiesPage = () => {
                           size="sm"
                           className="bg-green-500 hover:bg-green-600"
                           onClick={() => {
-                            setApprovalCommunity({ ...community }); // ensures latest data is passed
+                            setApprovalCommunity({ ...community });
                             setApprovalDialogOpen(true);
                           }}
                         >
@@ -373,61 +393,85 @@ const AdminCommunitiesPage = () => {
       )}
 
       {/* All Communities */}
-      <div className="border rounded-md">
+      <div className="border-2 border-purple-200 rounded-2xl shadow-lg overflow-hidden bg-white/95">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-gradient-to-r from-purple-100/80 to-blue-100/60">
             <TableRow>
-              <TableHead>Community</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead className="hidden md:table-cell">Members</TableHead>
-              <TableHead className="hidden md:table-cell">Posts</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide">
+                Community
+              </TableHead>
+              <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide">
+                Category
+              </TableHead>
+              <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide hidden md:table-cell">
+                Members
+              </TableHead>
+              <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide hidden md:table-cell">
+                Posts
+              </TableHead>
+              <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide">
+                Status
+              </TableHead>
+              <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide text-right">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedCommunities.map((community) => (
-              <TableRow key={community.id}>
-                <TableCell>
+              <TableRow
+                key={community.id}
+                className="hover:bg-gradient-to-r hover:from-purple-50/60 hover:to-blue-50/40 transition-colors group"
+              >
+                <TableCell className="py-4 px-6 align-top">
                   <div>
-                    <p className="font-medium">{community.name}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-semibold text-lg text-foreground group-hover:text-purple-700 transition-colors">
+                      {community.name}
+                    </p>
+                    <p className="text-sm text-social-muted">
                       {community.description}
                     </p>
                   </div>
                 </TableCell>
-                <TableCell>
-                  <Badge variant="outline">{community.category}</Badge>
+                <TableCell className="py-4 px-6 align-top">
+                  <Badge
+                    variant="outline"
+                    className="bg-purple-100 text-purple-700 border-purple-200 group-hover:bg-purple-200"
+                  >
+                    {community.category}
+                  </Badge>
                 </TableCell>
-                <TableCell className="hidden md:table-cell">
+                <TableCell className="py-4 px-6 align-top hidden md:table-cell">
                   <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    {community.memberCount.toLocaleString()}
+                    <Users className="h-4 w-4 text-purple-400" />
+                    <span className="font-semibold">
+                      {community.memberCount.toLocaleString()}
+                    </span>
                   </div>
                 </TableCell>
-                <TableCell className="hidden md:table-cell">
+                <TableCell className="py-4 px-6 align-top hidden md:table-cell">
                   <div className="flex items-center gap-1">
-                    <MessageSquare className="h-4 w-4" />
-                    {community.postCount}
+                    <MessageSquare className="h-4 w-4 text-blue-400" />
+                    <span className="font-semibold">{community.postCount}</span>
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4 px-6 align-top">
                   <Badge
                     className={
                       community.status === "active"
-                        ? "bg-green-500"
+                        ? "bg-green-500 text-white"
                         : community.status === "suspended"
-                        ? "bg-red-500"
-                        : "bg-orange-500"
+                        ? "bg-red-500 text-white"
+                        : "bg-orange-500 text-white"
                     }
                   >
                     {community.status}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="py-4 px-6 align-top text-right">
                   <div className="flex justify-end gap-2">
                     <Button
-                      variant="outline"
+                      variant="default"
                       size="sm"
                       onClick={() => {
                         setSelectedCommunity(community);
@@ -436,7 +480,6 @@ const AdminCommunitiesPage = () => {
                     >
                       View Details
                     </Button>
-
                     {community.status === "active" ? (
                       <Button
                         size="sm"

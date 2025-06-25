@@ -171,10 +171,10 @@ const DiscoverPage = () => {
                 key={post.id}
                 className="flex flex-col h-full border-2 transition-shadow hover:shadow-xl hover:scale-[1.03] hover:border-purple-400 hover:bg-purple-50 focus-within:border-purple-500 focus-within:bg-purple-50"
               >
-                <CardHeader className="flex-1 pb-3">
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
+                <CardHeader className="flex-1 pb-2">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
-                      <CardTitle className="text-base sm:text-lg mb-2 break-words">
+                      <CardTitle className="text-base sm:text-lg break-words">
                         <Link
                           to={`/post/${post.id}`}
                           className="hover:text-primary transition-colors"
@@ -182,13 +182,9 @@ const DiscoverPage = () => {
                           {post.title}
                         </Link>
                       </CardTitle>
-                      <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                        <span>by {post.author}</span>
-                        <span>•</span>
-                        <span>in {post.community}</span>
-                        <span>•</span>
-                        <span>{post.createdAt.toLocaleDateString()}</span>
-                      </div>
+                      <CardDescription className="text-xs sm:text-sm mt-1 break-words">
+                        {post.excerpt}
+                      </CardDescription>
                     </div>
                     <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
                       <div className="flex items-center gap-1">
@@ -202,13 +198,20 @@ const DiscoverPage = () => {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="flex flex-col flex-1 justify-end">
-                  <p className="text-sm sm:text-base text-muted-foreground mb-4 break-words">
-                    {post.excerpt}
-                  </p>
+                <CardContent className="flex flex-col flex-1 justify-end space-y-3">
+                  <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
+                    <span className="break-words">
+                      by {post.author} • in {post.community} •{" "}
+                      {post.createdAt.toLocaleDateString()}
+                    </span>
+                  </div>
                   <div className="flex mt-auto w-full">
-                    <Button className="w-full h-10" asChild>
-                      <Link to={`/post/${post.id}`}>Read More</Link>
+                    <Button
+                      variant="outline"
+                      className="flex-1 text-xs sm:text-sm"
+                    >
+                      <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      Read More
                     </Button>
                   </div>
                 </CardContent>

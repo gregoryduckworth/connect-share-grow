@@ -366,29 +366,17 @@ const AdminUsersPage = () => {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="text-xs"
-                      onClick={() => setSelectedUser(user)}
-                    >
+                    <Button onClick={() => setSelectedUser(user)}>
                       View Profile
                     </Button>
                     {!isCurrentUser(user.email) && (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => handleChangeRole(user)}
-                        className="text-xs"
-                      >
+                      <Button onClick={() => handleChangeRole(user)}>
                         Change Role
                       </Button>
                     )}
                     {user.status === "active" && !isCurrentUser(user.email) && (
                       <Button
                         variant="destructive"
-                        size="sm"
-                        className="text-xs"
                         onClick={() => {
                           setUserToSuspend(user);
                           setSuspendDialogOpen(true);
@@ -400,9 +388,7 @@ const AdminUsersPage = () => {
                     {user.status === "suspended" &&
                       !isCurrentUser(user.email) && (
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-xs text-green-700 border-green-500 hover:bg-green-50"
+                          className="bg-green-500 hover:bg-green-600"
                           onClick={() => {
                             setUserToActivate(user);
                             setActivateDialogOpen(true);
