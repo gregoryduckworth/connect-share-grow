@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { useToast } from "@/components/ui/use-toast";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
+import ReportModal from "@/components/ui/ReportModal";
 
 interface Reply {
   id: string;
@@ -49,6 +50,14 @@ const PostDetailPage = () => {
     {}
   );
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportContext, setReportContext] = useState<{
+    type: "post" | "reply";
+    postId: string;
+    replyId?: string;
+    communityId?: string;
+    originalContent?: string;
+  } | null>(null);
 
   const [post, setPost] = useState<PostDetailData | null>(null);
 
@@ -153,6 +162,14 @@ const PostDetailPage = () => {
     });
   };
 
+  const currentUserId = "user-1"; // TODO: Replace with actual user context
+
+  const openReportModal = (context: typeof reportContext) => {
+    setReportContext(context);
+    setReportModalOpen(true);
+  };
+  const closeReportModal = () => setReportModalOpen(false);
+
   const ReplyComponent = ({
     reply,
     depth = 0,
@@ -173,20 +190,38 @@ const PostDetailPage = () => {
             </div>
           </Avatar>
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <button
-                className="font-medium hover:text-social-primary transition-colors cursor-pointer"
+            <div className="flex items-center gap-2 mb-2 justify-between">
+              <div className="flex items-center gap-2">
+                <button
+                  className="font-medium hover:text-social-primary transition-colors cursor-pointer"
+                  onClick={() =>
+                    setSelectedUserId(
+                      `user-${reply.author.toLowerCase().replace(" ", "-")}`
+                    )
+                  }
+                >
+                  {reply.author}
+                </button>
+                <span className="text-sm text-gray-500">
+                  {reply.timestamp.toLocaleDateString()}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs text-gray-400 hover:text-red-500"
                 onClick={() =>
-                  setSelectedUserId(
-                    `user-${reply.author.toLowerCase().replace(" ", "-")}`
-                  )
+                  openReportModal({
+                    type: "reply",
+                    postId: post.id,
+                    replyId: reply.id,
+                    communityId: post.communityId,
+                    originalContent: reply.content,
+                  })
                 }
               >
-                {reply.author}
-              </button>
-              <span className="text-sm text-gray-500">
-                {reply.timestamp.toLocaleDateString()}
-              </span>
+                Report
+              </Button>
             </div>
             <p className="text-gray-700 mb-3">{reply.content}</p>
             <div className="flex items-center gap-4">
@@ -344,6 +379,21 @@ const PostDetailPage = () => {
                   </p>
                 </div>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs text-gray-400 hover:text-red-500"
+                onClick={() =>
+                  openReportModal({
+                    type: "post",
+                    postId: post.id,
+                    communityId: post.communityId,
+                    originalContent: post.content,
+                  })
+                }
+              >
+                Report
+              </Button>
             </div>
           </CardHeader>
 
@@ -456,6 +506,22 @@ const PostDetailPage = () => {
           isOpen={!!selectedUserId}
           onClose={() => setSelectedUserId(null)}
           currentUserId="current-user-id"
+        />
+      )}
+
+      {/* Report Modal */}
+      {reportContext && (
+        <ReportModal
+          open={reportModalOpen}
+          onClose={closeReportModal}
+          context={reportContext}
+          reportedBy={currentUserId}
+          onSubmitted={() =>
+            toast({
+              title: "Report submitted",
+              description: "Thank you for helping us keep the community safe.",
+            })
+          }
         />
       )}
     </div>

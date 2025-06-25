@@ -968,4 +968,20 @@ export const api = {
       setTimeout(() => resolve(mockPostDetail), 300)
     );
   },
+
+  // Submit a new report
+  async submitReport(
+    report: Omit<Report, "id" | "reportedAt" | "status">
+  ): Promise<Report> {
+    return new Promise((resolve) => {
+      const newReport: Report = {
+        ...report,
+        id: `report-${Date.now()}`,
+        reportedAt: new Date(),
+        status: "pending",
+      };
+      mockReports.push(newReport);
+      setTimeout(() => resolve(newReport), 500);
+    });
+  },
 };
