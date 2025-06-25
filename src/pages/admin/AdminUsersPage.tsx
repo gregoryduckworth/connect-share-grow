@@ -11,12 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Shield, Search, User } from "lucide-react";
+import { Shield, Search, User, AlertTriangle } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import UserProfileDialog from "@/components/admin/UserProfileDialog";
 import RoleChangeDialog from "@/components/admin/RoleChangeDialog";
 import AdminTablePagination from "@/components/admin/AdminTablePagination";
-import AdminRoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
+import RoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
 import UserSuspendDialog from "@/components/admin/UserSuspendDialog";
 import UserActivateDialog from "@/components/admin/UserActivateDialog";
 
@@ -268,7 +268,7 @@ const AdminUsersPage = () => {
         </div>
       </div>
 
-      <AdminRoleChangeAlert
+      <RoleChangeAlert
         pendingChanges={pendingAdminRoleChanges}
         currentUser={currentUser}
         onApprove={(changeId) => {
@@ -303,6 +303,7 @@ const AdminUsersPage = () => {
             description: `The admin role change request has been rejected.`,
           });
         }}
+        alertTitle={"Admin Role Change Approval Required"}
       />
 
       <div className="border rounded-md">

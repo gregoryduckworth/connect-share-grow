@@ -1,34 +1,43 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import React from "react";
+import { AlertTriangle } from "lucide-react";
 
-interface AdminRoleChangeAlertProps {
+interface RoleChangeAlertProps {
   pendingChanges: {
     id: string;
     user: { id: string; name: string; email: string; role: string };
     requestedBy: string;
     requestedAt: Date;
-    newRole: "admin" | "user" | "moderator";
+    newRole: string;
   }[];
   currentUser: string;
   onApprove: (changeId: string) => void;
   onReject: (changeId: string) => void;
+  alertTitle: React.ReactNode;
+  icon?: React.ReactNode;
+  colorClass?: string; // e.g. "border-orange-200 bg-orange-50/50"
+  badgeClass?: string; // e.g. "bg-red-100 text-red-800"
 }
 
-const AdminRoleChangeAlert = ({
+const RoleChangeAlert: React.FC<RoleChangeAlertProps> = ({
   pendingChanges,
   currentUser,
   onApprove,
   onReject,
-}: AdminRoleChangeAlertProps) => {
+  alertTitle,
+  icon = <AlertTriangle className="h-5 w-5 text-orange-800" />,
+  colorClass = "border-orange-200 bg-orange-50/50",
+  badgeClass = "bg-red-100 text-red-800",
+}) => {
   if (!pendingChanges.length) return null;
   return (
-    <Card className="border-orange-200 bg-orange-50/50 mb-6">
+    <Card className={colorClass + " mb-6"}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-orange-800">
-          <AlertTriangle className="h-5 w-5" />
-          Admin Role Change Approval Required
+        <CardTitle className="flex items-center gap-2">
+          {icon}
+          {alertTitle}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -39,9 +48,9 @@ const AdminRoleChangeAlert = ({
           >
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-red-500" />
+                {icon}
                 <span className="font-medium">{change.user.name}</span>
-                <Badge className="bg-red-100 text-red-800">
+                <Badge className={badgeClass}>
                   {change.user.role} → {change.newRole}
                 </Badge>
               </div>
@@ -77,4 +86,4 @@ const AdminRoleChangeAlert = ({
   );
 };
 
-export default AdminRoleChangeAlert;
+export default RoleChangeAlert;

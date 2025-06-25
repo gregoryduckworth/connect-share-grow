@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import RoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
 
 interface Moderator {
   id: string;
@@ -123,6 +124,9 @@ const ModeratePage = () => {
       reason: "Inactivity and lack of engagement with the community.",
     },
   ]);
+
+  // Define the current moderator (for demo, use the first moderator's name)
+  const currentUser = moderators[0]?.name || "";
 
   const handleRemoveModerator = (moderator: Moderator) => {
     setModeratorToRemove(moderator);
@@ -233,61 +237,24 @@ const ModeratePage = () => {
         </div>
 
         {/* Pending Moderator Removal Requests Alert */}
-        {pendingRemovalRequests.length > 0 && (
-          <Card className="border-orange-200 bg-orange-50/50 mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-orange-800">
-                <AlertTriangle className="h-5 w-5" />
-                Moderator Removal Approval Required
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {pendingRemovalRequests.map((req) => (
-                <div
-                  key={req.id}
-                  className="flex items-center justify-between p-3 bg-white rounded-lg border"
-                >
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-red-500" />
-                      <span className="font-medium">{req.moderator.name}</span>
-                      <Badge className="bg-red-100 text-red-800">
-                        {req.moderator.role} (removal requested)
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      Requested by: {req.requestedBy} •{" "}
-                      {req.requestedAt.toLocaleString()}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Reason: {req.reason}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-green-200 text-green-700 hover:bg-green-50"
-                      onClick={() => handleApproveRemoval(req.id)}
-                      // Optionally disable if current user is requester
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-red-200 text-red-600 hover:bg-red-50"
-                      onClick={() => handleRejectRemoval(req.id)}
-                      // Optionally disable if current user is requester
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+        <RoleChangeAlert
+          pendingChanges={pendingRemovalRequests.map((req) => ({
+            id: req.id,
+            user: {
+              id: req.moderator.id,
+              name: req.moderator.name,
+              email: "moderator@example.com",
+              role: req.moderator.role,
+            },
+            requestedBy: req.requestedBy,
+            requestedAt: req.requestedAt,
+            newRole: "removed",
+          }))}
+          currentUser={currentUser}
+          onApprove={handleApproveRemoval}
+          onReject={handleRejectRemoval}
+          alertTitle={"Moderator Removal Approval Required"}
+        />
 
         {/* Analytics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
