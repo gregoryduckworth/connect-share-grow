@@ -1,12 +1,4 @@
 import { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +8,8 @@ import { logAdminAction } from "@/lib/admin-logger";
 import UserProfileDialog from "@/components/admin/UserProfileDialog";
 import RoleChangeDialog from "@/components/admin/RoleChangeDialog";
 import AdminTablePagination from "@/components/admin/AdminTablePagination";
-import RoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
+import AdminTable from "@/components/admin/AdminTable";
+import AdminRoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
 import UserSuspendDialog from "@/components/admin/UserSuspendDialog";
 import UserActivateDialog from "@/components/admin/UserActivateDialog";
 
@@ -268,7 +261,7 @@ const AdminUsersPage = () => {
         </div>
       </div>
 
-      <RoleChangeAlert
+      <AdminRoleChangeAlert
         pendingChanges={pendingAdminRoleChanges}
         currentUser={currentUser}
         onApprove={(changeId) => {
@@ -304,129 +297,143 @@ const AdminUsersPage = () => {
           });
         }}
         alertTitle={"Admin Role Change Approval Required"}
+        icon={<AlertTriangle className="h-5 w-5 text-orange-800" />}
+        colorClass="border-orange-200 bg-orange-50/50"
+        badgeClass="bg-red-100 text-red-800"
       />
 
-      <div className="border rounded-md">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-64">User</TableHead>
-              <TableHead className="hidden md:table-cell">Email</TableHead>
-              <TableHead className="hidden md:table-cell">Joined</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="w-64">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-social-primary flex items-center justify-center text-white flex-shrink-0">
-                      <User className="h-4 w-4" />
-                    </div>
-                    <span className="font-medium truncate">{user.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {user.email}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {user.joinDate.toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    className={
-                      user.role === "admin"
-                        ? "bg-social-primary"
-                        : user.role === "moderator"
-                        ? "bg-social-secondary"
-                        : "bg-slate-400"
-                    }
+      <AdminTable
+        columns={[
+          {
+            header: "User",
+            accessor: (user: AppUser) => (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-social-primary flex items-center justify-center text-white flex-shrink-0">
+                  <User className="h-4 w-4" />
+                </div>
+                <span className="font-medium truncate">{user.name}</span>
+              </div>
+            ),
+            className: "w-64",
+          },
+          {
+            header: "Email",
+            accessor: (user: AppUser) => user.email,
+            className: "hidden md:table-cell",
+          },
+          {
+            header: "Joined",
+            accessor: (user: AppUser) => user.joinDate.toLocaleDateString(),
+            className: "hidden md:table-cell",
+          },
+          {
+            header: "Role",
+            accessor: (user: AppUser) => (
+              <Badge
+                className={
+                  user.role === "admin"
+                    ? "bg-social-primary"
+                    : user.role === "moderator"
+                    ? "bg-social-secondary"
+                    : "bg-slate-400"
+                }
+              >
+                {user.role === "admin" && <Shield className="h-3 w-3 mr-1" />}
+                {user.role}
+                {isCurrentUser(user.email) && " (You)"}
+              </Badge>
+            ),
+          },
+          {
+            header: "Status",
+            accessor: (user: AppUser) => (
+              <Badge
+                className={
+                  user.status === "active"
+                    ? "bg-green-500"
+                    : user.status === "suspended"
+                    ? "bg-orange-500"
+                    : "bg-red-500"
+                }
+              >
+                {user.status}
+              </Badge>
+            ),
+          },
+          {
+            header: "Actions",
+            accessor: (user: AppUser) => (
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => setSelectedUser(user)}
+                >
+                  View Profile
+                </Button>
+                {!isCurrentUser(user.email) && (
+                  <Button
+                    variant=""
+                    size="sm"
+                    onClick={() => handleChangeRole(user)}
+                    className="text-xs"
                   >
-                    {user.role === "admin" && (
-                      <Shield className="h-3 w-3 mr-1" />
-                    )}
-                    {user.role}
-                    {isCurrentUser(user.email) && " (You)"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    className={
-                      user.status === "active"
-                        ? "bg-green-500"
-                        : user.status === "suspended"
-                        ? "bg-orange-500"
-                        : "bg-red-500"
-                    }
+                    Change Role
+                  </Button>
+                )}
+                {user.status === "active" && !isCurrentUser(user.email) && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => {
+                      setUserToSuspend(user);
+                      setSuspendDialogOpen(true);
+                    }}
                   >
-                    {user.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button onClick={() => setSelectedUser(user)}>
-                      View Profile
-                    </Button>
-                    {!isCurrentUser(user.email) && (
-                      <Button onClick={() => handleChangeRole(user)}>
-                        Change Role
-                      </Button>
-                    )}
-                    {user.status === "active" && !isCurrentUser(user.email) && (
-                      <Button
-                        variant="destructive"
-                        onClick={() => {
-                          setUserToSuspend(user);
-                          setSuspendDialogOpen(true);
-                        }}
-                      >
-                        Suspend
-                      </Button>
-                    )}
-                    {user.status === "suspended" &&
-                      !isCurrentUser(user.email) && (
-                        <Button
-                          className="bg-green-500 hover:bg-green-600"
-                          onClick={() => {
-                            setUserToActivate(user);
-                            setActivateDialogOpen(true);
-                          }}
-                        >
-                          Activate
-                        </Button>
-                      )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                    Suspend
+                  </Button>
+                )}
+                {user.status === "suspended" && !isCurrentUser(user.email) && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs text-green-700 border-green-500 hover:bg-green-50"
+                    onClick={() => {
+                      setUserToActivate(user);
+                      setActivateDialogOpen(true);
+                    }}
+                  >
+                    Activate
+                  </Button>
+                )}
+              </div>
+            ),
+            className: "text-right",
+          },
+        ]}
+        data={paginatedUsers}
+        emptyMessage={
+          <p className="text-social-muted">
+            No users found matching your search.
+          </p>
+        }
+      />
 
-        {paginatedUsers.length === 0 && (
-          <div className="text-center p-8">
-            <p className="text-social-muted">
-              No users found matching your search.
-            </p>
-          </div>
-        )}
-
-        {filteredUsers.length > 0 && (
-          <AdminTablePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            pageSize={pageSize}
-            totalItems={filteredUsers.length}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setCurrentPage(1);
-            }}
-          />
-        )}
-      </div>
+      {filteredUsers.length > 0 && (
+        <AdminTablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          totalItems={filteredUsers.length}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
+        />
+      )}
 
       {selectedUser && (
         <UserProfileDialog

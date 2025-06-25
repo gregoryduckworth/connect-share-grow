@@ -1,12 +1,5 @@
 import { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import AdminTable from "@/components/admin/AdminTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -269,6 +262,183 @@ const AdminCommunitiesPage = () => {
     }
   };
 
+  // Columns for pending communities
+  const pendingColumns = [
+    {
+      header: "Community",
+      accessor: (community: PendingCommunity) => (
+        <div>
+          <p className="font-semibold text-lg text-foreground group-hover:text-purple-700 transition-colors">
+            {community.name}
+          </p>
+          <p className="text-sm text-social-muted">{community.description}</p>
+        </div>
+      ),
+    },
+    {
+      header: "Category",
+      accessor: (community: PendingCommunity) => (
+        <Badge
+          variant="outline"
+          className="bg-purple-100 text-purple-700 border-purple-200 group-hover:bg-purple-200"
+        >
+          {community.category}
+        </Badge>
+      ),
+    },
+    {
+      header: "Requested",
+      accessor: (community: PendingCommunity) =>
+        community.requestedAt.toLocaleDateString(),
+    },
+    {
+      header: "Actions",
+      accessor: (community: PendingCommunity) => (
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => {
+              setSelectedCommunity(community);
+              setDetailsDialogOpen(true);
+            }}
+          >
+            View Details
+          </Button>
+
+          <Button
+            size="sm"
+            className="bg-green-500 hover:bg-green-600"
+            onClick={() => {
+              setApprovalCommunity({ ...community });
+              setApprovalDialogOpen(true);
+            }}
+          >
+            <Check className="h-4 w-4 mr-1" />
+            Approve
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => {
+              setRejectionCommunity(community);
+              setRejectionDialogOpen(true);
+            }}
+          >
+            <X className="h-4 w-4 mr-1" />
+            Reject
+          </Button>
+        </div>
+      ),
+      className: "text-right",
+    },
+  ];
+
+  // Columns for all communities
+  const allColumns = [
+    {
+      header: "Community",
+      accessor: (community: Community) => (
+        <div>
+          <p className="font-semibold text-lg text-foreground group-hover:text-purple-700 transition-colors">
+            {community.name}
+          </p>
+          <p className="text-sm text-social-muted">{community.description}</p>
+        </div>
+      ),
+    },
+    {
+      header: "Category",
+      accessor: (community: Community) => (
+        <Badge
+          variant="outline"
+          className="bg-purple-100 text-purple-700 border-purple-200 group-hover:bg-purple-200"
+        >
+          {community.category}
+        </Badge>
+      ),
+    },
+    {
+      header: "Members",
+      accessor: (community: Community) => (
+        <div className="flex items-center gap-1">
+          <Users className="h-4 w-4 text-purple-400" />
+          <span className="font-semibold">
+            {community.memberCount.toLocaleString()}
+          </span>
+        </div>
+      ),
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Posts",
+      accessor: (community: Community) => (
+        <div className="flex items-center gap-1">
+          <MessageSquare className="h-4 w-4 text-blue-400" />
+          <span className="font-semibold">{community.postCount}</span>
+        </div>
+      ),
+      className: "hidden md:table-cell",
+    },
+    {
+      header: "Status",
+      accessor: (community: Community) => (
+        <Badge
+          className={
+            community.status === "active"
+              ? "bg-green-500 text-white"
+              : community.status === "suspended"
+              ? "bg-red-500 text-white"
+              : "bg-orange-500 text-white"
+          }
+        >
+          {community.status}
+        </Badge>
+      ),
+    },
+    {
+      header: "Actions",
+      accessor: (community: Community) => (
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => {
+              setSelectedCommunity(community);
+              setDetailsDialogOpen(true);
+            }}
+          >
+            View Details
+          </Button>
+          {community.status === "active" ? (
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => {
+                setSuspendCommunity(community);
+                setSuspendDialogOpen(true);
+              }}
+            >
+              Suspend
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              className="bg-green-500 hover:bg-green-600"
+              onClick={() => {
+                setActivateCommunity(community);
+                setActivateDialogOpen(true);
+              }}
+            >
+              Activate
+            </Button>
+          )}
+        </div>
+      ),
+      className: "text-right",
+    },
+  ];
+
   return (
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -301,237 +471,41 @@ const AdminCommunitiesPage = () => {
           <h3 className="text-lg font-semibold text-social-primary">
             Pending Community Approvals
           </h3>
-          <div className="border-2 border-purple-200 rounded-2xl shadow-lg overflow-hidden bg-white/95">
-            <Table>
-              <TableHeader className="bg-gradient-to-r from-purple-100/80 to-blue-100/60">
-                <TableRow>
-                  <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide">
-                    Community
-                  </TableHead>
-                  <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide">
-                    Category
-                  </TableHead>
-                  <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide">
-                    Requested
-                  </TableHead>
-                  <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide text-right">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {pendingCommunities.map((community) => (
-                  <TableRow
-                    key={community.id}
-                    className="hover:bg-gradient-to-r hover:from-purple-50/60 hover:to-blue-50/40 transition-colors group"
-                  >
-                    <TableCell className="py-4 px-6 align-top">
-                      <div>
-                        <p className="font-semibold text-lg text-foreground group-hover:text-purple-700 transition-colors">
-                          {community.name}
-                        </p>
-                        <p className="text-sm text-social-muted">
-                          {community.description}
-                        </p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-4 px-6 align-top">
-                      <Badge
-                        variant="outline"
-                        className="bg-purple-100 text-purple-700 border-purple-200 group-hover:bg-purple-200"
-                      >
-                        {community.category}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="py-4 px-6 align-top">
-                      {community.requestedAt.toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="py-4 px-6 align-top text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedCommunity(community);
-                            setDetailsDialogOpen(true);
-                          }}
-                        >
-                          View Details
-                        </Button>
-
-                        <Button
-                          size="sm"
-                          className="bg-green-500 hover:bg-green-600"
-                          onClick={() => {
-                            setApprovalCommunity({ ...community });
-                            setApprovalDialogOpen(true);
-                          }}
-                        >
-                          <Check className="h-4 w-4 mr-1" />
-                          Approve
-                        </Button>
-
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => {
-                            setRejectionCommunity(community);
-                            setRejectionDialogOpen(true);
-                          }}
-                        >
-                          <X className="h-4 w-4 mr-1" />
-                          Reject
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <AdminTable
+            columns={pendingColumns}
+            data={pendingCommunities}
+            emptyMessage={
+              <div className="text-center p-8 text-social-muted">
+                No pending communities.
+              </div>
+            }
+          />
         </div>
       )}
 
       {/* All Communities */}
-      <div className="border-2 border-purple-200 rounded-2xl shadow-lg overflow-hidden bg-white/95">
-        <Table>
-          <TableHeader className="bg-gradient-to-r from-purple-100/80 to-blue-100/60">
-            <TableRow>
-              <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide">
-                Community
-              </TableHead>
-              <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide">
-                Category
-              </TableHead>
-              <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide hidden md:table-cell">
-                Members
-              </TableHead>
-              <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide hidden md:table-cell">
-                Posts
-              </TableHead>
-              <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide">
-                Status
-              </TableHead>
-              <TableHead className="py-4 px-6 text-base font-bold text-foreground tracking-wide text-right">
-                Actions
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedCommunities.map((community) => (
-              <TableRow
-                key={community.id}
-                className="hover:bg-gradient-to-r hover:from-purple-50/60 hover:to-blue-50/40 transition-colors group"
-              >
-                <TableCell className="py-4 px-6 align-top">
-                  <div>
-                    <p className="font-semibold text-lg text-foreground group-hover:text-purple-700 transition-colors">
-                      {community.name}
-                    </p>
-                    <p className="text-sm text-social-muted">
-                      {community.description}
-                    </p>
-                  </div>
-                </TableCell>
-                <TableCell className="py-4 px-6 align-top">
-                  <Badge
-                    variant="outline"
-                    className="bg-purple-100 text-purple-700 border-purple-200 group-hover:bg-purple-200"
-                  >
-                    {community.category}
-                  </Badge>
-                </TableCell>
-                <TableCell className="py-4 px-6 align-top hidden md:table-cell">
-                  <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4 text-purple-400" />
-                    <span className="font-semibold">
-                      {community.memberCount.toLocaleString()}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell className="py-4 px-6 align-top hidden md:table-cell">
-                  <div className="flex items-center gap-1">
-                    <MessageSquare className="h-4 w-4 text-blue-400" />
-                    <span className="font-semibold">{community.postCount}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="py-4 px-6 align-top">
-                  <Badge
-                    className={
-                      community.status === "active"
-                        ? "bg-green-500 text-white"
-                        : community.status === "suspended"
-                        ? "bg-red-500 text-white"
-                        : "bg-orange-500 text-white"
-                    }
-                  >
-                    {community.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="py-4 px-6 align-top text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedCommunity(community);
-                        setDetailsDialogOpen(true);
-                      }}
-                    >
-                      View Details
-                    </Button>
-                    {community.status === "active" ? (
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => {
-                          setSuspendCommunity(community);
-                          setSuspendDialogOpen(true);
-                        }}
-                      >
-                        Suspend
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        className="bg-green-500 hover:bg-green-600"
-                        onClick={() => {
-                          setActivateCommunity(community);
-                          setActivateDialogOpen(true);
-                        }}
-                      >
-                        Activate
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-
-        {paginatedCommunities.length === 0 && (
-          <div className="text-center p-8">
-            <p className="text-social-muted">
-              No communities found matching your search.
-            </p>
+      <AdminTable
+        columns={allColumns}
+        data={paginatedCommunities}
+        emptyMessage={
+          <div className="text-center p-8 text-social-muted">
+            No communities found matching your search.
           </div>
-        )}
-
-        {filteredCommunities.length > 0 && (
-          <AdminTablePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            pageSize={pageSize}
-            totalItems={filteredCommunities.length}
-            onPageChange={setCurrentPage}
-            onPageSizeChange={(size) => {
-              setPageSize(size);
-              setCurrentPage(1);
-            }}
-          />
-        )}
-      </div>
+        }
+      />
+      {filteredCommunities.length > 0 && (
+        <AdminTablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          totalItems={filteredCommunities.length}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
+        />
+      )}
 
       <CommunityDetailsDialog
         isOpen={detailsDialogOpen}
