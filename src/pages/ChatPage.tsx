@@ -301,30 +301,39 @@ const ChatPage = () => {
                     </DialogContent>
                   </Dialog>
                 </div>
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Search conversations..."
-                    className="pl-8"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
+                <div className="relative mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div className="flex-1 relative">
+                    <div
+                      className="absolute inset-0 pointer-events-none rounded-lg border border-purple-200 bg-gradient-to-r from-purple-100/40 to-blue-100/20"
+                      style={{ zIndex: 0 }}
+                    />
+                    <div className="flex items-center gap-2 relative z-10 p-1 rounded-lg bg-white/90 border border-purple-200 w-full focus-within:border-purple-500 focus-within:shadow-lg focus-within:shadow-purple-200/40 transition-colors">
+                      <Search className="ml-3 text-social-primary h-5 w-5" />
+                      <Input
+                        placeholder="Search conversations..."
+                        className="pl-2 py-3 border-0 bg-transparent focus:ring-0 focus:outline-none shadow-none min-w-0 flex-1"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{ boxShadow: "none" }}
+                      />
+                    </div>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 <div
-                  className="space-y-1 max-h-[60vh] overflow-y-auto"
+                  className="space-y-1 max-h-[60vh] overflow-y-auto py-6"
                   role="listbox"
                   aria-label="Chat list"
                 >
                   {filteredChats.map((chat) => (
                     <div
                       key={chat.id}
-                      className={`p-3 cursor-pointer flex items-center gap-3 border bg-white
+                      className={`p-3 cursor-pointer flex items-center gap-3 border-2 transition-shadow bg-white max-w-[95%] mx-auto
                         ${
                           selectedChat === chat.id
-                            ? "border border-border bg-purple-50 scale-[1.03] rounded-none"
-                            : "border-transparent bg-white rounded-lg"
+                            ? "border-purple-400 bg-purple-50 scale-[1.03] rounded-lg shadow-xl"
+                            : "border-transparent bg-white rounded-lg hover:shadow-md hover:scale-[1.01] hover:border-purple-200 hover:bg-purple-50"
                         }
                       `}
                       onClick={() => setSelectedChat(chat.id)}

@@ -98,17 +98,26 @@ const AdminLogsPage = () => {
             Audit Log
           </h1>
           <div className="flex flex-col md:flex-row gap-2">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search logs..."
-                className="pl-8 w-full md:w-64"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+            <div className="relative w-full md:w-64">
+              <div
+                className="absolute inset-0 pointer-events-none rounded-lg border border-purple-200 bg-gradient-to-r from-purple-100/40 to-blue-100/20"
+                style={{ zIndex: 0 }}
               />
+              <div className="flex items-center gap-2 relative z-10 p-1 rounded-lg bg-white/90 border border-purple-200 w-full focus-within:border-purple-500 focus-within:shadow-lg focus-within:shadow-purple-200/40 transition-colors h-12">
+                <Search className="ml-3 text-social-primary h-5 w-5" />
+                <Input
+                  placeholder="Search logs..."
+                  className="pl-2 py-3 border-0 bg-transparent focus:ring-0 focus:outline-none shadow-none min-w-0 flex-1 text-base h-full"
+                  style={{ boxShadow: "none" }}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  type="text"
+                  autoComplete="off"
+                />
+              </div>
             </div>
             <Select value={actionFilter} onValueChange={setActionFilter}>
-              <SelectTrigger className="w-full md:w-40">
+              <SelectTrigger className="w-full md:w-40 bg-white/90 border border-purple-200 rounded-lg shadow-none px-4 py-0 h-12 flex items-center focus:border-purple-500 focus:shadow-lg focus:shadow-purple-200/40 transition-colors">
                 <SelectValue placeholder="Action Type" />
               </SelectTrigger>
               <SelectContent>
@@ -124,7 +133,7 @@ const AdminLogsPage = () => {
               value={targetTypeFilter}
               onValueChange={setTargetTypeFilter}
             >
-              <SelectTrigger className="w-full md:w-40">
+              <SelectTrigger className="w-full md:w-40 bg-white/90 border border-purple-200 rounded-lg shadow-none px-4 py-0 h-12 flex items-center focus:border-purple-500 focus:shadow-lg focus:shadow-purple-200/40 transition-colors">
                 <SelectValue placeholder="Target Type" />
               </SelectTrigger>
               <SelectContent>
@@ -137,9 +146,9 @@ const AdminLogsPage = () => {
               </SelectContent>
             </Select>
             <Button
-              variant="outline"
+              variant="default"
               onClick={clearFilters}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 px-4 py-0 h-12 min-w-[100px]"
             >
               <RotateCcw className="h-4 w-4" />
               Clear

@@ -164,7 +164,7 @@ const AdminAnalyticsPage = () => {
                 variant="outline"
                 role="combobox"
                 aria-expanded={open}
-                className="w-full md:w-48 justify-between"
+                className="w-full md:w-48 justify-between px-4 py-0 h-12 flex items-center bg-white/90 border border-purple-200 rounded-lg shadow-none focus:border-purple-500 focus:shadow-lg focus:shadow-purple-200/40 transition-colors"
               >
                 {selectedCommunity === "all"
                   ? "All Communities"
@@ -219,7 +219,7 @@ const AdminAnalyticsPage = () => {
             </PopoverContent>
           </Popover>
           <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-full md:w-32">
+            <SelectTrigger className="w-full md:w-32 bg-white/90 border border-purple-200 rounded-lg shadow-none px-4 py-0 h-12 flex items-center focus:border-purple-500 focus:shadow-lg focus:shadow-purple-200/40 transition-colors">
               <SelectValue placeholder="Time Range" />
             </SelectTrigger>
             <SelectContent>
@@ -230,9 +230,9 @@ const AdminAnalyticsPage = () => {
             </SelectContent>
           </Select>
           <Button
-            variant="outline"
+            variant="default"
             onClick={resetFilters}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 px-4 py-0 h-12 min-w-[100px]"
           >
             <RotateCcw className="h-4 w-4" />
             Reset
@@ -243,12 +243,12 @@ const AdminAnalyticsPage = () => {
       {/* Filter indicator */}
       <div className="flex items-center gap-2 text-sm">
         <span className="text-muted-foreground">Showing:</span>
-        <Badge variant="outline">
+        <Badge variant="default">
           {selectedCommunity === "all"
             ? "All Communities"
             : selectedCommunityData?.name}
         </Badge>
-        <Badge variant="outline">Last {timeRange} days</Badge>
+        <Badge variant="default">Last {timeRange} days</Badge>
       </div>
 
       {/* Platform Overview Metrics */}
