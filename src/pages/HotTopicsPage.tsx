@@ -1,9 +1,24 @@
 import { useState } from "react";
-import { Search, TrendingUp, Users } from "lucide-react";
+import {
+  Search,
+  TrendingUp,
+  Users,
+  MessageSquare,
+  Calendar,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "react-router-dom";
 import CommunityCard from "@/components/community/CommunityCard";
-import TrendingPostCard from "@/components/community/TrendingPostCard";
 
 interface TrendingPost {
   id: string;
@@ -118,14 +133,23 @@ const DiscoverPage = () => {
         </p>
       </div>
 
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-        <Input
-          placeholder="Search trending posts and communities..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
+      <div className="relative mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="flex-1 relative">
+          <div
+            className="absolute inset-0 pointer-events-none rounded-lg border border-purple-200 bg-gradient-to-r from-purple-100/40 to-blue-100/20"
+            style={{ zIndex: 0 }}
+          />
+          <div className="flex items-center gap-2 relative z-10 p-1 rounded-lg bg-white/90 border border-purple-200 w-full focus-within:border-purple-500 focus-within:shadow-lg focus-within:shadow-purple-200/40 transition-colors">
+            <Search className="ml-3 text-social-primary h-5 w-5" />
+            <Input
+              placeholder="Search trending posts and communities..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-2 py-3 border-0 bg-transparent focus:ring-0 focus:outline-none shadow-none min-w-0 flex-1"
+              style={{ boxShadow: "none" }}
+            />
+          </div>
+        </div>
       </div>
 
       <Tabs defaultValue="posts" className="w-full">
@@ -149,17 +173,50 @@ const DiscoverPage = () => {
         <TabsContent value="posts" className="space-y-4 sm:space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPosts.map((post) => (
-              <TrendingPostCard
+              <Card
                 key={post.id}
-                id={post.id}
-                title={post.title}
-                author={post.author}
-                community={post.community}
-                likes={post.likes}
-                replies={post.replies}
-                createdAt={post.createdAt}
-                excerpt={post.excerpt}
-              />
+                className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent h-full"
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
+                    <div className="flex-1">
+                      <CardTitle className="text-base sm:text-lg mb-2 break-words">
+                        <Link
+                          to={`/post/${post.id}`}
+                          className="hover:text-primary transition-colors"
+                        >
+                          {post.title}
+                        </Link>
+                      </CardTitle>
+                      <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                        <span>by {post.author}</span>
+                        <span>•</span>
+                        <span>in {post.community}</span>
+                        <span>•</span>
+                        <span>{post.createdAt.toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+                        <span>{post.likes}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
+                        <span>{post.replies}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm sm:text-base text-muted-foreground mb-4 break-words">
+                    {post.excerpt}
+                  </p>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to={`/post/${post.id}`}>Read More</Link>
+                  </Button>
+                </CardContent>
+              </Card>
             ))}
           </div>
           {filteredPosts.length === 0 && (

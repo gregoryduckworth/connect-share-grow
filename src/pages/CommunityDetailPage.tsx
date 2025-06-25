@@ -256,12 +256,11 @@ const CommunityDetailPage = () => {
                 )}
 
                 {community.isModerator && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowModPanel(true)}
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    Moderate
+                  <Button variant="outline" asChild>
+                    <Link to={`/community/${communityId}/moderate`}>
+                      <Settings className="h-4 w-4 mr-2" />
+                      Moderate
+                    </Link>
                   </Button>
                 )}
               </div>

@@ -112,7 +112,7 @@ const CommunityCard = ({
             asChild
             className="h-10 min-w-[100px]"
           >
-            <Link to="/moderate">Moderate</Link>
+            <Link to={`/community/${id}/moderate`}>Moderate</Link>
           </Button>
         )}
       </div>
