@@ -30,6 +30,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
 import ReportModal from "@/components/ui/ReportModal";
+import UserProfileLink from "@/components/user/UserProfileLink";
 
 interface Reply {
   id: string;
@@ -232,7 +233,13 @@ const PostDetailPage = () => {
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2 justify-between">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-base">{reply.author}</span>
+                <UserProfileLink
+                  userId={`user-${reply.author
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")}`}
+                  userName={reply.author}
+                  currentUserId={"current-user-id"}
+                />
                 <span className="text-sm text-gray-400 font-normal">
                   {reply.timestamp.toLocaleDateString()}
                 </span>
@@ -480,16 +487,13 @@ const PostDetailPage = () => {
                   </div>
                   <p className="text-sm text-social-muted">
                     by{" "}
-                    <button
-                      className="hover:text-social-primary transition-colors cursor-pointer"
-                      onClick={() =>
-                        setSelectedUserId(
-                          `user-${post.author.toLowerCase().replace(" ", "-")}`
-                        )
-                      }
-                    >
-                      {post.author}
-                    </button>{" "}
+                    <UserProfileLink
+                      userId={`user-${post.author
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")}`}
+                      userName={post.author}
+                      currentUserId={"current-user-id"}
+                    />{" "}
                     • {post.timestamp.toLocaleDateString()}
                   </p>
                 </div>

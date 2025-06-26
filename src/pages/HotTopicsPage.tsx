@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import CommunityCard from "@/components/community/CommunityCard";
 import InfoCard from "@/components/ui/InfoCard";
+import UserProfileLink from "@/components/user/UserProfileLink";
 
 interface TrendingPost {
   id: string;
@@ -194,7 +195,15 @@ const DiscoverPage = () => {
                 contentTop={
                   <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
                     <span className="break-words">
-                      by {post.author} • in {post.community} •{" "}
+                      by{" "}
+                      <UserProfileLink
+                        userId={`user-${post.author
+                          .toLowerCase()
+                          .replace(/\s+/g, "-")}`}
+                        userName={post.author}
+                        currentUserId={"current-user-id"}
+                      />{" "}
+                      • in {post.community} •{" "}
                       {post.createdAt.toLocaleDateString()}
                     </span>
                   </div>

@@ -306,6 +306,7 @@ const CommunityDetailPage = () => {
                     onPin={handlePinPost}
                     isModerator={community.isModerator}
                     showPreview={true}
+                    onShowUserProfile={(userId) => setSelectedUserId(userId)}
                   />
                 </Link>
               </div>

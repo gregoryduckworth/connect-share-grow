@@ -10,84 +10,71 @@ import {
   ChatMessage,
 } from "./types";
 
-// Mock data storage
-const mockPosts: Post[] = [
+// --- Unified and simplified mock data ---
+export const mockCommunities: Community[] = [
   {
-    id: "post-1",
-    title: "The Future of Web Development",
-    content:
-      "What do you think about the latest trends in web development? AI integration seems to be everywhere now.",
-    author: "TechEnthusiast",
-    communityId: "web-dev",
-    communityName: "Web Development",
-    createdAt: new Date(2024, 5, 22),
-    likes: 45,
-    replies: 23,
-    isHot: true,
-    isLiked: true,
-  },
-  {
-    id: "post-2",
-    title: "Best Photography Spots in the City",
-    content:
-      "I've been exploring the city and found some amazing spots for photography. Here are my top recommendations.",
-    author: "PhotographyPro",
-    communityId: "photography",
-    communityName: "Photography Enthusiasts",
-    createdAt: new Date(2024, 5, 21),
-    likes: 67,
-    replies: 34,
-    isHot: true,
-    isLiked: true,
-  },
-  {
-    id: "post-3",
-    title: "Camera Gear Recommendations",
-    content:
-      "Looking for recommendations on the best camera gear for beginners. Any suggestions?",
-    author: "NewPhotographer",
-    communityId: "photography",
-    communityName: "Photography Enthusiasts",
-    createdAt: new Date(2024, 5, 20),
-    likes: 23,
-    replies: 12,
-    isHot: false,
-    isLiked: true,
-  },
-];
-
-const mockCommunities: Community[] = [
-  {
-    id: "web-dev",
-    name: "Web Development",
-    description:
-      "Discussion about modern web development practices and technologies",
-    memberCount: 2100,
-    postCount: 867,
-    category: "Technology",
-    tags: ["JavaScript", "React", "Node.js"],
-    isJoined: false,
-    lastActivity: new Date(2024, 5, 21),
-    status: "active",
-    moderators: ["user-1"],
-  },
-  {
-    id: "photography",
+    id: "1",
     name: "Photography Enthusiasts",
     description:
-      "Share your photography tips, gear reviews, and stunning shots",
-    memberCount: 1500,
+      "A place for photographers to share their work and discuss techniques",
+    memberCount: 1250,
     postCount: 543,
     category: "Creative",
-    tags: ["Photography", "Camera", "Editing"],
+    tags: ["Photography", "Art", "Camera"],
     isJoined: true,
     lastActivity: new Date(2024, 5, 22),
     status: "active",
     moderators: ["user-2"],
   },
+  {
+    id: "2",
+    name: "Tech Innovators",
+    description: "Discussing the latest in technology and innovation",
+    memberCount: 890,
+    postCount: 120,
+    category: "Technology",
+    tags: ["Technology", "Innovation", "Startups"],
+    isJoined: false,
+    lastActivity: new Date(2024, 5, 21),
+    status: "active",
+    moderators: [],
+  },
 ];
 
-const mockUsers: User[] = [
+export const mockPosts: Post[] = [
+  {
+    id: "post-1",
+    title: "Golden Hour Landscape Tips",
+    content:
+      "Here are some techniques I've learned for capturing stunning golden hour landscapes...",
+    author: "Sarah Johnson",
+    communityId: "1",
+    communityName: "Photography Enthusiasts",
+    createdAt: new Date(2024, 5, 15, 14, 30),
+    likes: 24,
+    replies: 8,
+    isHot: true,
+    isLiked: false,
+    isLocked: false,
+  },
+  {
+    id: "post-2",
+    title: "Street Photography Ethics",
+    content:
+      "Let's discuss the ethical considerations when photographing strangers in public spaces...",
+    author: "Mike Chen",
+    communityId: "1",
+    communityName: "Photography Enthusiasts",
+    createdAt: new Date(2024, 5, 14, 10, 15),
+    likes: 15,
+    replies: 12,
+    isHot: false,
+    isLiked: true,
+    isLocked: false,
+  },
+];
+
+export const mockUsers: User[] = [
   {
     id: "user-1",
     name: "John Doe",
@@ -115,7 +102,7 @@ const mockUsers: User[] = [
   },
 ];
 
-const mockReplies: Reply[] = [
+export const mockReplies: Reply[] = [
   {
     id: "reply-1",
     content:
@@ -1128,9 +1115,21 @@ export const mockFlaggedReports: Report[] = [
     reason: "Spam/advertising",
     status: "pending",
     content: "Buy cheap cameras at spammy-site.com!",
-    postId: "1",
+    postId: "post-1",
     communityId: "1",
     originalContent: "Buy cheap cameras at spammy-site.com!",
+  },
+  {
+    id: "mock-flagged-post-2",
+    type: "post",
+    reportedBy: "user-999",
+    reportedAt: new Date(),
+    reason: "Off-topic",
+    status: "pending",
+    content: "Let's talk about programming languages!",
+    postId: "post-2",
+    communityId: "1",
+    originalContent: "Let's talk about programming languages!",
   },
   {
     id: "mock-flagged-reply-1",
@@ -1141,9 +1140,22 @@ export const mockFlaggedReports: Report[] = [
     status: "pending",
     content: "You're terrible at photography!",
     replyId: "reply-1",
-    postId: "2",
+    postId: "post-1",
     communityId: "1",
     originalContent: "You're terrible at photography!",
+  },
+  {
+    id: "mock-flagged-reply-2",
+    type: "reply",
+    reportedBy: "user-888",
+    reportedAt: new Date(),
+    reason: "Spam reply",
+    status: "pending",
+    content: "Check out my site for free followers!",
+    replyId: "reply-2",
+    postId: "post-2",
+    communityId: "1",
+    originalContent: "Check out my site for free followers!",
   },
   {
     id: "mock-flagged-user-1",
@@ -1156,6 +1168,32 @@ export const mockFlaggedReports: Report[] = [
     userId: "offensive_user_99",
     communityId: "1",
     originalContent: "offensive_user_99",
+  },
+  // Add flagged posts/replies for community 7
+  {
+    id: "mock-flagged-post-7-1",
+    type: "post",
+    reportedBy: "user-777",
+    reportedAt: new Date(),
+    reason: "Abusive language",
+    status: "pending",
+    content: "This post contains offensive language.",
+    postId: "post-7-1",
+    communityId: "7",
+    originalContent: "This post contains offensive language.",
+  },
+  {
+    id: "mock-flagged-reply-7-1",
+    type: "reply",
+    reportedBy: "user-778",
+    reportedAt: new Date(),
+    reason: "Spam reply",
+    status: "pending",
+    content: "Visit my spam site for free stuff!",
+    replyId: "reply-7-1",
+    postId: "post-7-1",
+    communityId: "7",
+    originalContent: "Visit my spam site for free stuff!",
   },
 ];
 

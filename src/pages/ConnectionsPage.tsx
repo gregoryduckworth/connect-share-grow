@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
 import InfoCard from "@/components/ui/InfoCard";
+import UserProfileLink from "@/components/user/UserProfileLink";
 
 interface Connection {
   id: string;
@@ -154,7 +155,13 @@ const ConnectionsPage = () => {
             {filteredConnections.map((connection) => (
               <InfoCard
                 key={connection.id}
-                title={connection.name}
+                title={
+                  <UserProfileLink
+                    userId={connection.id}
+                    userName={connection.name}
+                    currentUserId={"current-user-id"}
+                  />
+                }
                 description={connection.bio}
                 headerRight={
                   <Badge
@@ -197,7 +204,13 @@ const ConnectionsPage = () => {
             {pendingRequests.map((connection) => (
               <InfoCard
                 key={connection.id}
-                title={connection.name}
+                title={
+                  <UserProfileLink
+                    userId={connection.id}
+                    userName={connection.name}
+                    currentUserId={"current-user-id"}
+                  />
+                }
                 description={connection.bio}
                 headerRight={
                   <Badge
@@ -240,7 +253,13 @@ const ConnectionsPage = () => {
             {receivedRequests.map((connection) => (
               <InfoCard
                 key={connection.id}
-                title={connection.name}
+                title={
+                  <UserProfileLink
+                    userId={connection.id}
+                    userName={connection.name}
+                    currentUserId={"current-user-id"}
+                  />
+                }
                 description={connection.bio}
                 headerRight={
                   <Badge

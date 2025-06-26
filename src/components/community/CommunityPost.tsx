@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { Heart, MessageSquare, Pin, Lock, Unlock, User } from "lucide-react";
 import LockPostDialog from "./LockPostDialog";
+import { Link } from "react-router-dom";
+import UserProfileLink from "@/components/user/UserProfileLink";
 
 interface PostData {
   id: string;
@@ -34,6 +36,7 @@ interface CommunityPostProps {
   onUnlockComments?: (postId: string) => void;
   isModerator?: boolean;
   showPreview?: boolean;
+  onShowUserProfile?: (userId: string) => void;
 }
 
 const CommunityPost = ({
@@ -47,6 +50,7 @@ const CommunityPost = ({
   onUnlockComments,
   isModerator = false,
   showPreview = false,
+  onShowUserProfile,
 }: CommunityPostProps) => {
   const [showLockDialog, setShowLockDialog] = useState(false);
   const [lockType, setLockType] = useState<"post" | "comments">("post");
@@ -99,7 +103,15 @@ const CommunityPost = ({
                   {post.isLocked && <Lock className="h-4 w-4 text-red-500" />}
                 </div>
                 <p className="text-sm text-social-muted">
-                  by {post.author} • {post.timestamp.toLocaleDateString()}
+                  by{" "}
+                  <UserProfileLink
+                    userId={`user-${post.author
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
+                    userName={post.author}
+                    currentUserId={"current-user-id"}
+                  />{" "}
+                  • {post.timestamp.toLocaleDateString()}
                 </p>
               </div>
             </div>
