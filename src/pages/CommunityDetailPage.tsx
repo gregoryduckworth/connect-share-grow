@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,23 +22,11 @@ import {
 import CommunityPost from "@/components/community/CommunityPost";
 import { useToast } from "@/components/ui/use-toast";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
-
-interface PostData {
-  id: string;
-  title: string;
-  content: string;
-  author: string;
-  timestamp: Date;
-  likes: number;
-  comments: number;
-  isLiked: boolean;
-  isPinned: boolean;
-  isLocked: boolean;
-  commentsLocked: boolean;
-  tags: string[];
-  lockReason?: string;
-  commentsLockReason?: string;
-}
+import { api } from "@/lib/api";
+import type {
+  CommunityDetail,
+  CommunityPost as CommunityPostType,
+} from "@/lib/types";
 
 const CommunityDetailPage = () => {
   const { communityId } = useParams();
@@ -46,79 +34,15 @@ const CommunityDetailPage = () => {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showModPanel, setShowModPanel] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [community, setCommunity] = useState<CommunityDetail | null>(null);
+  const [posts, setPosts] = useState<CommunityPostType[]>([]);
 
-  // Mock data - in a real app, this would come from an API
-  const community = {
-    id: communityId || "1",
-    name: "Photography Enthusiasts",
-    description:
-      "A place for photographers to share their work and discuss techniques",
-    memberCount: 1250,
-    postCount: 423,
-    tags: ["Photography", "Art", "Camera", "Editing"],
-    isMember: true,
-    isModerator: true,
-    moderators: [
-      {
-        id: "mod-1",
-        name: "Sarah Johnson",
-        role: "Lead Moderator",
-        joinedAsModAt: new Date(2023, 0, 15),
-      },
-      {
-        id: "mod-2",
-        name: "Mike Chen",
-        role: "Moderator",
-        joinedAsModAt: new Date(2023, 2, 20),
-      },
-      {
-        id: "mod-3",
-        name: "Alex Rivera",
-        role: "Moderator",
-        joinedAsModAt: new Date(2023, 4, 10),
-      },
-    ],
-    rules: [
-      "Be respectful to all members",
-      "No spam or self-promotion without approval",
-      "Share constructive feedback on others' work",
-      "Use appropriate tags for your posts",
-      "No inappropriate or offensive content",
-    ],
-  };
-
-  const [posts, setPosts] = useState<PostData[]>([
-    {
-      id: "1",
-      title: "Golden Hour Landscape Tips",
-      content:
-        "Here are some techniques I've learned for capturing stunning golden hour landscapes...",
-      author: "Sarah Johnson",
-      timestamp: new Date(2024, 5, 15, 14, 30),
-      likes: 24,
-      comments: 8,
-      isLiked: false,
-      isPinned: true,
-      isLocked: false,
-      commentsLocked: false,
-      tags: ["Landscape", "Golden Hour", "Tips"],
-    },
-    {
-      id: "2",
-      title: "Street Photography Ethics",
-      content:
-        "Let's discuss the ethical considerations when photographing strangers in public spaces...",
-      author: "Mike Chen",
-      timestamp: new Date(2024, 5, 14, 10, 15),
-      likes: 15,
-      comments: 12,
-      isLiked: true,
-      isPinned: false,
-      isLocked: false,
-      commentsLocked: false,
-      tags: ["Street Photography", "Ethics", "Discussion"],
-    },
-  ]);
+  useEffect(() => {
+    if (communityId) {
+      api.getCommunityDetail(communityId).then(setCommunity);
+      api.getCommunityPosts(communityId).then(setPosts);
+    }
+  }, [communityId]);
 
   const handleLikePost = (postId: string) => {
     setPosts(
@@ -186,6 +110,8 @@ const CommunityDetailPage = () => {
       )
     );
   };
+
+  if (!community) return null;
 
   return (
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
@@ -268,11 +194,7 @@ const CommunityDetailPage = () => {
 
             <div className="flex flex-wrap gap-2">
               {community.tags.map((tag, index) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className="bg-social-accent/50"
-                >
+                <Badge key={index} variant="secondary">
                   {tag}
                 </Badge>
               ))}
@@ -283,26 +205,32 @@ const CommunityDetailPage = () => {
           <div className="space-y-4">
             {posts.map((post) => (
               <div key={post.id}>
-                <Link to={`/community/${communityId}/post/${post.id}`}>
+                {community.isModerator ? (
                   <CommunityPost
                     post={post}
                     onLike={handleLikePost}
                     onComment={handleCommentPost}
-                    onPin={community.isModerator ? handlePinPost : undefined}
-                    onLock={community.isModerator ? handleLockPost : undefined}
-                    onUnlock={
-                      community.isModerator ? handleUnlockPost : undefined
-                    }
-                    onLockComments={
-                      community.isModerator ? handleLockComments : undefined
-                    }
-                    onUnlockComments={
-                      community.isModerator ? handleUnlockComments : undefined
-                    }
-                    isModerator={community.isModerator}
-                    showPreview={true}
+                    onPin={handlePinPost}
+                    onLock={handleLockPost}
+                    onUnlock={handleUnlockPost}
+                    onLockComments={handleLockComments}
+                    onUnlockComments={handleUnlockComments}
+                    isModerator={true}
+                    showPreview={false}
                   />
-                </Link>
+                ) : (
+                  <Link
+                    to={`/community/${communityId}/post/${post.id}`}
+                    tabIndex={-1}
+                  >
+                    <CommunityPost
+                      post={post}
+                      onLike={handleLikePost}
+                      onComment={handleCommentPost}
+                      showPreview={true}
+                    />
+                  </Link>
+                )}
               </div>
             ))}
           </div>

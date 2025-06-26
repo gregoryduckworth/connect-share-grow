@@ -703,6 +703,79 @@ export const mockPostDetail: import("./types").PostDetailData = {
   ],
 };
 
+// Community detail mock for Photography Enthusiasts
+export const mockCommunityDetail = {
+  id: "1",
+  name: "Photography Enthusiasts",
+  description:
+    "A place for photographers to share their work and discuss techniques",
+  memberCount: 1250,
+  postCount: 423,
+  tags: ["Photography", "Art", "Camera", "Editing"],
+  isMember: true,
+  isModerator: true,
+  moderators: [
+    {
+      id: "mod-1",
+      name: "Sarah Johnson",
+      role: "Lead Moderator",
+      joinedAsModAt: new Date(2023, 0, 15),
+    },
+    {
+      id: "mod-2",
+      name: "Mike Chen",
+      role: "Moderator",
+      joinedAsModAt: new Date(2023, 2, 20),
+    },
+    {
+      id: "mod-3",
+      name: "Alex Rivera",
+      role: "Moderator",
+      joinedAsModAt: new Date(2023, 4, 10),
+    },
+  ],
+  rules: [
+    "Be respectful to all members",
+    "No spam or self-promotion without approval",
+    "Share constructive feedback on others' work",
+    "Use appropriate tags for your posts",
+    "No inappropriate or offensive content",
+  ],
+};
+
+export const mockCommunityPosts = [
+  {
+    id: "1",
+    title: "Golden Hour Landscape Tips",
+    content:
+      "Here are some techniques I've learned for capturing stunning golden hour landscapes...",
+    author: "Sarah Johnson",
+    timestamp: new Date(2024, 5, 15, 14, 30),
+    likes: 24,
+    comments: 8,
+    isLiked: false,
+    isPinned: true,
+    isLocked: false,
+    commentsLocked: false,
+    tags: ["Landscape", "Golden Hour", "Tips"],
+  },
+  {
+    id: "2",
+    title: "Street Photography Ethics",
+    content:
+      "Let's discuss the ethical considerations when photographing strangers in public spaces...",
+    author: "Mike Chen",
+    timestamp: new Date(2024, 5, 14, 10, 15),
+    likes: 15,
+    comments: 12,
+    isLiked: true,
+    isPinned: false,
+    isLocked: false,
+    commentsLocked: false,
+    tags: ["Street Photography", "Ethics", "Discussion"],
+  },
+];
+
 export const api = {
   // Posts
   async getPosts(): Promise<Post[]> {
@@ -759,6 +832,20 @@ export const api = {
         500
       );
     });
+  },
+
+  async getCommunityDetail(communityId: string) {
+    // In a real app, filter by communityId
+    return new Promise((resolve) =>
+      setTimeout(() => resolve(mockCommunityDetail), 300)
+    );
+  },
+
+  async getCommunityPosts(communityId: string) {
+    // In a real app, filter by communityId
+    return new Promise((resolve) =>
+      setTimeout(() => resolve(mockCommunityPosts), 300)
+    );
   },
 
   // Users

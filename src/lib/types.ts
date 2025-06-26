@@ -1,4 +1,5 @@
 export interface Post {
+  isLiked: boolean;
   id: string;
   title: string;
   content: string;
@@ -148,4 +149,40 @@ export interface PostDetailData {
   replies: PostDetailReply[];
   communityId: string;
   communityName: string;
+}
+
+// Types for UI-specific community and post data
+export interface CommunityDetail {
+  id: string;
+  name: string;
+  description: string;
+  memberCount: number;
+  postCount: number;
+  tags: string[];
+  isMember: boolean;
+  isModerator: boolean;
+  moderators: Array<{
+    id: string;
+    name: string;
+    role: string;
+    joinedAsModAt: Date;
+  }>;
+  rules: string[];
+}
+
+export interface CommunityPost {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  timestamp: Date;
+  likes: number;
+  comments: number;
+  isLiked: boolean;
+  isPinned: boolean;
+  isLocked: boolean;
+  commentsLocked: boolean;
+  tags: string[];
+  lockReason?: string;
+  commentsLockReason?: string;
 }

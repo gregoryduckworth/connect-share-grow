@@ -439,11 +439,7 @@ const PostDetailPage = () => {
 
             <div className="flex flex-wrap gap-2 mb-4">
               {post.tags.map((tag, index) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className="bg-social-accent/50"
-                >
+                <Badge key={index} variant="secondary">
                   {tag}
                 </Badge>
               ))}
