@@ -1056,6 +1056,19 @@ export const api = {
       setTimeout(() => resolve(mockCommunityPosts[communityId] || []), 300)
     );
   },
+
+  async submitReport(reportData) {
+    // Simulate saving the report and returning the created report object
+    const newReport = {
+      id: `report-${Date.now()}`,
+      ...reportData,
+      status: "pending",
+      createdAt: new Date(),
+    };
+    // Optionally push to mockReports if you want to see it in admin
+    // mockReports.push(newReport);
+    return new Promise((resolve) => setTimeout(() => resolve(newReport), 300));
+  },
 };
 
 // New function to get flagged reports for a community

@@ -64,7 +64,7 @@ export default function ReportModal({
       originalContent: context.originalContent,
     };
     try {
-      const report = await api.submitReport(reportData);
+      const report = (await api.submitReport(reportData)) as Report;
       setSubmitting(false);
       onSubmitted?.(report);
       onClose();
