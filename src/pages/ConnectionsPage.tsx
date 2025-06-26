@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Users, MessageCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,12 +25,18 @@ interface Connection {
   bio?: string;
 }
 
+interface ConnectionRequest {
+  id: string;
+  name: string;
+  message: string;
+  date: string;
+}
+
 const ConnectionsPage = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-
   const [connections, setConnections] = useState<Connection[]>([
     {
       id: "1",
@@ -65,10 +71,44 @@ const ConnectionsPage = () => {
       bio: "Graphic designer and artist",
     },
   ]);
+  const [connectionRequests, setConnectionRequests] = useState<
+    ConnectionRequest[]
+  >([]);
+
+  useEffect(() => {
+    // Load connection requests from localStorage
+    const requests = JSON.parse(
+      localStorage.getItem("connectionRequests") || "[]"
+    );
+    setConnectionRequests(requests);
+  }, []);
+
+  // Sync requests if a new one is added (e.g., after sending from dialog)
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "connectionRequests") {
+        const requests = JSON.parse(
+          localStorage.getItem("connectionRequests") || "[]"
+        );
+        setConnectionRequests(requests);
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    // Also poll every 1s in case of same-tab update
+    const interval = setInterval(() => {
+      const requests = JSON.parse(
+        localStorage.getItem("connectionRequests") || "[]"
+      );
+      setConnectionRequests(requests);
+    }, 1000);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      clearInterval(interval);
+    };
+  }, []);
 
   const connectedUsers = connections.filter((c) => c.status === "connected");
   const pendingRequests = connections.filter((c) => c.status === "pending");
-  const receivedRequests = connections.filter((c) => c.status === "received");
 
   const filteredConnections = connectedUsers.filter((connection) =>
     connection.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -146,7 +186,7 @@ const ConnectionsPage = () => {
             Pending ({pendingRequests.length})
           </TabsTrigger>
           <TabsTrigger value="requests" className="text-xs sm:text-sm">
-            Requests ({receivedRequests.length})
+            Requests ({connectionRequests.length})
           </TabsTrigger>
         </TabsList>
 
@@ -250,54 +290,36 @@ const ConnectionsPage = () => {
 
         <TabsContent value="requests">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {receivedRequests.map((connection) => (
+            {connectionRequests.map((request) => (
               <InfoCard
-                key={connection.id}
+                key={request.id + request.date}
                 title={
                   <UserProfileLink
-                    userId={connection.id}
-                    userName={connection.name}
+                    userId={request.id}
+                    userName={request.name}
                     currentUserId={"current-user-id"}
                   />
                 }
-                description={connection.bio}
+                description={request.message}
                 headerRight={
-                  <Badge
-                    variant="outline"
-                    className="text-xs whitespace-nowrap"
-                  >
-                    {connection.mutualConnections} mutual
-                  </Badge>
-                }
-                contentTop={
-                  <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
-                    <span className="break-words">
-                      Last active: {connection.lastActive.toLocaleDateString()}
-                    </span>
-                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(request.date).toLocaleDateString()}
+                  </span>
                 }
                 actions={
-                  <>
-                    <Button
-                      onClick={() => handleAcceptRequest(connection.id)}
-                      className="flex-1 text-xs sm:text-sm"
-                    >
-                      Accept
-                    </Button>
-                    <Button
-                      onClick={() => handleRejectRequest(connection.id)}
-                      variant="outline"
-                      className="flex-1 text-xs sm:text-sm"
-                    >
-                      Decline
-                    </Button>
-                  </>
+                  <Button
+                    variant="outline"
+                    className="flex-1 text-xs sm:text-sm"
+                    disabled
+                  >
+                    Pending
+                  </Button>
                 }
               />
             ))}
           </div>
 
-          {receivedRequests.length === 0 && (
+          {connectionRequests.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No connection requests.</p>
             </div>

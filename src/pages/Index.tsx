@@ -208,8 +208,7 @@ const CommunitiesPage = () => {
               (r) =>
                 r.communityId &&
                 r.status === "pending" &&
-                (r.communityId === community.id ||
-                  r.communityName === community.name)
+                r.communityId === community.id
             ).length;
             const roleChangeCount = roleChanges.filter(
               (rc) =>

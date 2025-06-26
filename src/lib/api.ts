@@ -8,73 +8,141 @@ import {
   Report,
   Connection,
   ChatMessage,
+  PostDetailData,
 } from "./types";
 
-// --- Unified and simplified mock data ---
-export const mockCommunities: Community[] = [
+// Mock data storage
+const mockPosts: Post[] = [
   {
-    id: "1",
+    id: "post-1",
+    title: "The Future of Web Development",
+    content:
+      "What do you think about the latest trends in web development? AI integration seems to be everywhere now.",
+    author: "TechEnthusiast",
+    communityId: "web-dev",
+    communityName: "Web Development",
+    createdAt: new Date(2024, 5, 22),
+    likes: 45,
+    replies: 23,
+    isHot: true,
+    isLiked: false,
+  },
+  {
+    id: "post-2",
+    title: "Best Photography Spots in the City",
+    content:
+      "I've been exploring the city and found some amazing spots for photography. Here are my top recommendations.",
+    author: "PhotographyPro",
+    communityId: "photography",
+    communityName: "Photography Enthusiasts",
+    createdAt: new Date(2024, 5, 21),
+    likes: 67,
+    replies: 34,
+    isHot: true,
+    isLiked: false,
+  },
+  {
+    id: "post-3",
+    title: "Camera Gear Recommendations",
+    content:
+      "Looking for recommendations on the best camera gear for beginners. Any suggestions?",
+    author: "NewPhotographer",
+    communityId: "photography",
+    communityName: "Photography Enthusiasts",
+    createdAt: new Date(2024, 5, 20),
+    likes: 23,
+    replies: 12,
+    isHot: false,
+    isLiked: false,
+  },
+  {
+    id: "post-4",
+    title: "Sustainable Living Tips for 2024",
+    content: "Here are some practical ways to live more sustainably this year!",
+    author: "EcoWarrior",
+    communityId: "sustainable-living",
+    communityName: "Sustainable Living",
+    createdAt: new Date(2024, 5, 23),
+    likes: 88,
+    replies: 19,
+    isHot: true,
+    isLiked: false,
+  },
+  {
+    id: "post-5",
+    title: "AI in Indie Game Development",
+    content:
+      "How are you using AI tools in your indie game projects? Share your experience!",
+    author: "GameDevAI",
+    communityId: "indie-game-dev",
+    communityName: "Indie Game Development",
+    createdAt: new Date(2024, 5, 24),
+    likes: 120,
+    replies: 41,
+    isHot: true,
+    isLiked: false,
+  },
+];
+
+const mockCommunities: Community[] = [
+  {
+    id: "web-dev",
+    name: "Web Development",
+    description:
+      "Discussion about modern web development practices and technologies",
+    memberCount: 2100,
+    postCount: 867,
+    category: "Technology",
+    tags: ["JavaScript", "React", "Node.js"],
+    isJoined: false,
+    lastActivity: new Date(2024, 5, 21),
+    status: "active",
+    moderators: ["user-1"],
+  },
+  {
+    id: "photography",
     name: "Photography Enthusiasts",
     description:
-      "A place for photographers to share their work and discuss techniques",
-    memberCount: 1250,
+      "Share your photography tips, gear reviews, and stunning shots",
+    memberCount: 1500,
     postCount: 543,
     category: "Creative",
-    tags: ["Photography", "Art", "Camera"],
+    tags: ["Photography", "Camera", "Editing"],
     isJoined: true,
     lastActivity: new Date(2024, 5, 22),
     status: "active",
     moderators: ["user-2"],
   },
   {
-    id: "2",
-    name: "Tech Innovators",
-    description: "Discussing the latest in technology and innovation",
-    memberCount: 890,
-    postCount: 120,
-    category: "Technology",
-    tags: ["Technology", "Innovation", "Startups"],
+    id: "sustainable-living",
+    name: "Sustainable Living",
+    description: "Tips and discussions about eco-friendly lifestyle choices",
+    memberCount: 1456,
+    postCount: 321,
+    category: "Lifestyle",
+    tags: ["Eco", "Green", "Sustainability"],
     isJoined: false,
-    lastActivity: new Date(2024, 5, 21),
+    lastActivity: new Date(2024, 5, 23),
     status: "active",
-    moderators: [],
+    moderators: ["user-3"],
+  },
+  {
+    id: "indie-game-dev",
+    name: "Indie Game Development",
+    description:
+      "For independent game developers to share experiences and resources",
+    memberCount: 987,
+    postCount: 210,
+    category: "Gaming",
+    tags: ["Games", "Indie", "Development"],
+    isJoined: false,
+    lastActivity: new Date(2024, 5, 24),
+    status: "active",
+    moderators: ["user-1"],
   },
 ];
 
-export const mockPosts: Post[] = [
-  {
-    id: "post-1",
-    title: "Golden Hour Landscape Tips",
-    content:
-      "Here are some techniques I've learned for capturing stunning golden hour landscapes...",
-    author: "Sarah Johnson",
-    communityId: "1",
-    communityName: "Photography Enthusiasts",
-    createdAt: new Date(2024, 5, 15, 14, 30),
-    likes: 24,
-    replies: 8,
-    isHot: true,
-    isLiked: false,
-    isLocked: false,
-  },
-  {
-    id: "post-2",
-    title: "Street Photography Ethics",
-    content:
-      "Let's discuss the ethical considerations when photographing strangers in public spaces...",
-    author: "Mike Chen",
-    communityId: "1",
-    communityName: "Photography Enthusiasts",
-    createdAt: new Date(2024, 5, 14, 10, 15),
-    likes: 15,
-    replies: 12,
-    isHot: false,
-    isLiked: true,
-    isLocked: false,
-  },
-];
-
-export const mockUsers: User[] = [
+const mockUsers: User[] = [
   {
     id: "user-1",
     name: "John Doe",
@@ -102,7 +170,7 @@ export const mockUsers: User[] = [
   },
 ];
 
-export const mockReplies: Reply[] = [
+const mockReplies: Reply[] = [
   {
     id: "reply-1",
     content:
@@ -208,19 +276,6 @@ const mockReports: Report[] = [
     originalContent:
       "Your photos are terrible and you should stop posting here.",
   },
-  // --- Added mock to always show a pending moderation for Photography Enthusiasts ---
-  {
-    id: "report-3",
-    type: "post",
-    reportedBy: "user-3",
-    reportedAt: new Date(2024, 5, 25),
-    reason: "Off-topic",
-    status: "pending",
-    content: "This post is not related to photography.",
-    postId: "post-3",
-    communityId: "photography",
-    originalContent: "Let's talk about programming languages!",
-  },
 ];
 
 const mockConnections: Connection[] = [
@@ -267,537 +322,759 @@ const mockChatMessages: ChatMessage[] = [
   },
 ];
 
-// --- Analytics/Statistics Mock Data ---
-export const mockAnalyticsCommunities = [
+// Mock pending moderator role changes
+export const mockPendingModeratorRoleChanges = [
   {
-    id: "comm-1",
-    name: "Photography Enthusiasts",
-    members: 128,
-    posts: 342,
-    comments: 1456,
-  },
-  { id: "comm-2", name: "Tech Talk", members: 256, posts: 789, comments: 2890 },
-  {
-    id: "comm-3",
-    name: "Book Readers",
-    members: 96,
-    posts: 156,
-    comments: 678,
-  },
-  {
-    id: "comm-4",
-    name: "Travel Adventures",
-    members: 78,
-    posts: 234,
-    comments: 890,
+    id: "modrole-1",
+    user: {
+      id: "user-4",
+      name: "Jane Smith",
+      email: "jane@example.com",
+      joinDate: new Date(2024, 2, 10),
+      role: "user",
+      status: "active",
+      communities: ["Photography Enthusiasts"],
+    },
+    requestedBy: "user-2",
+    requestedAt: new Date(2024, 5, 20),
+    newRole: "moderator",
+    communityName: "Photography Enthusiasts",
+    status: "pending",
   },
   {
-    id: "comm-5",
-    name: "Fitness & Health",
-    members: 189,
-    posts: 445,
-    comments: 1234,
+    id: "modrole-2",
+    user: {
+      id: "user-5",
+      name: "Carlos Rivera",
+      email: "carlos@example.com",
+      joinDate: new Date(2024, 1, 5),
+      role: "user",
+      status: "active",
+      communities: ["Tech Innovators"],
+    },
+    requestedBy: "user-3",
+    requestedAt: new Date(2024, 5, 21),
+    newRole: "moderator",
+    communityName: "Tech Innovators",
+    status: "pending",
   },
 ];
 
-export const mockPlatformStats = {
-  totalUsers: 2847,
-  totalCommunities: 12,
-  totalPosts: 5673,
-  totalComments: 18429,
-  activeUsers: 1892,
-  newUsersThisMonth: 342,
-  reportsCount: 23,
-  moderatorsCount: 15,
+// Add a mock for post detail data
+const mockPostDetails: Record<string, PostDetailData> = {
+  "post-1": {
+    id: "post-1",
+    title: "The Future of Web Development",
+    content:
+      "What do you think about the latest trends in web development? AI integration seems to be everywhere now.",
+    author: "TechEnthusiast",
+    timestamp: new Date(2024, 5, 22),
+    likes: 45,
+    comments: 23,
+    isLiked: false,
+    isPinned: false,
+    isLocked: false,
+    commentsLocked: false,
+    tags: ["web", "ai", "trends"],
+    replies: [
+      {
+        id: "reply-1",
+        author: "ReactDev",
+        content:
+          "Great insights! I've been working with React for years and the new features are amazing.",
+        timestamp: new Date(2024, 5, 22, 10, 30),
+        likes: 12,
+        isLiked: false,
+        replies: [
+          {
+            id: "reply-1-1",
+            author: "NextGenCoder",
+            content:
+              "Absolutely! Hooks and Suspense have changed the way I write components.",
+            timestamp: new Date(2024, 5, 22, 11, 0),
+            likes: 5,
+            isLiked: false,
+            replies: [
+              {
+                id: "reply-1-1-1",
+                author: "TypeScriptFan",
+                content: "And with TypeScript, it's even better!",
+                timestamp: new Date(2024, 5, 22, 11, 15),
+                likes: 3,
+                isLiked: false,
+                replies: [],
+              },
+            ],
+          },
+          {
+            id: "reply-1-2",
+            author: "WebWizard",
+            content: "Don't forget about server components!",
+            timestamp: new Date(2024, 5, 22, 11, 10),
+            likes: 2,
+            isLiked: false,
+            replies: [],
+          },
+        ],
+      },
+      {
+        id: "reply-2",
+        author: "AIDiscussion",
+        content:
+          "AI is definitely the future. I'm curious how it will impact frontend frameworks.",
+        timestamp: new Date(2024, 5, 22, 12, 0),
+        likes: 7,
+        isLiked: false,
+        replies: [
+          {
+            id: "reply-2-1",
+            author: "MLDev",
+            content:
+              "We're already seeing AI-powered code completion and design tools!",
+            timestamp: new Date(2024, 5, 22, 12, 20),
+            likes: 4,
+            isLiked: false,
+            replies: [
+              {
+                id: "reply-2-1-1",
+                author: "TechEnthusiast",
+                content: "Copilot and similar tools are game changers.",
+                timestamp: new Date(2024, 5, 22, 12, 30),
+                likes: 2,
+                isLiked: false,
+                replies: [],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "reply-3",
+        author: "OldSchoolDev",
+        content:
+          "I still prefer vanilla JS for most things, but the ecosystem is impressive.",
+        timestamp: new Date(2024, 5, 22, 13, 0),
+        likes: 6,
+        isLiked: false,
+        replies: [],
+      },
+      {
+        id: "reply-4",
+        author: "CSSMaster",
+        content: "CSS-in-JS or traditional stylesheets? What's your take?",
+        timestamp: new Date(2024, 5, 22, 13, 30),
+        likes: 4,
+        isLiked: false,
+        replies: [
+          {
+            id: "reply-4-1",
+            author: "ReactDev",
+            content: "I use styled-components for everything now.",
+            timestamp: new Date(2024, 5, 22, 13, 45),
+            likes: 2,
+            isLiked: false,
+            replies: [],
+          },
+          {
+            id: "reply-4-2",
+            author: "OldSchoolDev",
+            content: "Still using SCSS partials!",
+            timestamp: new Date(2024, 5, 22, 13, 50),
+            likes: 1,
+            isLiked: false,
+            replies: [],
+          },
+        ],
+      },
+      {
+        id: "reply-5",
+        author: "NewbieCoder",
+        content: "Thanks for starting this discussion! I'm learning a lot.",
+        timestamp: new Date(2024, 5, 22, 14, 0),
+        likes: 1,
+        isLiked: false,
+        replies: [],
+      },
+    ],
+    communityId: "web-dev",
+    communityName: "Web Development",
+  },
+  "post-2": {
+    id: "post-2",
+    title: "Best Photography Spots in the City",
+    content:
+      "I've been exploring the city and found some amazing spots for photography. Here are my top recommendations.",
+    author: "PhotographyPro",
+    timestamp: new Date(2024, 5, 21),
+    likes: 67,
+    comments: 34,
+    isLiked: false,
+    isPinned: false,
+    isLocked: false,
+    commentsLocked: false,
+    tags: ["photography", "city", "locations"],
+    replies: [
+      {
+        id: "reply-1",
+        author: "PhotoFan",
+        content:
+          "Thanks for sharing these spots! I'll definitely check them out this weekend.",
+        timestamp: new Date(2024, 5, 21, 16, 0),
+        likes: 8,
+        isLiked: false,
+        replies: [
+          {
+            id: "reply-1-1",
+            author: "UrbanExplorer",
+            content: "Which spot had the best lighting?",
+            timestamp: new Date(2024, 5, 21, 16, 30),
+            likes: 2,
+            isLiked: false,
+            replies: [
+              {
+                id: "reply-1-1-1",
+                author: "PhotographyPro",
+                content: "The riverside at sunset is unbeatable!",
+                timestamp: new Date(2024, 5, 21, 16, 45),
+                likes: 1,
+                isLiked: false,
+                replies: [],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "reply-2",
+        author: "LensLover",
+        content: "I love the riverside at sunset!",
+        timestamp: new Date(2024, 5, 21, 17, 0),
+        likes: 5,
+        isLiked: false,
+        replies: [],
+      },
+      {
+        id: "reply-3",
+        author: "NightOwl",
+        content: "Any recommendations for night photography?",
+        timestamp: new Date(2024, 5, 21, 18, 0),
+        likes: 3,
+        isLiked: false,
+        replies: [
+          {
+            id: "reply-3-1",
+            author: "PhotographyPro",
+            content: "Try the old bridge after 10pm!",
+            timestamp: new Date(2024, 5, 21, 18, 15),
+            likes: 1,
+            isLiked: false,
+            replies: [],
+          },
+        ],
+      },
+    ],
+    communityId: "photography",
+    communityName: "Photography Enthusiasts",
+  },
+  "post-3": {
+    id: "post-3",
+    title: "Camera Gear Recommendations",
+    content:
+      "Looking for recommendations on the best camera gear for beginners. Any suggestions?",
+    author: "NewPhotographer",
+    timestamp: new Date(2024, 5, 20),
+    likes: 23,
+    comments: 12,
+    isLiked: false,
+    isPinned: false,
+    isLocked: false,
+    commentsLocked: false,
+    tags: ["camera", "gear", "beginner"],
+    replies: [
+      {
+        id: "reply-1",
+        author: "GearGuru",
+        content: "Start with a mirrorless kit!",
+        timestamp: new Date(2024, 5, 20, 10, 0),
+        likes: 4,
+        isLiked: false,
+        replies: [
+          {
+            id: "reply-1-1",
+            author: "BudgetShooter",
+            content: "Any affordable brands?",
+            timestamp: new Date(2024, 5, 20, 10, 30),
+            likes: 1,
+            isLiked: false,
+            replies: [],
+          },
+        ],
+      },
+      {
+        id: "reply-2",
+        author: "LensLover",
+        content: "Don't forget a good tripod!",
+        timestamp: new Date(2024, 5, 20, 11, 0),
+        likes: 2,
+        isLiked: false,
+        replies: [],
+      },
+    ],
+    communityId: "photography",
+    communityName: "Photography Enthusiasts",
+  },
+  "post-4": {
+    id: "post-4",
+    title: "Sustainable Living Tips for 2024",
+    content: "Here are some practical ways to live more sustainably this year!",
+    author: "EcoWarrior",
+    timestamp: new Date(2024, 5, 23),
+    likes: 88,
+    comments: 19,
+    isLiked: false,
+    isPinned: false,
+    isLocked: false,
+    commentsLocked: false,
+    tags: ["sustainability", "eco", "lifestyle"],
+    replies: [
+      {
+        id: "reply-1",
+        author: "GreenThumb",
+        content: "Composting has made a huge difference for me!",
+        timestamp: new Date(2024, 5, 23, 9, 0),
+        likes: 6,
+        isLiked: false,
+        replies: [],
+      },
+      {
+        id: "reply-2",
+        author: "MinimalistMom",
+        content: "I switched to reusable everything. Love it!",
+        timestamp: new Date(2024, 5, 23, 10, 0),
+        likes: 4,
+        isLiked: false,
+        replies: [
+          {
+            id: "reply-2-1",
+            author: "EcoWarrior",
+            content: "What was the hardest thing to switch?",
+            timestamp: new Date(2024, 5, 23, 10, 30),
+            likes: 1,
+            isLiked: false,
+            replies: [],
+          },
+        ],
+      },
+    ],
+    communityId: "sustainable-living",
+    communityName: "Sustainable Living",
+  },
+  "post-5": {
+    id: "post-5",
+    title: "AI in Indie Game Development",
+    content:
+      "How are you using AI tools in your indie game projects? Share your experience!",
+    author: "GameDevAI",
+    timestamp: new Date(2024, 5, 24),
+    likes: 120,
+    comments: 41,
+    isLiked: false,
+    isPinned: false,
+    isLocked: false,
+    commentsLocked: false,
+    tags: ["ai", "games", "indie"],
+    replies: [
+      {
+        id: "reply-1",
+        author: "AIGamer",
+        content: "I use AI for NPC behavior scripting.",
+        timestamp: new Date(2024, 5, 24, 11, 0),
+        likes: 10,
+        isLiked: false,
+        replies: [
+          {
+            id: "reply-1-1",
+            author: "GameDevAI",
+            content: "What tools do you use?",
+            timestamp: new Date(2024, 5, 24, 11, 15),
+            likes: 2,
+            isLiked: false,
+            replies: [],
+          },
+        ],
+      },
+      {
+        id: "reply-2",
+        author: "PixelArtist",
+        content: "AI art generators have sped up my workflow.",
+        timestamp: new Date(2024, 5, 24, 12, 0),
+        likes: 7,
+        isLiked: false,
+        replies: [],
+      },
+    ],
+    communityId: "indie-game-dev",
+    communityName: "Indie Game Development",
+  },
 };
 
-export const mockActivityData = [
-  { date: "2024-06-01", users: 120, posts: 45, comments: 180 },
-  { date: "2024-06-07", users: 135, posts: 52, comments: 210 },
-  { date: "2024-06-14", users: 142, posts: 48, comments: 195 },
-  { date: "2024-06-21", users: 158, posts: 61, comments: 240 },
-];
-
-export const mockSizeDistribution = [
-  { name: "Small (0-50)", value: 3, color: "#8884d8" },
-  { name: "Medium (51-150)", value: 6, color: "#82ca9d" },
-  { name: "Large (151+)", value: 3, color: "#ffc658" },
-];
-
-// Pending communities mock for admin page
-export const mockPendingCommunities = [
+// --- Admin Analytics Mocks ---
+const mockAnalyticsCommunities = [
   {
-    id: "pending-1",
-    name: "Cryptocurrency Trading",
-    description: "Discussion about crypto trading strategies",
-    memberCount: 0,
-    postCount: 0,
-    category: "Finance",
-    createdAt: new Date(2024, 5, 15),
-    status: "pending",
-    moderators: [],
-    tags: ["Crypto", "Trading", "Investment"],
-    createdBy: "John Trader",
-    requestedAt: new Date(2024, 5, 15),
-  },
-];
-
-// Admin communities mock (with createdAt, requestedAt, etc.)
-export const mockAdminCommunities = [
-  {
-    id: "comm-1",
-    name: "Photography Enthusiasts",
-    description: "A place for photographers to share their work",
-    memberCount: 1250,
-    postCount: 423,
-    category: "Art & Design",
-    createdAt: new Date(2023, 0, 15),
-    status: "active",
-    moderators: ["Sarah Johnson", "Mike Chen"],
-    tags: ["Photography", "Art", "Camera"],
-    createdBy: "admin",
-    requestedAt: new Date(2023, 0, 15),
-  },
-  {
-    id: "comm-2",
+    id: "web-dev",
     name: "Web Development",
-    description: "Modern web development practices",
+    members: 2100,
+    posts: 867,
+    comments: 3200,
+  },
+  {
+    id: "photography",
+    name: "Photography Enthusiasts",
+    members: 1500,
+    posts: 543,
+    comments: 2100,
+  },
+  {
+    id: "sustainable-living",
+    name: "Sustainable Living",
+    members: 1456,
+    posts: 321,
+    comments: 900,
+  },
+  {
+    id: "indie-game-dev",
+    name: "Indie Game Development",
+    members: 987,
+    posts: 210,
+    comments: 600,
+  },
+];
+
+const mockPlatformStats = {
+  totalUsers: 5000,
+  totalCommunities: 25,
+  totalPosts: 3200,
+  totalComments: 12000,
+  activeUsers: 3200,
+  newUsers: 120,
+  newCommunities: 2,
+  newPosts: 80,
+  newComments: 350,
+};
+
+const mockActivityData = [
+  { date: "2024-06-01", posts: 10, comments: 40 },
+  { date: "2024-06-02", posts: 12, comments: 45 },
+  { date: "2024-06-03", posts: 8, comments: 38 },
+  { date: "2024-06-04", posts: 15, comments: 60 },
+  { date: "2024-06-05", posts: 20, comments: 80 },
+];
+
+const mockSizeDistribution = [
+  {
+    size: "<100",
+    count: 5,
+    communities: [
+      "Tiny Gamers",
+      "Mini Makers",
+      "Quick Cooks",
+      "Book Nook",
+      "Pet Lovers",
+    ],
+  },
+  {
+    size: "100-500",
+    count: 10,
+    communities: [
+      "Urban Gardeners",
+      "Fitness Friends",
+      "Budget Travelers",
+      "Coffee Club",
+      "Remote Workers",
+      "Cycling Crew",
+      "Film Buffs",
+      "Writers' Den",
+      "Parenting Tips",
+      "Music Makers",
+    ],
+  },
+  {
+    size: "500-1000",
+    count: 6,
+    communities: [
+      "Photography Enthusiasts",
+      "Tech Innovators",
+      "Sustainable Living",
+      "Indie Game Development",
+      "Startup Founders",
+      "Language Learners",
+    ],
+  },
+  {
+    size: ">1000",
+    count: 4,
+    communities: [
+      "Web Development",
+      "Cooking Adventures",
+      "Health & Wellness",
+      "Art Lovers",
+    ],
+  },
+];
+
+// --- Admin Communities Mocks ---
+const mockAdminCommunities = [
+  {
+    id: "web-dev",
+    name: "Web Development",
+    description:
+      "Discussion about modern web development practices and technologies",
     memberCount: 2100,
     postCount: 867,
     category: "Technology",
-    createdAt: new Date(2023, 1, 20),
     status: "active",
-    moderators: ["Alex Rivera"],
+    createdAt: new Date(2024, 2, 10),
+    moderators: ["user-1"],
     tags: ["JavaScript", "React", "Node.js"],
-    createdBy: "admin",
-    requestedAt: new Date(2023, 1, 20),
+    createdBy: "user-1",
+    requestedAt: new Date(2024, 2, 10),
   },
   {
-    id: "comm-3",
-    name: "Cooking Club",
-    description: "Share recipes and cooking tips",
-    memberCount: 890,
-    postCount: 234,
-    category: "Food & Drink",
-    createdAt: new Date(2023, 2, 10),
-    status: "suspended",
-    moderators: ["Emma Davis"],
-    tags: ["Cooking", "Recipes", "Food"],
-    createdBy: "admin",
-    requestedAt: new Date(2023, 2, 10),
+    id: "photography",
+    name: "Photography Enthusiasts",
+    description:
+      "Share your photography tips, gear reviews, and stunning shots",
+    memberCount: 1500,
+    postCount: 543,
+    category: "Creative",
+    status: "active",
+    createdAt: new Date(2024, 1, 15),
+    moderators: ["user-2"],
+    tags: ["Photography", "Camera", "Editing"],
+    createdBy: "user-2",
+    requestedAt: new Date(2024, 1, 15),
   },
 ];
 
-// Admin users mock data
-export const mockAdminUsers = [
+const mockPendingCommunities = [
+  {
+    id: "eco-living",
+    name: "Eco Living",
+    description:
+      "A community for sharing tips and stories about sustainable living.",
+    memberCount: 0,
+    postCount: 0,
+    category: "Lifestyle",
+    status: "pending",
+    createdAt: new Date(2024, 5, 25),
+    moderators: ["user-3"],
+    tags: ["Eco", "Green"],
+    createdBy: "user-3",
+    requestedAt: new Date(2024, 5, 25),
+  },
+  {
+    id: "ai-artists",
+    name: "AI Artists",
+    description:
+      "Exploring the intersection of art and artificial intelligence.",
+    memberCount: 0,
+    postCount: 0,
+    category: "Art",
+    status: "pending",
+    createdAt: new Date(2024, 5, 24),
+    moderators: ["user-4"],
+    tags: ["AI", "Art"],
+    createdBy: "user-4",
+    requestedAt: new Date(2024, 5, 24),
+  },
+];
+
+// --- Admin Users Mocks ---
+const mockAdminUsers = [
   {
     id: "user-1",
     name: "John Doe",
-    email: "john.doe@example.com",
-    joinDate: new Date(2023, 0, 15),
-    role: "admin",
+    email: "john@example.com",
+    role: "user",
     status: "active",
-    communities: ["Photography", "Tech Talk"],
+    joinDate: new Date(2024, 4, 15),
+    isActive: true,
+    lastLogin: new Date(2024, 5, 25, 10, 30),
+    communities: ["Web Development", "Photography Enthusiasts"],
   },
   {
     id: "user-2",
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    joinDate: new Date(2023, 1, 3),
+    name: "Alice Johnson",
+    email: "alice@example.com",
     role: "moderator",
     status: "active",
-    communities: ["Cooking Club", "Travel Adventures"],
+    joinDate: new Date(2024, 3, 10),
+    isActive: true,
+    lastLogin: new Date(2024, 5, 24, 9, 0),
+    communities: ["Photography Enthusiasts"],
   },
   {
     id: "user-3",
-    name: "Robert Johnson",
-    email: "robert.j@example.com",
-    joinDate: new Date(2023, 2, 20),
-    role: "user",
+    name: "Bob Smith",
+    email: "bob@example.com",
+    role: "admin",
     status: "active",
-    communities: ["Book Readers"],
-  },
-  {
-    id: "user-4",
-    name: "Lisa Brown",
-    email: "lisa.b@example.com",
-    joinDate: new Date(2023, 3, 5),
-    role: "user",
-    status: "suspended",
-    communities: [],
-    suspensionReason:
-      "Repeated violation of community guidelines and inappropriate behavior",
-    suspendedAt: new Date(2024, 5, 10),
-    suspendedBy: "admin@example.com",
-  },
-  {
-    id: "user-5",
-    name: "Michael Wilson",
-    email: "michael.w@example.com",
-    joinDate: new Date(2023, 4, 12),
-    role: "user",
-    status: "active",
-    communities: ["Gaming", "Tech Talk"],
+    joinDate: new Date(2024, 2, 5),
+    isActive: true,
+    lastLogin: new Date(2024, 5, 23, 14, 15),
+    communities: ["Web Development"],
   },
 ];
 
-// Pending admin role changes mock
-export const mockPendingAdminRoleChanges = [
+const mockPendingAdminRoleChanges = [
   {
-    id: "mock-1",
+    id: "rolechange-1",
+    user: {
+      id: "user-1",
+      name: "John Doe",
+      email: "john@example.com",
+      role: "user",
+    },
+    requestedBy: "user-3",
+    requestedAt: new Date(2024, 5, 25),
+    newRole: "moderator",
+    status: "pending",
+    reason: "Active contributor and helpful in discussions.",
+  },
+  {
+    id: "rolechange-2",
     user: {
       id: "user-2",
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      joinDate: new Date(2023, 1, 3),
+      name: "Alice Johnson",
+      email: "alice@example.com",
       role: "moderator",
-      status: "active",
-      communities: ["Cooking Club", "Travel Adventures"],
     },
-    requestedBy: "admin@example.com",
-    requestedAt: new Date(),
+    requestedBy: "user-3",
+    requestedAt: new Date(2024, 5, 24),
     newRole: "admin",
+    status: "pending",
+    reason: "Consistently moderates and manages community issues.",
   },
 ];
 
-// Admin roles mock data
-export const mockAdminRoles = [
-  {
-    name: "Admin",
-    description: "Full system access with all administrative privileges",
-    permissions: [
-      "Manage all users and communities",
-      "Access admin dashboard and analytics",
-      "Modify system settings",
-      "Handle reports and moderation",
-      "Assign and revoke roles",
-    ],
-    userCount: 2,
-    users: [
-      {
-        id: "admin-1",
-        name: "John Doe",
-        email: "john.doe@example.com",
-        joinDate: new Date(2023, 0, 15),
-        communities: ["Photography", "Tech Talk"],
-      },
-      {
-        id: "admin-2",
-        name: "Sarah Admin",
-        email: "sarah.admin@example.com",
-        joinDate: new Date(2023, 1, 1),
-        communities: ["Photography", "Web Development"],
-      },
-    ],
-    icon: "admin",
-    color: "bg-red-500",
-  },
-  {
-    name: "Moderator",
-    description: "Community moderation and user management capabilities",
-    permissions: [
-      "Moderate community content",
-      "Lock/unlock posts and comments",
-      "Manage community rules",
-      "Handle community reports",
-      "Pin important posts",
-    ],
-    userCount: 5,
-    users: [
-      {
-        id: "mod-1",
-        name: "Jane Smith",
-        email: "jane.smith@example.com",
-        joinDate: new Date(2023, 1, 3),
-        communities: ["Cooking Club", "Travel Adventures"],
-      },
-      {
-        id: "mod-2",
-        name: "Mike Chen",
-        email: "mike.chen@example.com",
-        joinDate: new Date(2023, 2, 10),
-        communities: ["Photography"],
-      },
-      {
-        id: "mod-3",
-        name: "Alex Rivera",
-        email: "alex.rivera@example.com",
-        joinDate: new Date(2023, 3, 15),
-        communities: ["Web Development", "Tech Talk"],
-      },
-      {
-        id: "mod-4",
-        name: "Emma Davis",
-        email: "emma.davis@example.com",
-        joinDate: new Date(2023, 4, 20),
-        communities: ["Book Club"],
-      },
-      {
-        id: "mod-5",
-        name: "Tom Wilson",
-        email: "tom.wilson@example.com",
-        joinDate: new Date(2023, 5, 5),
-        communities: ["Fitness & Health"],
-      },
-    ],
-    icon: "moderator",
-    color: "bg-orange-500",
-  },
-  {
-    name: "User",
-    description: "Standard user with basic community participation rights",
-    permissions: [
-      "Create and edit own posts",
-      "Comment on posts",
-      "Join communities",
-      "Like and share content",
-      "Report inappropriate content",
-    ],
-    userCount: 1247,
-    users: [
-      {
-        id: "user-1",
-        name: "Robert Johnson",
-        email: "robert.j@example.com",
-        joinDate: new Date(2023, 2, 20),
-        communities: ["Book Readers"],
-      },
-      {
-        id: "user-2",
-        name: "Lisa Brown",
-        email: "lisa.b@example.com",
-        joinDate: new Date(2023, 3, 5),
-        communities: [],
-      },
-      {
-        id: "user-3",
-        name: "Michael Wilson",
-        email: "michael.w@example.com",
-        joinDate: new Date(2023, 4, 12),
-        communities: ["Gaming", "Tech Talk"],
-      },
-    ],
-    icon: "user",
-    color: "bg-blue-500",
-  },
-];
-
-// --- Admin Reports Mock Data ---
-export const mockAdminReports = [
+// --- Admin Reports Mocks ---
+const mockAdminReports = [
   {
     id: "report-1",
     contentType: "post",
-    contentId: "post-123",
-    contentPreview:
-      "This post contains potentially inappropriate content about politics and inflammatory language that goes against community guidelines. It uses divisive rhetoric and could incite arguments.",
-    reportedBy: "user-456",
-    reason: "Contains inappropriate content",
-    createdAt: new Date(Date.now() - 1000 * 60 * 30),
+    contentId: "post-1",
+    reportedBy: "user-1",
+    createdAt: new Date(2024, 5, 20),
+    reason: "Spam content",
     status: "pending",
+    contentPreview: "This is inappropriate spam content",
     originalContent: {
-      title: "Why Current Political System is Completely Broken",
-      author: "AngryUser2024",
-      community: "Political Discussion",
-      fullText:
-        "I'm so tired of all these politicians lying to us constantly. They're all corrupt and only care about their own power. The whole system needs to be torn down and rebuilt from scratch. Anyone who supports the current administration is either blind or complicit in this corruption. We need to take action now before it's too late and our democracy is completely destroyed. This is not a drill - we're heading towards a complete collapse of our society if we don't act immediately.",
+      title: "The Future of Web Development",
+      community: "Web Development",
+      author: "TechEnthusiast",
+      body: "What do you think about the latest trends in web development? AI integration seems to be everywhere now.",
     },
   },
   {
     id: "report-2",
     contentType: "reply",
-    contentId: "reply-789",
-    contentPreview:
-      "This reply contains offensive language and personal attacks directed at other community members. The language used is clearly harassment and violates our community standards.",
-    reportedBy: "user-101",
+    contentId: "reply-1",
+    reportedBy: "user-2",
+    createdAt: new Date(2024, 5, 19),
     reason: "Harassment",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60),
     status: "pending",
+    contentPreview: "Harassing comment targeting another user",
     originalContent: {
-      author: "ToxicUser123",
-      parentPost: "Best Programming Languages for Beginners",
-      fullText:
-        "You're absolutely clueless and shouldn't be giving advice to anyone. Your suggestions are terrible and show you have no idea what you're talking about. Maybe stick to something you actually understand instead of spreading misinformation. People like you are what's wrong with this community - always acting like experts when you clearly aren't. Just delete your account and save everyone the trouble of reading your garbage posts.",
+      parentPost: "Best Photography Spots in the City",
+      author: "PhotoFan",
+      body: "Your photos are terrible and you should stop posting here.",
     },
   },
   {
     id: "report-3",
     contentType: "user",
-    contentId: "user-202",
-    contentPreview:
-      "This user has been repeatedly posting spam across multiple communities including promotional links, duplicate content, and off-topic advertisements that disrupt community discussions.",
-    reportedBy: "user-303",
-    reason: "Spamming",
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
+    contentId: "user-4",
+    reportedBy: "user-3",
+    createdAt: new Date(2024, 5, 18),
+    reason: "Impersonation",
     status: "pending",
+    contentPreview: "User is impersonating another member",
   },
 ];
 
-// --- Post Detail Mock Data ---
-export const mockPostDetail: import("./types").PostDetailData = {
-  id: "1",
-  title: "Golden Hour Landscape Tips",
-  content:
-    "Here are some techniques I've learned for capturing stunning golden hour landscapes. The key is to arrive early and scout your location during the day. Understanding how the light will hit your subject is crucial for getting that perfect shot.",
-  author: "Sarah Johnson",
-  timestamp: new Date(2024, 5, 15, 14, 30),
-  likes: 24,
-  comments: 8,
-  isLiked: false,
-  isPinned: true,
-  isLocked: false,
-  commentsLocked: false,
-  tags: ["Landscape", "Golden Hour", "Tips"],
-  communityId: "1",
-  communityName: "Photography Enthusiasts",
-  replies: [
-    {
-      id: "reply-1",
-      author: "Alice Cooper",
-      content:
-        "Great tips! I especially love the advice about using graduated filters. Do you have any specific brand recommendations?",
-      timestamp: new Date(2024, 5, 15, 15, 45),
-      likes: 5,
-      isLiked: false,
-      replies: [
-        {
-          id: "reply-1-1",
-          author: "Sarah Johnson",
-          content:
-            "I personally use Lee Filters - they're a bit pricey but the quality is excellent. Cokin is also a good budget option!",
-          timestamp: new Date(2024, 5, 15, 16, 15),
-          likes: 3,
-          isLiked: false,
-          parentId: "reply-1",
-          isLocked: true,
-          lockReason: "Locked by moderator for demonstration.",
-          replies: [
-            {
-              id: "reply-1-1-1",
-              author: "Third Level User",
-              content: "This is a 3rd level reply for visual testing.",
-              timestamp: new Date(2024, 5, 15, 16, 45),
-              likes: 1,
-              isLiked: false,
-              parentId: "reply-1-1",
-              replies: [],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      id: "reply-2",
-      author: "Bob Wilson",
-      content:
-        "Thanks for sharing! Do you have any recommendations for specific lens filters? I'm just starting out with landscape photography.",
-      timestamp: new Date(2024, 5, 15, 16, 20),
-      likes: 3,
-      isLiked: true,
-      replies: [],
-    },
-    {
-      id: "reply-3",
-      author: "Emma Davis",
-      content:
-        "This is so helpful! I've been struggling with exposure during golden hour. Your tip about bracketing shots is game-changing.",
-      timestamp: new Date(2024, 5, 15, 17, 10),
-      likes: 2,
-      isLiked: false,
-      replies: [],
-    },
-  ],
-};
-
-// Community detail mock for Photography Enthusiasts
-export const mockCommunityDetail = {
-  id: "1",
-  name: "Photography Enthusiasts",
-  description:
-    "A place for photographers to share their work and discuss techniques",
-  memberCount: 1250,
-  postCount: 423,
-  tags: ["Photography", "Art", "Camera", "Editing"],
-  isMember: true,
-  isModerator: true,
-  moderators: [
-    {
-      id: "mod-1",
-      name: "Sarah Johnson",
-      role: "Lead Moderator",
-      joinedAsModAt: new Date(2023, 0, 15),
-    },
-    {
-      id: "mod-2",
-      name: "Mike Chen",
-      role: "Moderator",
-      joinedAsModAt: new Date(2023, 2, 20),
-    },
-    {
-      id: "mod-3",
-      name: "Alex Rivera",
-      role: "Moderator",
-      joinedAsModAt: new Date(2023, 4, 10),
-    },
-  ],
-  rules: [
-    "Be respectful to all members",
-    "No spam or self-promotion without approval",
-    "Share constructive feedback on others' work",
-    "Use appropriate tags for your posts",
-    "No inappropriate or offensive content",
-  ],
-};
-
-export const mockCommunityPosts = [
+// --- Admin Roles Mocks ---
+const mockAdminRoles = [
   {
-    id: "1",
-    title: "Golden Hour Landscape Tips",
-    content:
-      "Here are some techniques I've learned for capturing stunning golden hour landscapes...",
-    author: "Sarah Johnson",
-    timestamp: new Date(2024, 5, 15, 14, 30),
-    likes: 24,
-    comments: 8,
-    isLiked: false,
-    isPinned: true,
-    isLocked: false,
-    commentsLocked: false,
-    tags: ["Landscape", "Golden Hour", "Tips"],
+    name: "Admin",
+    description:
+      "Full platform access, can manage users, communities, and settings.",
+    permissions: [
+      "Manage all users",
+      "Manage all communities",
+      "Change platform settings",
+      "View analytics",
+      "Assign roles",
+    ],
+    userCount: 1,
+    icon: "admin",
+    color: "bg-yellow-500",
+    users: [
+      {
+        id: "user-3",
+        name: "Bob Smith",
+        email: "bob@example.com",
+        joinDate: new Date(2024, 2, 5),
+        communities: ["Web Development"],
+      },
+    ],
   },
   {
-    id: "2",
-    title: "Street Photography Ethics",
-    content:
-      "Let's discuss the ethical considerations when photographing strangers in public spaces...",
-    author: "Mike Chen",
-    timestamp: new Date(2024, 5, 14, 10, 15),
-    likes: 15,
-    comments: 12,
-    isLiked: true,
-    isPinned: false,
-    isLocked: false,
-    commentsLocked: false,
-    tags: ["Street Photography", "Ethics", "Discussion"],
+    name: "Moderator",
+    description: "Can moderate posts, replies, and manage community members.",
+    permissions: [
+      "Moderate posts and replies",
+      "Manage community members",
+      "Review reports",
+      "Pin/lock posts",
+    ],
+    userCount: 1,
+    icon: "moderator",
+    color: "bg-blue-500",
+    users: [
+      {
+        id: "user-2",
+        name: "Alice Johnson",
+        email: "alice@example.com",
+        joinDate: new Date(2024, 3, 10),
+        communities: ["Photography Enthusiasts"],
+      },
+    ],
   },
-  // Additional mock posts for pagination
-  ...Array.from({ length: 18 }, (_, i) => ({
-    id: `${i + 3}`,
-    title: `Mock Post Title ${i + 3}`,
-    content: `This is the content for mock post number ${
-      i + 3
-    }. Lots of interesting discussion here!`,
-    author: `User${i + 3}`,
-    timestamp: new Date(2024, 5, 10 + ((i + 3) % 10), 9, 0),
-    likes: Math.floor(Math.random() * 30),
-    comments: Math.floor(Math.random() * 15),
-    isLiked: false,
-    isPinned: false,
-    isLocked: false,
-    commentsLocked: false,
-    tags: ["General", `Tag${(i % 5) + 1}`],
-  })),
+  {
+    name: "User",
+    description:
+      "Standard user with access to join and participate in communities.",
+    permissions: [
+      "Join communities",
+      "Create posts and replies",
+      "Report content",
+    ],
+    userCount: 1,
+    icon: "user",
+    color: "bg-gray-500",
+    users: [
+      {
+        id: "user-1",
+        name: "John Doe",
+        email: "john@example.com",
+        joinDate: new Date(2024, 4, 15),
+        communities: ["Web Development", "Photography Enthusiasts"],
+      },
+    ],
+  },
 ];
 
+// API functions
 export const api = {
   // Posts
   async getPosts(): Promise<Post[]> {
@@ -810,17 +1087,14 @@ export const api = {
     return new Promise((resolve) => {
       setTimeout(
         () => resolve(mockPosts.filter((p) => p.isHot).slice(0, 10)),
-        500
+        0
       );
     });
   },
 
   async getPost(id: string): Promise<Post | null> {
     return new Promise((resolve) => {
-      setTimeout(
-        () => resolve(mockPosts.find((p) => p.id === id) || null),
-        500
-      );
+      setTimeout(() => resolve(mockPosts.find((p) => p.id === id) || null), 0);
     });
   },
 
@@ -834,9 +1108,16 @@ export const api = {
         createdAt: new Date(),
         likes: 0,
         replies: 0,
+        isLiked: false,
       };
       mockPosts.push(newPost);
       setTimeout(() => resolve(newPost), 500);
+    });
+  },
+
+  async getPostDetail(postId: string): Promise<PostDetailData | null> {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(mockPostDetails[postId] || null), 500);
     });
   },
 
@@ -854,20 +1135,6 @@ export const api = {
         500
       );
     });
-  },
-
-  async getCommunityDetail(communityId: string) {
-    // In a real app, filter by communityId
-    return new Promise((resolve) =>
-      setTimeout(() => resolve(mockCommunityDetail), 300)
-    );
-  },
-
-  async getCommunityPosts(communityId: string) {
-    // In a real app, filter by communityId
-    return new Promise((resolve) =>
-      setTimeout(() => resolve(mockCommunityPosts), 300)
-    );
   },
 
   // Users
@@ -1012,11 +1279,11 @@ export const api = {
         isRead: false,
       };
       mockChatMessages.push(newMessage);
-      setTimeout(() => resolve(newMessage), 500);
+      setTimeout(() => resolve(newMessage));
     });
   },
 
-  // Analytics
+  // --- Admin Analytics API ---
   async getAnalyticsCommunities() {
     return new Promise((resolve) =>
       setTimeout(() => resolve(mockAnalyticsCommunities), 300)
@@ -1038,187 +1305,235 @@ export const api = {
     );
   },
 
-  // Pending communities
-  async getPendingCommunities() {
-    return new Promise((resolve) =>
-      setTimeout(() => resolve(mockPendingCommunities), 300)
-    );
-  },
-
-  // Admin communities
+  // --- Admin Communities API ---
   async getAdminCommunities() {
     return new Promise((resolve) =>
       setTimeout(() => resolve(mockAdminCommunities), 300)
     );
   },
-
-  // Admin users
+  async getPendingCommunities() {
+    return new Promise((resolve) =>
+      setTimeout(() => resolve(mockPendingCommunities), 300)
+    );
+  },
   async getAdminUsers() {
     return new Promise((resolve) =>
       setTimeout(() => resolve(mockAdminUsers), 300)
     );
   },
-
-  // Pending admin role changes
   async getPendingAdminRoleChanges() {
     return new Promise((resolve) =>
       setTimeout(() => resolve(mockPendingAdminRoleChanges), 300)
     );
   },
-
-  // Admin roles
-  async getAdminRoles() {
-    return new Promise((resolve) =>
-      setTimeout(() => resolve(mockAdminRoles), 300)
-    );
-  },
-
-  // Admin Reports
   async getAdminReports() {
     return new Promise((resolve) =>
       setTimeout(() => resolve(mockAdminReports), 300)
     );
   },
 
-  async getPostDetail(
-    postId: string
-  ): Promise<import("./types").PostDetailData> {
-    // In a real app, you'd filter by postId
+  // --- Admin Roles API ---
+  async getAdminRoles() {
     return new Promise((resolve) =>
-      setTimeout(() => resolve(mockPostDetail), 300)
+      setTimeout(() => resolve(mockAdminRoles), 300)
     );
   },
 
-  // Submit a new report
-  async submitReport(
-    report: Omit<Report, "id" | "reportedAt" | "status">
-  ): Promise<Report> {
-    return new Promise((resolve) => {
-      const newReport: Report = {
-        ...report,
-        id: `report-${Date.now()}`,
-        reportedAt: new Date(),
-        status: "pending",
-      };
-      mockReports.push(newReport);
-      setTimeout(() => resolve(newReport), 500);
-    });
+  // --- Community Detail API ---
+  async getCommunityDetail(communityId: string) {
+    return new Promise((resolve) =>
+      setTimeout(() => resolve(mockCommunityDetails[communityId] || null), 300)
+    );
+  },
+  async getCommunityPosts(communityId: string) {
+    return new Promise((resolve) =>
+      setTimeout(() => resolve(mockCommunityPosts[communityId] || []), 300)
+    );
   },
 };
 
-export const mockFlaggedReports: Report[] = [
-  {
-    id: "mock-flagged-post-1",
-    type: "post",
-    reportedBy: "user-123",
-    reportedAt: new Date(),
-    reason: "Spam/advertising",
-    status: "pending",
-    content: "Buy cheap cameras at spammy-site.com!",
-    postId: "post-1",
-    communityId: "1",
-    originalContent: "Buy cheap cameras at spammy-site.com!",
-  },
-  {
-    id: "mock-flagged-post-2",
-    type: "post",
-    reportedBy: "user-999",
-    reportedAt: new Date(),
-    reason: "Off-topic",
-    status: "pending",
-    content: "Let's talk about programming languages!",
-    postId: "post-2",
-    communityId: "1",
-    originalContent: "Let's talk about programming languages!",
-  },
-  {
-    id: "mock-flagged-reply-1",
-    type: "reply",
-    reportedBy: "user-456",
-    reportedAt: new Date(),
-    reason: "Harassment",
-    status: "pending",
-    content: "You're terrible at photography!",
-    replyId: "reply-1",
-    postId: "post-1",
-    communityId: "1",
-    originalContent: "You're terrible at photography!",
-  },
-  {
-    id: "mock-flagged-reply-2",
-    type: "reply",
-    reportedBy: "user-888",
-    reportedAt: new Date(),
-    reason: "Spam reply",
-    status: "pending",
-    content: "Check out my site for free followers!",
-    replyId: "reply-2",
-    postId: "post-2",
-    communityId: "1",
-    originalContent: "Check out my site for free followers!",
-  },
-  {
-    id: "mock-flagged-user-1",
-    type: "user",
-    reportedBy: "user-789",
-    reportedAt: new Date(),
-    reason: "Inappropriate username",
-    status: "pending",
-    content: "offensive_user_99",
-    userId: "offensive_user_99",
-    communityId: "1",
-    originalContent: "offensive_user_99",
-  },
-  // Add flagged posts/replies for community 7
-  {
-    id: "mock-flagged-post-7-1",
-    type: "post",
-    reportedBy: "user-777",
-    reportedAt: new Date(),
-    reason: "Abusive language",
-    status: "pending",
-    content: "This post contains offensive language.",
-    postId: "post-7-1",
-    communityId: "7",
-    originalContent: "This post contains offensive language.",
-  },
-  {
-    id: "mock-flagged-reply-7-1",
-    type: "reply",
-    reportedBy: "user-778",
-    reportedAt: new Date(),
-    reason: "Spam reply",
-    status: "pending",
-    content: "Visit my spam site for free stuff!",
-    replyId: "reply-7-1",
-    postId: "post-7-1",
-    communityId: "7",
-    originalContent: "Visit my spam site for free stuff!",
-  },
-];
-
-// Add a function to get flagged reports for a community
+// New function to get flagged reports for a community
 export function getMockFlaggedReports(communityId: string) {
-  return mockFlaggedReports.filter((r) => r.communityId === communityId);
+  return mockReports.filter(
+    (r) => r.communityId === communityId && r.status === "pending"
+  );
 }
 
-// Pending moderator role changes mock for communities
-export const mockPendingModeratorRoleChanges = [
-  {
-    id: "mod-change-1",
-    user: {
-      id: "user-4",
-      name: "Sarah Lee",
-      email: "sarah.lee@example.com",
-      joinDate: new Date(2024, 5, 1),
-      role: "user",
-      status: "active",
-      communities: ["Photography Enthusiasts"],
-    },
-    requestedBy: "user-2",
-    requestedAt: new Date(),
-    newRole: "moderator",
-    communityName: "Photography Enthusiasts",
-    status: "pending",
+// --- Community Detail Mocks ---
+const mockCommunityDetails = {
+  "web-dev": {
+    id: "web-dev",
+    name: "Web Development",
+    description:
+      "Discussion about modern web development practices and technologies",
+    memberCount: 2100,
+    postCount: 867,
+    tags: ["JavaScript", "React", "Node.js"],
+    isMember: true,
+    isModerator: false,
+    moderators: [
+      {
+        id: "user-1",
+        name: "John Doe",
+        role: "moderator",
+        joinedAsModAt: new Date(2024, 2, 10),
+      },
+    ],
+    rules: ["Be respectful", "Stay on topic", "No spam"],
+    category: "Technology",
+    isJoined: true,
+    lastActivity: new Date(2024, 5, 21),
+    createdBy: "user-1",
+    requestedAt: new Date(2024, 2, 10),
+    status: "active",
   },
-];
+  photography: {
+    id: "photography",
+    name: "Photography Enthusiasts",
+    description:
+      "Share your photography tips, gear reviews, and stunning shots",
+    memberCount: 1500,
+    postCount: 543,
+    tags: ["Photography", "Camera", "Editing"],
+    isMember: false,
+    isModerator: true,
+    moderators: [
+      {
+        id: "user-2",
+        name: "Alice Johnson",
+        role: "moderator",
+        joinedAsModAt: new Date(2024, 3, 10),
+      },
+    ],
+    rules: [
+      "Share original work",
+      "Give constructive feedback",
+      "No self-promotion",
+    ],
+    category: "Creative",
+    isJoined: true,
+    lastActivity: new Date(2024, 5, 22),
+    createdBy: "user-2",
+    requestedAt: new Date(2024, 1, 15),
+    status: "active",
+  },
+  "1": {
+    id: "1",
+    name: "Photography Enthusiasts",
+    description:
+      "A place for photographers to share their work and discuss techniques",
+    memberCount: 1250,
+    postCount: 2,
+    tags: ["Photography", "Art", "Camera"],
+    isMember: true,
+    isModerator: true,
+    moderators: [
+      {
+        id: "user-2",
+        name: "Alice Johnson",
+        role: "moderator",
+        joinedAsModAt: new Date(2024, 3, 10),
+      },
+    ],
+    rules: [
+      "Share original work",
+      "Give constructive feedback",
+      "No self-promotion",
+    ],
+    category: "Creative",
+    isJoined: true,
+    lastActivity: new Date(2024, 5, 22),
+    createdBy: "user-2",
+    requestedAt: new Date(2024, 1, 15),
+    status: "active",
+  },
+};
+
+const mockCommunityPosts = {
+  "web-dev": [
+    {
+      id: "post-1",
+      title: "The Future of Web Development",
+      content:
+        "What do you think about the latest trends in web development? AI integration seems to be everywhere now.",
+      author: "TechEnthusiast",
+      timestamp: new Date(2024, 5, 22),
+      likes: 45,
+      comments: 23,
+      isLiked: false,
+      isPinned: false,
+      isLocked: false,
+      commentsLocked: false,
+      tags: ["web", "ai", "trends"],
+      communityId: "web-dev",
+      communityName: "Web Development",
+      lockReason: undefined,
+      commentsLockReason: undefined,
+      replies: [],
+    },
+  ],
+  photography: [
+    {
+      id: "post-2",
+      title: "Best Photography Spots in the City",
+      content:
+        "I've been exploring the city and found some amazing spots for photography. Here are my top recommendations.",
+      author: "PhotographyPro",
+      timestamp: new Date(2024, 5, 21),
+      likes: 67,
+      comments: 34,
+      isLiked: false,
+      isPinned: false,
+      isLocked: false,
+      commentsLocked: false,
+      tags: ["photography", "city", "locations"],
+      communityId: "photography",
+      communityName: "Photography Enthusiasts",
+      lockReason: undefined,
+      commentsLockReason: undefined,
+      replies: [],
+    },
+  ],
+  "1": [
+    {
+      id: "post-2",
+      title: "Best Photography Spots in the City",
+      content:
+        "I've been exploring the city and found some amazing spots for photography. Here are my top recommendations.",
+      author: "PhotographyPro",
+      timestamp: new Date(2024, 5, 21),
+      likes: 67,
+      comments: 34,
+      isLiked: false,
+      isPinned: false,
+      isLocked: false,
+      commentsLocked: false,
+      tags: ["photography", "city", "locations"],
+      communityId: "1",
+      communityName: "Photography Enthusiasts",
+      lockReason: undefined,
+      commentsLockReason: undefined,
+      replies: [],
+    },
+    {
+      id: "post-3",
+      title: "Camera Gear Recommendations",
+      content:
+        "Looking for recommendations on the best camera gear for beginners. Any suggestions?",
+      author: "NewPhotographer",
+      timestamp: new Date(2024, 5, 20),
+      likes: 23,
+      comments: 12,
+      isLiked: false,
+      isPinned: false,
+      isLocked: false,
+      commentsLocked: false,
+      tags: ["camera", "gear", "beginner"],
+      communityId: "1",
+      communityName: "Photography Enthusiasts",
+      lockReason: undefined,
+      commentsLockReason: undefined,
+      replies: [],
+    },
+  ],
+};

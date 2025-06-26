@@ -1,22 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, TrendingUp, Users, MessageSquare } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 import CommunityCard from "@/components/community/CommunityCard";
 import InfoCard from "@/components/ui/InfoCard";
 import UserProfileLink from "@/components/user/UserProfileLink";
+import { api } from "@/lib/api";
 
-interface TrendingPost {
+interface TrendingPostUI {
   id: string;
   title: string;
   author: string;
@@ -27,8 +20,7 @@ interface TrendingPost {
   createdAt: Date;
   excerpt: string;
 }
-
-interface TrendingCommunity {
+interface TrendingCommunityUI {
   id: string;
   name: string;
   description: string;
@@ -39,74 +31,45 @@ interface TrendingCommunity {
 
 const DiscoverPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [trendingPosts, setTrendingPosts] = useState<TrendingPostUI[]>([]);
+  const [trendingCommunities, setTrendingCommunities] = useState<
+    TrendingCommunityUI[]
+  >([]);
 
-  const trendingPosts: TrendingPost[] = [
-    {
-      id: "post-1",
-      title: "The Future of Remote Work in Tech",
-      author: "Sarah Chen",
-      community: "Tech Innovators",
-      communityId: "2",
-      likes: 234,
-      replies: 67,
-      createdAt: new Date(2024, 5, 20),
-      excerpt:
-        "As we move forward, remote work is becoming the norm rather than the exception. Here's what I think the future holds...",
-    },
-    {
-      id: "post-2",
-      title: "Best Photography Spots in Urban Areas",
-      author: "Mike Rodriguez",
-      community: "Photography Enthusiasts",
-      communityId: "1",
-      likes: 189,
-      replies: 43,
-      createdAt: new Date(2024, 5, 19),
-      excerpt:
-        "Discovering amazing photography locations in the concrete jungle. These spots will transform your urban photography...",
-    },
-    {
-      id: "post-3",
-      title: "Healthy Meal Prep Ideas for Busy Professionals",
-      author: "Emma Thompson",
-      community: "Health & Wellness",
-      communityId: "3",
-      likes: 156,
-      replies: 29,
-      createdAt: new Date(2024, 5, 18),
-      excerpt:
-        "Time-saving meal prep strategies that don't compromise on nutrition. Perfect for those hectic weekdays...",
-    },
-  ];
-
-  const trendingCommunities: TrendingCommunity[] = [
-    {
-      id: "1",
-      name: "AI & Machine Learning",
-      description:
-        "Discussions about artificial intelligence, machine learning, and their applications",
-      memberCount: 2890,
-      growthRate: 15.2,
-      category: "Technology",
-    },
-    {
-      id: "2",
-      name: "Sustainable Living",
-      description: "Tips and discussions about eco-friendly lifestyle choices",
-      memberCount: 1456,
-      growthRate: 12.8,
-      category: "Lifestyle",
-    },
-    {
-      id: "3",
-      name: "Indie Game Development",
-      description:
-        "For independent game developers to share experiences and resources",
-      memberCount: 987,
-      growthRate: 18.5,
-      category: "Gaming",
-    },
-  ];
+  useEffect(() => {
+    Promise.all([api.getHotPosts(), api.getCommunities()]).then(
+      ([posts, communities]) => {
+        // Build a set of valid community IDs
+        const validCommunityIds = new Set(communities.map((c) => c.id));
+        setTrendingCommunities(
+          communities.map((c) => ({
+            id: c.id,
+            name: c.name,
+            description: c.description,
+            memberCount: c.memberCount,
+            growthRate: Math.round(Math.random() * 20 * 10) / 10, // mock growth
+            category: c.category,
+          }))
+        );
+        setTrendingPosts(
+          posts
+            .filter((p) => validCommunityIds.has(p.communityId))
+            .map((p) => ({
+              id: p.id,
+              title: p.title,
+              author: p.author,
+              community: p.communityName,
+              communityId: p.communityId,
+              likes: p.likes,
+              replies: p.replies,
+              createdAt: p.createdAt,
+              excerpt:
+                p.content.slice(0, 120) + (p.content.length > 120 ? "..." : ""),
+            }))
+        );
+      }
+    );
+  }, []);
 
   const filteredPosts = trendingPosts.filter(
     (post) =>
@@ -207,7 +170,10 @@ const DiscoverPage = () => {
                   </div>
                 }
                 actions={
-                  <Link to={`/community/${post.communityId}/post/${post.id}`} className="flex-1">
+                  <Link
+                    to={`/community/${post.communityId}/post/${post.id}`}
+                    className="flex-1"
+                  >
                     <Button
                       variant="outline"
                       className="w-full text-xs sm:text-sm"
