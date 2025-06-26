@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  Search,
-  TrendingUp,
-  Users,
-  MessageSquare,
-  Calendar,
-} from "lucide-react";
+import { Search, TrendingUp, Users, MessageSquare } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Card,

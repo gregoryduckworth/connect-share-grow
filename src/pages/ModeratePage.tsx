@@ -38,6 +38,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
 import { api, getMockFlaggedReports } from "@/lib/api";
 import type { Report } from "@/lib/types";
+import UserProfileLink from "@/components/user/UserProfileLink";
 
 interface Moderator {
   id: string;
@@ -366,7 +367,13 @@ const ModeratePage = () => {
                         <Users className="h-5 w-5" />
                       </div>
                       <div>
-                        <p className="font-medium">{moderator.name}</p>
+                        <p className="font-medium">
+                          <UserProfileLink
+                            userId={moderator.id}
+                            userName={moderator.name}
+                            currentUserId={moderator.id}
+                          />
+                        </p>
                         <p className="text-sm text-social-muted">
                           {moderator.role}
                         </p>
@@ -508,7 +515,15 @@ const ModeratePage = () => {
                       </span>
                     </div>
                     <div className="text-xs text-social-muted">
-                      Reported by: {report.reportedBy} • Reason: {report.reason}
+                      Reported by:{" "}
+                      <UserProfileLink
+                        userId={`user-${report.reportedBy
+                          .toLowerCase()
+                          .replace(/\s+/g, "-")}`}
+                        userName={report.reportedBy}
+                        currentUserId={"current-user-id"}
+                      />{" "}
+                      • Reason: {report.reason}
                     </div>
                     {/* Moderation actions: lock post/comments, etc. */}
                     {report.type === "post" && (

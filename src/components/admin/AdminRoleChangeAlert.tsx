@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import React from "react";
 import { AlertTriangle } from "lucide-react";
+import UserProfileLink from "@/components/user/UserProfileLink";
 
 interface RoleChangeAlertProps {
   pendingChanges: {
@@ -49,14 +50,27 @@ const RoleChangeAlert: React.FC<RoleChangeAlertProps> = ({
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 {icon}
-                <span className="font-medium">{change.user.name}</span>
+                <span className="font-medium">
+                  <UserProfileLink
+                    userId={change.user.id}
+                    userName={change.user.name}
+                    currentUserId={change.user.id}
+                  />
+                </span>
                 <Badge className={badgeClass}>
                   {change.user.role} → {change.newRole}
                 </Badge>
               </div>
               <div className="text-xs text-muted-foreground">
-                Requested by: {change.requestedBy} •{" "}
-                {change.requestedAt.toLocaleString()}
+                Requested by:{" "}
+                <UserProfileLink
+                  userId={`user-${change.requestedBy
+                    .toLowerCase()
+                    .replace(/\s+/g, "-")}`}
+                  userName={change.requestedBy}
+                  currentUserId={change.user.id}
+                />{" "}
+                • {change.requestedAt.toLocaleString()}
               </div>
             </div>
             <div className="flex gap-2">

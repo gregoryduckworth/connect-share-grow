@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { Heart, MessageSquare, Pin, Lock, Unlock, User } from "lucide-react";
 import LockPostDialog from "./LockPostDialog";
-import { Link } from "react-router-dom";
 import UserProfileLink from "@/components/user/UserProfileLink";
 
 interface PostData {

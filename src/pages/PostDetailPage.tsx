@@ -4,7 +4,7 @@ import { api } from "@/lib/api";
 import { PostDetailData } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar } from "@/components/ui/avatar";
 import {
@@ -28,9 +28,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { useToast } from "@/components/ui/use-toast";
-import UserProfileDialog from "@/components/user/UserProfileDialog";
 import ReportModal from "@/components/ui/ReportModal";
 import UserProfileLink from "@/components/user/UserProfileLink";
+import UserProfileDialog from "@/components/user/UserProfileDialog";
 
 interface Reply {
   id: string;
