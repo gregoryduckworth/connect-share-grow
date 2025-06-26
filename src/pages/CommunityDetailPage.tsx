@@ -29,6 +29,21 @@ import type {
 } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+} from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const CommunityDetailPage = () => {
   const { communityId } = useParams();
@@ -72,46 +87,6 @@ const CommunityDetailPage = () => {
     setPosts(
       posts.map((post) =>
         post.id === postId ? { ...post, isPinned: !post.isPinned } : post
-      )
-    );
-  };
-
-  const handleLockPost = (postId: string, reason: string) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId
-          ? { ...post, isLocked: true, lockReason: reason }
-          : post
-      )
-    );
-  };
-
-  const handleUnlockPost = (postId: string) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId
-          ? { ...post, isLocked: false, lockReason: undefined }
-          : post
-      )
-    );
-  };
-
-  const handleLockComments = (postId: string, reason: string) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId
-          ? { ...post, commentsLocked: true, commentsLockReason: reason }
-          : post
-      )
-    );
-  };
-
-  const handleUnlockComments = (postId: string) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId
-          ? { ...post, commentsLocked: false, commentsLockReason: undefined }
-          : post
       )
     );
   };
@@ -260,10 +235,6 @@ const CommunityDetailPage = () => {
                     onLike={handleLikePost}
                     onComment={handleCommentPost}
                     onPin={handlePinPost}
-                    onLock={handleLockPost}
-                    onUnlock={handleUnlockPost}
-                    onLockComments={handleLockComments}
-                    onUnlockComments={handleUnlockComments}
                     isModerator={community.isModerator}
                     showPreview={true}
                   />
@@ -272,46 +243,81 @@ const CommunityDetailPage = () => {
             ))}
           </div>
           {/* Pagination Controls */}
-          <div className="flex items-center justify-between mt-6">
-            <div className="flex gap-2 items-center">
-              <span>
-                Page {page} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-              >
-                Next
-              </Button>
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 mt-6">
+              <div className="flex-1 flex justify-center">
+                <Pagination>
+                  <PaginationContent className="flex flex-wrap gap-1 justify-center">
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        className={
+                          page === 1
+                            ? "pointer-events-none opacity-50"
+                            : "cursor-pointer"
+                        }
+                        aria-label="Previous page"
+                      />
+                    </PaginationItem>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (pg) => (
+                        <PaginationItem key={pg}>
+                          <PaginationLink
+                            onClick={() => setPage(pg)}
+                            isActive={page === pg}
+                            className={`cursor-pointer ${
+                              page === pg
+                                ? "bg-accent text-primary font-bold"
+                                : ""
+                            }`}
+                            aria-label={`Go to page ${pg}`}
+                          >
+                            {pg}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )
+                    )}
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() =>
+                          setPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        className={
+                          page === totalPages
+                            ? "pointer-events-none opacity-50"
+                            : "cursor-pointer"
+                        }
+                        aria-label="Next page"
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+              <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                <label htmlFor="perPage" className="text-sm text-social-muted">
+                  Posts per page:
+                </label>
+                <Select
+                  value={String(pageSize)}
+                  onValueChange={(val) => {
+                    setPageSize(Number(val));
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger id="perPage" className="w-24">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[5, 10, 15, 20].map((size) => (
+                      <SelectItem key={size} value={String(size)}>
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="flex gap-2 items-center">
-              <span>Posts per page:</span>
-              <select
-                className="border rounded px-2 py-1"
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                  setPage(1);
-                }}
-              >
-                {[5, 10, 15, 20].map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Sidebar */}
