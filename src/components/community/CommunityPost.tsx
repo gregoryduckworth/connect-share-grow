@@ -104,13 +104,17 @@ const CommunityPost = ({
               </div>
             </div>
 
-            {isModerator && !showPreview && (
+            {isModerator && (
               <div className="flex gap-2 flex-wrap">
                 {onPin && (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onPin(post.id)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onPin(post.id);
+                    }}
                     className="text-xs"
                   >
                     <Pin className="h-3 w-3 mr-1" />
@@ -123,7 +127,11 @@ const CommunityPost = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onUnlock(post.id)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onUnlock(post.id);
+                        }}
                         className="text-xs border-green-400 text-green-500 hover:bg-green-50"
                       >
                         <Unlock className="h-3 w-3 mr-1" />
@@ -134,7 +142,11 @@ const CommunityPost = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleLockClick("post")}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleLockClick("post");
+                        }}
                         className="text-xs border-red-400 text-red-500 hover:bg-red-50"
                       >
                         <Lock className="h-3 w-3 mr-1" />
@@ -147,7 +159,11 @@ const CommunityPost = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onUnlockComments(post.id)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onUnlockComments(post.id);
+                        }}
                         className="text-xs border-green-400 text-green-500 hover:bg-green-50"
                       >
                         <Unlock className="h-3 w-3 mr-1" />
@@ -158,7 +174,11 @@ const CommunityPost = ({
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleLockClick("comments")}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleLockClick("comments");
+                        }}
                         className="text-xs border-orange-400 text-orange-500 hover:bg-orange-50"
                       >
                         <Lock className="h-3 w-3 mr-1" />
