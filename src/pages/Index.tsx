@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,9 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import CommunityCard from "@/components/community/CommunityCard";
+import { mockPendingModeratorRoleChanges } from "@/lib/api";
+import type { Report } from "@/lib/types";
+import { api } from "@/lib/api";
 
 interface Community {
   id: string;
@@ -22,6 +25,25 @@ interface Community {
   tags: string[];
   isJoined: boolean;
   isModerator: boolean;
+}
+
+// Define the type for pending moderator role changes
+interface PendingModeratorRoleChange {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    joinDate: Date;
+    role: string;
+    status: string;
+    communities: string[];
+  };
+  requestedBy: string;
+  requestedAt: Date;
+  newRole: string;
+  communityName: string;
+  status: string;
 }
 
 const CommunitiesPage = () => {
@@ -163,6 +185,55 @@ const CommunitiesPage = () => {
     });
   };
 
+  // Add state for moderation actions
+  const [modActionCount, setModActionCount] = useState<{
+    [communityName: string]: number;
+  }>({});
+
+  // Fetch moderation actions for all communities the user moderates
+  useEffect(() => {
+    // Only for communities the user moderates
+    const moderatedCommunities = allCommunities.filter((c) => c.isModerator);
+    Promise.all(
+      moderatedCommunities.map((community) =>
+        Promise.all([
+          api.getReports(),
+          Promise.resolve(mockPendingModeratorRoleChanges),
+        ]).then(
+          ([reports, roleChanges]: [
+            Report[],
+            PendingModeratorRoleChange[]
+          ]) => {
+            const reportCount = reports.filter(
+              (r) =>
+                r.communityId &&
+                r.status === "pending" &&
+                (r.communityId === community.id ||
+                  r.communityName === community.name)
+            ).length;
+            const roleChangeCount = roleChanges.filter(
+              (rc) =>
+                rc.status === "pending" &&
+                rc.communityName &&
+                rc.communityName.toLowerCase().replace(/\s+/g, "") ===
+                  (community.name || "").toLowerCase().replace(/\s+/g, "")
+            ).length;
+            return {
+              name: community.name,
+              count: reportCount + roleChangeCount,
+            };
+          }
+        )
+      )
+    ).then((results) => {
+      const counts: { [communityName: string]: number } = {};
+      results.forEach((r) => {
+        counts[r.name] = r.count;
+      });
+      setModActionCount(counts);
+    });
+  }, [allCommunities]);
+
   return (
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
@@ -218,6 +289,11 @@ const CommunitiesPage = () => {
             isJoined={community.isJoined}
             isModerator={community.isModerator}
             onJoinLeave={handleJoinCommunity}
+            moderateButtonBadge={
+              community.isModerator && modActionCount[community.name] > 0
+                ? modActionCount[community.name]
+                : undefined
+            }
           />
         ))}
       </div>

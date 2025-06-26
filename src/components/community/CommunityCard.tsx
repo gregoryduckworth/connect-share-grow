@@ -21,6 +21,7 @@ interface CommunityCardProps {
   isJoined?: boolean;
   isModerator?: boolean;
   onJoinLeave?: (id: string) => void;
+  moderateButtonBadge?: number;
 }
 
 const CommunityCard = ({
@@ -34,6 +35,7 @@ const CommunityCard = ({
   isJoined,
   isModerator,
   onJoinLeave,
+  moderateButtonBadge,
 }: CommunityCardProps) => (
   <Card className="flex flex-col h-full border-2 transition-shadow hover:shadow-xl hover:scale-[1.03] hover:border-purple-400 hover:bg-purple-50 focus-within:border-purple-500 focus-within:bg-purple-50">
     <CardHeader className="flex-1 pb-2">
@@ -106,14 +108,21 @@ const CommunityCard = ({
           </Button>
         )}
         {isModerator && (
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-            className="h-10 min-w-[100px]"
-          >
-            <Link to={`/community/${id}/moderate`}>Moderate</Link>
-          </Button>
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="h-10 min-w-[100px]"
+            >
+              <Link to={`/community/${id}/moderate`}>Moderate</Link>
+            </Button>
+            {moderateButtonBadge && moderateButtonBadge > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 shadow-md border border-white">
+                {moderateButtonBadge}
+              </span>
+            )}
+          </div>
         )}
       </div>
     </CardContent>

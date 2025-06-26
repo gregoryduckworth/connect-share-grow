@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,10 +21,11 @@ import {
 import CommunityPost from "@/components/community/CommunityPost";
 import { useToast } from "@/components/ui/use-toast";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
-import { api } from "@/lib/api";
+import { api, mockPendingModeratorRoleChanges } from "@/lib/api";
 import type {
   CommunityDetail,
   CommunityPost as CommunityPostType,
+  Report,
 } from "@/lib/types";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
@@ -44,6 +44,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useEffect, useState } from "react";
+
+// Define the type for pending moderator role changes
+interface PendingModeratorRoleChange {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    joinDate: Date;
+    role: string;
+    status: string;
+    communities: string[];
+  };
+  requestedBy: string;
+  requestedAt: Date;
+  newRole: string;
+  communityName: string;
+  status: string;
+}
+
+// Define the type for pending admin role changes
+interface PendingAdminRoleChange {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    joinDate: Date;
+    role: string;
+    status: string;
+    communities: string[];
+  };
+  requestedBy: string;
+  requestedAt: Date;
+  newRole: string;
+}
 
 const CommunityDetailPage = () => {
   const { communityId } = useParams();
@@ -56,6 +93,7 @@ const CommunityDetailPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
+  const [modActionCount, setModActionCount] = useState<number>(0);
 
   useEffect(() => {
     if (communityId) {
@@ -63,6 +101,30 @@ const CommunityDetailPage = () => {
       api.getCommunityPosts(communityId).then(setPosts);
     }
   }, [communityId]);
+
+  useEffect(() => {
+    if (communityId && community?.isModerator) {
+      Promise.all([
+        api.getReports(),
+        Promise.resolve(mockPendingModeratorRoleChanges),
+      ]).then(
+        ([reports, roleChanges]: [Report[], PendingModeratorRoleChange[]]) => {
+          const reportCount = reports.filter(
+            (r) => r.communityId === communityId && r.status === "pending"
+          ).length;
+          // Only count moderator role changes for this community
+          const roleChangeCount = roleChanges.filter(
+            (rc) =>
+              rc.status === "pending" &&
+              rc.communityName &&
+              rc.communityName.toLowerCase().replace(/\s+/g, "") ===
+                (community.name || "").toLowerCase().replace(/\s+/g, "")
+          ).length;
+          setModActionCount(reportCount + roleChangeCount);
+        }
+      );
+    }
+  }, [communityId, community?.isModerator, community?.name]);
 
   const handleLikePost = (postId: string) => {
     setPosts(
@@ -179,12 +241,19 @@ const CommunityDetailPage = () => {
                 )}
 
                 {community.isModerator && (
-                  <Button variant="outline" asChild>
-                    <Link to={`/community/${communityId}/moderate`}>
-                      <Settings className="h-4 w-4 mr-2" />
-                      Moderate
-                    </Link>
-                  </Button>
+                  <div className="relative">
+                    <Button variant="outline" asChild>
+                      <Link to={`/community/${communityId}/moderate`}>
+                        <Settings className="h-4 w-4 mr-2" />
+                        Moderate
+                      </Link>
+                    </Button>
+                    {modActionCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 shadow-md border border-white">
+                        {modActionCount}
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

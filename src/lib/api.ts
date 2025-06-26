@@ -221,6 +221,19 @@ const mockReports: Report[] = [
     originalContent:
       "Your photos are terrible and you should stop posting here.",
   },
+  // --- Added mock to always show a pending moderation for Photography Enthusiasts ---
+  {
+    id: "report-3",
+    type: "post",
+    reportedBy: "user-3",
+    reportedAt: new Date(2024, 5, 25),
+    reason: "Off-topic",
+    status: "pending",
+    content: "This post is not related to photography.",
+    postId: "post-3",
+    communityId: "photography",
+    originalContent: "Let's talk about programming languages!",
+  },
 ];
 
 const mockConnections: Connection[] = [
@@ -1105,3 +1118,69 @@ export const api = {
     });
   },
 };
+
+export const mockFlaggedReports: Report[] = [
+  {
+    id: "mock-flagged-post-1",
+    type: "post",
+    reportedBy: "user-123",
+    reportedAt: new Date(),
+    reason: "Spam/advertising",
+    status: "pending",
+    content: "Buy cheap cameras at spammy-site.com!",
+    postId: "1",
+    communityId: "1",
+    originalContent: "Buy cheap cameras at spammy-site.com!",
+  },
+  {
+    id: "mock-flagged-reply-1",
+    type: "reply",
+    reportedBy: "user-456",
+    reportedAt: new Date(),
+    reason: "Harassment",
+    status: "pending",
+    content: "You're terrible at photography!",
+    replyId: "reply-1",
+    postId: "2",
+    communityId: "1",
+    originalContent: "You're terrible at photography!",
+  },
+  {
+    id: "mock-flagged-user-1",
+    type: "user",
+    reportedBy: "user-789",
+    reportedAt: new Date(),
+    reason: "Inappropriate username",
+    status: "pending",
+    content: "offensive_user_99",
+    userId: "offensive_user_99",
+    communityId: "1",
+    originalContent: "offensive_user_99",
+  },
+];
+
+// Add a function to get flagged reports for a community
+export function getMockFlaggedReports(communityId: string) {
+  return mockFlaggedReports.filter((r) => r.communityId === communityId);
+}
+
+// Pending moderator role changes mock for communities
+export const mockPendingModeratorRoleChanges = [
+  {
+    id: "mod-change-1",
+    user: {
+      id: "user-4",
+      name: "Sarah Lee",
+      email: "sarah.lee@example.com",
+      joinDate: new Date(2024, 5, 1),
+      role: "user",
+      status: "active",
+      communities: ["Photography Enthusiasts"],
+    },
+    requestedBy: "user-2",
+    requestedAt: new Date(),
+    newRole: "moderator",
+    communityName: "Photography Enthusiasts",
+    status: "pending",
+  },
+];

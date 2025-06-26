@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +36,8 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
+import { api, getMockFlaggedReports } from "@/lib/api";
+import type { Report } from "@/lib/types";
 
 interface Moderator {
   id: string;
@@ -124,6 +126,15 @@ const ModeratePage = () => {
       reason: "Inactivity and lack of engagement with the community.",
     },
   ]);
+
+  // Flagged reports state
+  const [flaggedReports, setFlaggedReports] = useState<Report[]>([]);
+
+  useEffect(() => {
+    if (communityId) {
+      setFlaggedReports(getMockFlaggedReports(communityId));
+    }
+  }, [communityId]);
 
   // Define the current moderator (for demo, use the first moderator's name)
   const currentUser = moderators[0]?.name || "";
@@ -469,6 +480,83 @@ const ModeratePage = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Flagged Posts/Replies/Users Section */}
+        {flaggedReports.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>
+                <AlertTriangle className="inline-block mr-2 text-orange-500" />
+                Flagged Content for Review
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {flaggedReports.map((report) => (
+                  <div
+                    key={report.id}
+                    className="p-3 border rounded-lg bg-orange-50 flex flex-col gap-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Badge variant="destructive" className="text-xs">
+                        {report.type.toUpperCase()}
+                      </Badge>
+                      <span className="text-sm font-medium">
+                        {report.type === "post" && `Post: ${report.content}`}
+                        {report.type === "reply" && `Reply: ${report.content}`}
+                        {report.type === "user" && `User: ${report.content}`}
+                      </span>
+                    </div>
+                    <div className="text-xs text-social-muted">
+                      Reported by: {report.reportedBy} • Reason: {report.reason}
+                    </div>
+                    {/* Moderation actions: lock post/comments, etc. */}
+                    {report.type === "post" && (
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-red-400 text-red-500 hover:bg-red-50"
+                        >
+                          Lock Post
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-orange-400 text-orange-500 hover:bg-orange-50"
+                        >
+                          Lock Comments
+                        </Button>
+                      </div>
+                    )}
+                    {report.type === "reply" && (
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-red-400 text-red-500 hover:bg-red-50"
+                        >
+                          Lock Reply
+                        </Button>
+                      </div>
+                    )}
+                    {report.type === "user" && (
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-red-400 text-red-500 hover:bg-red-50"
+                        >
+                          Suspend User
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Remove Moderator Dialog */}
