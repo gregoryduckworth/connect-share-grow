@@ -21,6 +21,7 @@ interface TrendingPost {
   title: string;
   author: string;
   community: string;
+  communityId: string;
   likes: number;
   replies: number;
   createdAt: Date;
@@ -41,10 +42,11 @@ const DiscoverPage = () => {
 
   const trendingPosts: TrendingPost[] = [
     {
-      id: "1",
+      id: "post-1",
       title: "The Future of Remote Work in Tech",
       author: "Sarah Chen",
       community: "Tech Innovators",
+      communityId: "2",
       likes: 234,
       replies: 67,
       createdAt: new Date(2024, 5, 20),
@@ -52,10 +54,11 @@ const DiscoverPage = () => {
         "As we move forward, remote work is becoming the norm rather than the exception. Here's what I think the future holds...",
     },
     {
-      id: "2",
+      id: "post-2",
       title: "Best Photography Spots in Urban Areas",
       author: "Mike Rodriguez",
       community: "Photography Enthusiasts",
+      communityId: "1",
       likes: 189,
       replies: 43,
       createdAt: new Date(2024, 5, 19),
@@ -63,10 +66,11 @@ const DiscoverPage = () => {
         "Discovering amazing photography locations in the concrete jungle. These spots will transform your urban photography...",
     },
     {
-      id: "3",
+      id: "post-3",
       title: "Healthy Meal Prep Ideas for Busy Professionals",
       author: "Emma Thompson",
       community: "Health & Wellness",
+      communityId: "3",
       likes: 156,
       replies: 29,
       createdAt: new Date(2024, 5, 18),
@@ -167,7 +171,7 @@ const DiscoverPage = () => {
                 key={post.id}
                 title={
                   <Link
-                    to={`/post/${post.id}`}
+                    to={`/community/${post.communityId}/post/${post.id}`}
                     className="hover:text-primary transition-colors"
                   >
                     {post.title}
@@ -203,13 +207,15 @@ const DiscoverPage = () => {
                   </div>
                 }
                 actions={
-                  <Button
-                    variant="outline"
-                    className="flex-1 text-xs sm:text-sm"
-                  >
-                    <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                    Read More
-                  </Button>
+                  <Link to={`/community/${post.communityId}/post/${post.id}`} className="flex-1">
+                    <Button
+                      variant="outline"
+                      className="w-full text-xs sm:text-sm"
+                    >
+                      <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      Read More
+                    </Button>
+                  </Link>
                 }
               />
             ))}
