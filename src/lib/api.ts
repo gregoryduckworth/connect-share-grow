@@ -24,6 +24,7 @@ const mockPosts: Post[] = [
     likes: 45,
     replies: 23,
     isHot: true,
+    isLiked: true,
   },
   {
     id: "post-2",
@@ -37,6 +38,7 @@ const mockPosts: Post[] = [
     likes: 67,
     replies: 34,
     isHot: true,
+    isLiked: true,
   },
   {
     id: "post-3",
@@ -50,6 +52,7 @@ const mockPosts: Post[] = [
     likes: 23,
     replies: 12,
     isHot: false,
+    isLiked: true,
   },
 ];
 
@@ -776,6 +779,23 @@ export const mockCommunityPosts = [
     commentsLocked: false,
     tags: ["Street Photography", "Ethics", "Discussion"],
   },
+  // Additional mock posts for pagination
+  ...Array.from({ length: 18 }, (_, i) => ({
+    id: `${i + 3}`,
+    title: `Mock Post Title ${i + 3}`,
+    content: `This is the content for mock post number ${
+      i + 3
+    }. Lots of interesting discussion here!`,
+    author: `User${i + 3}`,
+    timestamp: new Date(2024, 5, 10 + ((i + 3) % 10), 9, 0),
+    likes: Math.floor(Math.random() * 30),
+    comments: Math.floor(Math.random() * 15),
+    isLiked: false,
+    isPinned: false,
+    isLocked: false,
+    commentsLocked: false,
+    tags: ["General", `Tag${(i % 5) + 1}`],
+  })),
 ];
 
 export const api = {

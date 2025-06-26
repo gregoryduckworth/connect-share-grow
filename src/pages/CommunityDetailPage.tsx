@@ -27,6 +27,8 @@ import type {
   CommunityDetail,
   CommunityPost as CommunityPostType,
 } from "@/lib/types";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 const CommunityDetailPage = () => {
   const { communityId } = useParams();
@@ -36,6 +38,9 @@ const CommunityDetailPage = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [community, setCommunity] = useState<CommunityDetail | null>(null);
   const [posts, setPosts] = useState<CommunityPostType[]>([]);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     if (communityId) {
@@ -110,6 +115,23 @@ const CommunityDetailPage = () => {
       )
     );
   };
+
+  // Filtered and paginated posts
+  const filteredPosts = posts.filter(
+    (post) =>
+      post.title.toLowerCase().includes(search.toLowerCase()) ||
+      post.content.toLowerCase().includes(search.toLowerCase()) ||
+      post.author.toLowerCase().includes(search.toLowerCase())
+  );
+  const sortedPosts = filteredPosts.slice().sort((a, b) => {
+    if (a.isPinned === b.isPinned) return 0;
+    return a.isPinned ? -1 : 1;
+  });
+  const totalPages = Math.ceil(sortedPosts.length / pageSize);
+  const paginatedPosts = sortedPosts.slice(
+    (page - 1) * pageSize,
+    page * pageSize
+  );
 
   if (!community) return null;
 
@@ -201,11 +223,38 @@ const CommunityDetailPage = () => {
             </div>
           </div>
 
+          {/* Search Bar */}
+          <div className="mb-6">
+            <div className="relative w-full">
+              <Card className="w-full p-0 border border-input bg-background shadow-none">
+                <div className="flex items-center gap-2 relative z-10 p-1 rounded-lg bg-white/90 border border-purple-200 w-full focus-within:border-purple-500 focus-within:shadow-lg focus-within:shadow-purple-200/40 transition-colors">
+                  <Search className="ml-3 text-social-primary h-5 w-5" />
+                  <Input
+                    type="text"
+                    placeholder="Search posts..."
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setPage(1);
+                    }}
+                    className="pl-2 py-3 border-0 bg-transparent focus:ring-0 focus:outline-none shadow-none min-w-0 flex-1"
+                    style={{ boxShadow: "none" }}
+                  />
+                </div>
+              </Card>
+            </div>
+          </div>
+
           {/* Posts */}
           <div className="space-y-4">
-            {posts.map((post) => (
+            {paginatedPosts.map((post) => (
               <div key={post.id}>
-                {community.isModerator ? (
+                <Link
+                  to={`/community/${communityId}/post/${post.id}`}
+                  tabIndex={-1}
+                  className="block focus:outline-none"
+                  style={{ textDecoration: "none" }}
+                >
                   <CommunityPost
                     post={post}
                     onLike={handleLikePost}
@@ -215,79 +264,110 @@ const CommunityDetailPage = () => {
                     onUnlock={handleUnlockPost}
                     onLockComments={handleLockComments}
                     onUnlockComments={handleUnlockComments}
-                    isModerator={true}
-                    showPreview={false}
+                    isModerator={community.isModerator}
+                    showPreview={true}
                   />
-                ) : (
-                  <Link
-                    to={`/community/${communityId}/post/${post.id}`}
-                    tabIndex={-1}
-                  >
-                    <CommunityPost
-                      post={post}
-                      onLike={handleLikePost}
-                      onComment={handleCommentPost}
-                      showPreview={true}
-                    />
-                  </Link>
-                )}
+                </Link>
               </div>
             ))}
+          </div>
+          {/* Pagination Controls */}
+          <div className="flex items-center justify-between mt-6">
+            <div className="flex gap-2 items-center">
+              <span>
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+            <div className="flex gap-2 items-center">
+              <span>Posts per page:</span>
+              <select
+                className="border rounded px-2 py-1"
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+              >
+                {[5, 10, 15, 20].map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
         {/* Sidebar */}
         <div className="lg:col-span-1">
-          {/* Moderators */}
-          <Card className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent mb-6">
-            <CardHeader>
-              <CardTitle>Moderators</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {community.moderators.map((moderator) => (
-                  <div key={moderator.id} className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-social-primary flex items-center justify-center text-white">
-                      <Users className="h-4 w-4" />
+          <div className="sticky top-8 flex flex-col">
+            {/* Moderators */}
+            <Card className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent mb-6">
+              <CardHeader>
+                <CardTitle>Moderators</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {community.moderators.map((moderator) => (
+                    <div key={moderator.id} className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-social-primary flex items-center justify-center text-white">
+                        <Users className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1">
+                        <button
+                          className="font-medium text-sm hover:text-social-primary transition-colors cursor-pointer"
+                          onClick={() => setSelectedUserId(moderator.id)}
+                        >
+                          {moderator.name}
+                        </button>
+                        <p className="text-xs text-social-muted">
+                          {moderator.role}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          Since {moderator.joinedAsModAt.toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <button
-                        className="font-medium text-sm hover:text-social-primary transition-colors cursor-pointer"
-                        onClick={() => setSelectedUserId(moderator.id)}
-                      >
-                        {moderator.name}
-                      </button>
-                      <p className="text-xs text-social-muted">
-                        {moderator.role}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        Since {moderator.joinedAsModAt.toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Community Rules */}
-          <Card className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent mb-6">
-            <CardHeader>
-              <CardTitle>Community Rules</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ol className="space-y-2 text-sm">
-                {community.rules.map((rule, index) => (
-                  <li key={index} className="flex">
-                    <span className="font-medium text-social-primary mr-2">
-                      {index + 1}.
-                    </span>
-                    <span className="text-social-muted">{rule}</span>
-                  </li>
-                ))}
-              </ol>
-            </CardContent>
-          </Card>
+            {/* Community Rules */}
+            <Card className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent mb-6">
+              <CardHeader>
+                <CardTitle>Community Rules</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ol className="space-y-2 text-sm">
+                  {community.rules.map((rule, index) => (
+                    <li key={index} className="flex">
+                      <span className="font-medium text-social-primary mr-2">
+                        {index + 1}.
+                      </span>
+                      <span className="text-social-muted">{rule}</span>
+                    </li>
+                  ))}
+                </ol>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
 
