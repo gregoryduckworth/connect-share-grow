@@ -67,6 +67,38 @@ const PostDetailPage = () => {
     }
   }, [postId]);
 
+  // Add a 3rd level reply to the mock data for demonstration
+  useEffect(() => {
+    if (
+      post &&
+      post.replies.length > 0 &&
+      post.replies[0].replies[0] &&
+      (!post.replies[0].replies[0].replies ||
+        post.replies[0].replies[0].replies.length === 0)
+    ) {
+      setPost((prev) => {
+        if (!prev) return prev;
+        const updated = { ...prev };
+        if (updated.replies[0] && updated.replies[0].replies[0]) {
+          updated.replies[0].replies[0].replies = [
+            {
+              id: "reply-3",
+              author: "Third Level User",
+              content: "This is a 3rd level reply for visual testing.",
+              timestamp: new Date(),
+              likes: 1,
+              isLiked: false,
+              parentId: updated.replies[0].replies[0].id,
+              replies: [],
+            },
+          ];
+        }
+        return updated;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post && post.replies.length > 0 && post.replies[0].replies[0]]);
+
   if (!post) {
     return null; // or a loading spinner, or any placeholder you prefer
   }
@@ -178,11 +210,15 @@ const PostDetailPage = () => {
     depth?: number;
   }) => (
     <Card
-      className={`${depth > 0 ? "ml-8" : "ml-4"} ${
-        depth > 2 ? "border-l-2 border-gray-200 pl-4" : ""
+      className={`mb-4 rounded-xl shadow-sm w-full ${
+        depth % 2 === 0
+          ? "bg-white border border-gray-200"
+          : "bg-gray-200 border border-gray-300"
+      } ${depth > 0 ? "ml-8 max-w-[calc(100%-2rem)]" : "ml-4 max-w-full"} ${
+        depth > 2 ? "border-l-4 border-blue-200 pl-6" : ""
       }`}
     >
-      <CardContent className="pt-4">
+      <CardContent className="pt-4 pb-4 px-6">
         <div className="flex gap-3">
           <Avatar className="h-10 w-10 bg-social-primary text-white">
             <div className="flex h-full w-full items-center justify-center">
@@ -192,24 +228,15 @@ const PostDetailPage = () => {
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2 justify-between">
               <div className="flex items-center gap-2">
-                <button
-                  className="font-medium hover:text-social-primary transition-colors cursor-pointer"
-                  onClick={() =>
-                    setSelectedUserId(
-                      `user-${reply.author.toLowerCase().replace(" ", "-")}`
-                    )
-                  }
-                >
-                  {reply.author}
-                </button>
-                <span className="text-sm text-gray-500">
+                <span className="font-semibold text-base">{reply.author}</span>
+                <span className="text-sm text-gray-400 font-normal">
                   {reply.timestamp.toLocaleDateString()}
                 </span>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs text-gray-400 hover:text-red-500"
+                className="text-xs text-gray-400 hover:text-red-500 px-2 py-0 h-auto"
                 onClick={() =>
                   openReportModal({
                     type: "reply",
@@ -223,8 +250,10 @@ const PostDetailPage = () => {
                 Report
               </Button>
             </div>
-            <p className="text-gray-700 mb-3">{reply.content}</p>
-            <div className="flex items-center gap-4">
+            <p className="text-gray-700 mb-4 text-[1.08rem] leading-relaxed">
+              {reply.content}
+            </p>
+            <div className="flex items-center gap-4 mb-2">
               <Button
                 variant="ghost"
                 size="sm"
@@ -239,7 +268,6 @@ const PostDetailPage = () => {
                 />
                 {reply.likes}
               </Button>
-
               {!post.commentsLocked && (
                 <Button
                   variant="ghost"
@@ -254,7 +282,6 @@ const PostDetailPage = () => {
                 </Button>
               )}
             </div>
-
             {/* Reply form for this specific reply */}
             {replyToId === reply.id && !post.commentsLocked && (
               <div className="mt-4 flex gap-3">
@@ -290,7 +317,6 @@ const PostDetailPage = () => {
           </div>
         </div>
       </CardContent>
-
       {/* Render nested replies */}
       {reply.replies.length > 0 && (
         <div className="space-y-2 mt-2">
@@ -340,10 +366,10 @@ const PostDetailPage = () => {
         </Breadcrumb>
       </div>
 
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full">
         {/* Main Post */}
         <Card
-          className={`mb-6 ${
+          className={`mb-6 w-full ${
             post.isPinned ? "border-social-primary bg-social-accent/10" : ""
           }`}
         >
@@ -448,7 +474,7 @@ const PostDetailPage = () => {
         </Card>
 
         {/* Replies Section */}
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           <h2 className="text-xl font-semibold">
             Replies ({post.replies.length})
           </h2>
