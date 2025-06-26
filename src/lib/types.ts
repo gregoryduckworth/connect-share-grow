@@ -127,6 +127,8 @@ export interface PostDetailReply {
   timestamp: Date;
   likes: number;
   isLiked: boolean;
+  isLocked?: boolean;
+  lockReason?: string;
   parentId?: string;
   replies: PostDetailReply[];
 }

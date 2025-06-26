@@ -45,10 +45,7 @@ function AdminTable<T extends { id: string | number }>(
             {columns.map((col, i) => (
               <TableHead
                 key={i}
-                className={
-                  "py-4 px-6 text-base font-bold text-foreground tracking-wide " +
-                  (col.headerClassName || "")
-                }
+                className={"py-4 px-6 text-lg " + (col.headerClassName || "")}
               >
                 {col.header}
               </TableHead>
@@ -58,10 +55,7 @@ function AdminTable<T extends { id: string | number }>(
         <TableBody>
           {data.length === 0 ? (
             <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="text-center py-8 text-social-muted"
-              >
+              <TableCell colSpan={columns.length} className="text-center py-8">
                 {emptyMessage}
               </TableCell>
             </TableRow>

@@ -665,6 +665,8 @@ export const mockPostDetail: import("./types").PostDetailData = {
           likes: 3,
           isLiked: false,
           parentId: "reply-1",
+          isLocked: true,
+          lockReason: "Locked by moderator for demonstration.",
           replies: [
             {
               id: "reply-1-1-1",

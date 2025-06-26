@@ -17,6 +17,7 @@ import {
   Home,
   ChevronRight,
   Reply,
+  Unlock,
 } from "lucide-react";
 import {
   Breadcrumb,
@@ -37,6 +38,8 @@ interface Reply {
   timestamp: Date;
   likes: number;
   isLiked: boolean;
+  isLocked?: boolean;
+  lockReason?: string;
   parentId?: string;
   replies: Reply[];
 }
@@ -60,6 +63,7 @@ const PostDetailPage = () => {
   } | null>(null);
 
   const [post, setPost] = useState<PostDetailData | null>(null);
+  const [isModerator, setIsModerator] = useState(true); // TODO: Replace with real user/role logic
 
   useEffect(() => {
     if (postId) {
@@ -233,26 +237,108 @@ const PostDetailPage = () => {
                   {reply.timestamp.toLocaleDateString()}
                 </span>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs text-gray-400 hover:text-red-500 px-2 py-0 h-auto"
-                onClick={() =>
-                  openReportModal({
-                    type: "reply",
-                    postId: post.id,
-                    replyId: reply.id,
-                    communityId: post.communityId,
-                    originalContent: reply.content,
-                  })
-                }
-              >
-                Report
-              </Button>
+              <div className="flex gap-2 items-center">
+                {isModerator &&
+                  (reply.isLocked ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        // Unlock reply
+                        setPost((prev) => {
+                          if (!prev) return prev;
+                          const unlockReply = (replies: Reply[]): Reply[] =>
+                            replies.map((r) =>
+                              r.id === reply.id
+                                ? {
+                                    ...r,
+                                    isLocked: false,
+                                    lockReason: undefined,
+                                  }
+                                : {
+                                    ...r,
+                                    replies: unlockReply(r.replies),
+                                  }
+                            );
+                          return {
+                            ...prev,
+                            replies: unlockReply(prev.replies),
+                          };
+                        });
+                      }}
+                      className="text-xs border-green-400 text-green-500 hover:bg-green-50"
+                    >
+                      <Unlock className="h-3 w-3 mr-1" />
+                      Unlock Reply
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        // Lock reply
+                        setPost((prev) => {
+                          if (!prev) return prev;
+                          const lockReply = (replies: Reply[]): Reply[] =>
+                            replies.map((r) =>
+                              r.id === reply.id
+                                ? {
+                                    ...r,
+                                    isLocked: true,
+                                    lockReason: "Locked by moderator",
+                                  }
+                                : {
+                                    ...r,
+                                    replies: lockReply(r.replies),
+                                  }
+                            );
+                          return {
+                            ...prev,
+                            replies: lockReply(prev.replies),
+                          };
+                        });
+                      }}
+                      className="text-xs border-red-400 text-red-500 hover:bg-red-50"
+                    >
+                      <Lock className="h-3 w-3 mr-1" />
+                      Lock Reply
+                    </Button>
+                  ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-gray-400 hover:text-red-500 px-2 py-0 h-auto"
+                  onClick={() =>
+                    openReportModal({
+                      type: "reply",
+                      postId: post.id,
+                      replyId: reply.id,
+                      communityId: post.communityId,
+                      originalContent: reply.content,
+                    })
+                  }
+                >
+                  Report
+                </Button>
+              </div>
             </div>
             <p className="text-gray-700 mb-4 text-[1.08rem] leading-relaxed">
-              {reply.content}
+              {reply.isLocked ? (
+                <span className="italic text-gray-400">
+                  [This reply has been locked and its content is redacted]
+                </span>
+              ) : (
+                reply.content
+              )}
             </p>
+            {reply.isLocked && reply.lockReason && (
+              <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-xs text-red-700">
+                  <Lock className="h-3 w-3 inline mr-1" />
+                  <strong>Reply Locked:</strong> {reply.lockReason}
+                </p>
+              </div>
+            )}
             <div className="flex items-center gap-4 mb-2">
               <Button
                 variant="ghost"
@@ -268,7 +354,8 @@ const PostDetailPage = () => {
                 />
                 {reply.likes}
               </Button>
-              {!post.commentsLocked && (
+              {/* Only show Reply button if reply is not locked and post comments are not locked */}
+              {!reply.isLocked && !post.commentsLocked && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -283,37 +370,39 @@ const PostDetailPage = () => {
               )}
             </div>
             {/* Reply form for this specific reply */}
-            {replyToId === reply.id && !post.commentsLocked && (
-              <div className="mt-4 flex gap-3">
-                <Avatar className="h-8 w-8 bg-social-primary text-white">
-                  <div className="flex h-full w-full items-center justify-center">
-                    <User className="h-4 w-4" />
+            {replyToId === reply.id &&
+              !post.commentsLocked &&
+              !reply.isLocked && (
+                <div className="mt-4 flex gap-3">
+                  <Avatar className="h-8 w-8 bg-social-primary text-white">
+                    <div className="flex h-full w-full items-center justify-center">
+                      <User className="h-4 w-4" />
+                    </div>
+                  </Avatar>
+                  <div className="flex-1 flex gap-3">
+                    <Textarea
+                      placeholder={`Reply to ${reply.author}...`}
+                      value={replyContent[reply.id] || ""}
+                      onChange={(e) =>
+                        setReplyContent((prev) => ({
+                          ...prev,
+                          [reply.id]: e.target.value,
+                        }))
+                      }
+                      className="flex-1"
+                      rows={2}
+                    />
+                    <Button
+                      onClick={() => handleSubmitReply(reply.id)}
+                      disabled={!replyContent[reply.id]?.trim()}
+                      size="sm"
+                      className="self-end"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
                   </div>
-                </Avatar>
-                <div className="flex-1 flex gap-3">
-                  <Textarea
-                    placeholder={`Reply to ${reply.author}...`}
-                    value={replyContent[reply.id] || ""}
-                    onChange={(e) =>
-                      setReplyContent((prev) => ({
-                        ...prev,
-                        [reply.id]: e.target.value,
-                      }))
-                    }
-                    className="flex-1"
-                    rows={2}
-                  />
-                  <Button
-                    onClick={() => handleSubmitReply(reply.id)}
-                    disabled={!replyContent[reply.id]?.trim()}
-                    size="sm"
-                    className="self-end"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         </div>
       </CardContent>
@@ -405,21 +494,77 @@ const PostDetailPage = () => {
                   </p>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs text-gray-400 hover:text-red-500"
-                onClick={() =>
-                  openReportModal({
-                    type: "post",
-                    postId: post.id,
-                    communityId: post.communityId,
-                    originalContent: post.content,
-                  })
-                }
-              >
-                Report
-              </Button>
+              <div className="flex gap-2 items-center">
+                {isModerator && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setPost(
+                        (prev) => prev && { ...prev, isPinned: !prev.isPinned }
+                      )
+                    }
+                    className="text-xs"
+                  >
+                    <Pin className="h-3 w-3 mr-1" />
+                    {post.isPinned ? "Unpin" : "Pin"}
+                  </Button>
+                )}
+                {isModerator && post.isLocked ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setPost(
+                        (prev) =>
+                          prev && {
+                            ...prev,
+                            isLocked: false,
+                            lockReason: undefined,
+                          }
+                      )
+                    }
+                    className="text-xs border-green-400 text-green-500 hover:bg-green-50"
+                  >
+                    <Unlock className="h-3 w-3 mr-1" />
+                    Unlock Post
+                  </Button>
+                ) : isModerator ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setPost(
+                        (prev) =>
+                          prev && {
+                            ...prev,
+                            isLocked: true,
+                            lockReason: "Locked by moderator",
+                          }
+                      )
+                    }
+                    className="text-xs border-red-400 text-red-500 hover:bg-red-50"
+                  >
+                    <Lock className="h-3 w-3 mr-1" />
+                    Lock Post
+                  </Button>
+                ) : null}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-gray-400 hover:text-red-500"
+                  onClick={() =>
+                    openReportModal({
+                      type: "post",
+                      postId: post.id,
+                      communityId: post.communityId,
+                      originalContent: post.content,
+                    })
+                  }
+                >
+                  Report
+                </Button>
+              </div>
             </div>
           </CardHeader>
 
@@ -480,7 +625,7 @@ const PostDetailPage = () => {
           ))}
 
           {/* Main Reply Form */}
-          {!post.commentsLocked && (
+          {!post.isLocked && !post.commentsLocked && (
             <Card className="ml-4">
               <CardContent className="pt-4">
                 <div className="flex gap-3">
