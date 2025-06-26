@@ -29,7 +29,7 @@ interface TrendingCommunityUI {
   category: string;
 }
 
-const DiscoverPage = () => {
+const HotTopicsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [trendingPosts, setTrendingPosts] = useState<TrendingPostUI[]>([]);
   const [trendingCommunities, setTrendingCommunities] = useState<
@@ -223,4 +223,4 @@ const DiscoverPage = () => {
   );
 };
 
-export default DiscoverPage;
+export default HotTopicsPage;

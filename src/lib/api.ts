@@ -33,7 +33,7 @@ const mockPosts: Post[] = [
     content:
       "I've been exploring the city and found some amazing spots for photography. Here are my top recommendations.",
     author: "PhotographyPro",
-    communityId: "photography",
+    communityId: "photography-enthusiasts",
     communityName: "Photography Enthusiasts",
     createdAt: new Date(2024, 5, 21),
     likes: 67,
@@ -47,7 +47,7 @@ const mockPosts: Post[] = [
     content:
       "Looking for recommendations on the best camera gear for beginners. Any suggestions?",
     author: "NewPhotographer",
-    communityId: "photography",
+    communityId: "photography-enthusiasts",
     communityName: "Photography Enthusiasts",
     createdAt: new Date(2024, 5, 20),
     likes: 23,
@@ -100,7 +100,7 @@ const mockCommunities: Community[] = [
     moderators: ["user-1"],
   },
   {
-    id: "photography",
+    id: "photography-enthusiasts",
     name: "Photography Enthusiasts",
     description:
       "Share your photography tips, gear reviews, and stunning shots",
@@ -573,7 +573,7 @@ const mockPostDetails: Record<string, PostDetailData> = {
         ],
       },
     ],
-    communityId: "photography",
+    communityId: "photography-enthusiasts",
     communityName: "Photography Enthusiasts",
   },
   "post-3": {
@@ -620,7 +620,7 @@ const mockPostDetails: Record<string, PostDetailData> = {
         replies: [],
       },
     ],
-    communityId: "photography",
+    communityId: "photography-enthusiasts",
     communityName: "Photography Enthusiasts",
   },
   "post-4": {
@@ -728,7 +728,7 @@ const mockAnalyticsCommunities = [
     comments: 3200,
   },
   {
-    id: "photography",
+    id: "photography-enthusiasts",
     name: "Photography Enthusiasts",
     members: 1500,
     posts: 543,
@@ -840,7 +840,7 @@ const mockAdminCommunities = [
     requestedAt: new Date(2024, 2, 10),
   },
   {
-    id: "photography",
+    id: "photography-enthusiasts",
     name: "Photography Enthusiasts",
     description:
       "Share your photography tips, gear reviews, and stunning shots",
@@ -1388,7 +1388,7 @@ const mockCommunityDetails = {
     status: "active",
   },
   photography: {
-    id: "photography",
+    id: "photography-enthusiasts",
     name: "Photography Enthusiasts",
     description:
       "Share your photography tips, gear reviews, and stunning shots",
@@ -1487,7 +1487,7 @@ const mockCommunityPosts = {
       isLocked: false,
       commentsLocked: false,
       tags: ["photography", "city", "locations"],
-      communityId: "photography",
+      communityId: "photography-enthusiasts",
       communityName: "Photography Enthusiasts",
       lockReason: undefined,
       commentsLockReason: undefined,
@@ -1509,7 +1509,7 @@ const mockCommunityPosts = {
       isLocked: false,
       commentsLocked: false,
       tags: ["photography", "city", "locations"],
-      communityId: "1",
+      communityId: "photography-enthusiasts",
       communityName: "Photography Enthusiasts",
       lockReason: undefined,
       commentsLockReason: undefined,
@@ -1529,7 +1529,7 @@ const mockCommunityPosts = {
       isLocked: false,
       commentsLocked: false,
       tags: ["camera", "gear", "beginner"],
-      communityId: "1",
+      communityId: "photography-enthusiasts",
       communityName: "Photography Enthusiasts",
       lockReason: undefined,
       commentsLockReason: undefined,

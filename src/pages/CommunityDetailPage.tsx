@@ -191,7 +191,7 @@ const CommunityDetailPage = () => {
             </BreadcrumbSeparator>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/discover">Discover</Link>
+                <Link to="/communities">Communities</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>

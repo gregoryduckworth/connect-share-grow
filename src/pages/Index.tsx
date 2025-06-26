@@ -55,7 +55,7 @@ const CommunitiesPage = () => {
   // Mock data - in a real app, this would come from an API
   const [allCommunities, setAllCommunities] = useState<Community[]>([
     {
-      id: "1",
+      id: "photography",
       name: "Photography Enthusiasts",
       description:
         "A place for photographers to share their work and discuss techniques",
@@ -65,7 +65,7 @@ const CommunitiesPage = () => {
       isModerator: true,
     },
     {
-      id: "2",
+      id: "tech-innovators",
       name: "Tech Innovators",
       description: "Discussing the latest in technology and innovation",
       memberCount: 890,
@@ -74,7 +74,7 @@ const CommunitiesPage = () => {
       isModerator: false,
     },
     {
-      id: "3",
+      id: "cooking-adventures",
       name: "Cooking Adventures",
       description: "Share recipes, cooking tips, and culinary experiences",
       memberCount: 2100,
@@ -83,7 +83,7 @@ const CommunitiesPage = () => {
       isModerator: false,
     },
     {
-      id: "4",
+      id: "travel-stories",
       name: "Travel Stories",
       description: "Share your travel experiences and get recommendations",
       memberCount: 756,
@@ -92,7 +92,7 @@ const CommunitiesPage = () => {
       isModerator: false,
     },
     {
-      id: "5",
+      id: "fitness-health",
       name: "Fitness & Health",
       description: "Tips, motivation, and discussions about fitness and health",
       memberCount: 1543,
@@ -101,7 +101,7 @@ const CommunitiesPage = () => {
       isModerator: false,
     },
     {
-      id: "6",
+      id: "book-club",
       name: "Book Club",
       description: "Monthly book discussions and reading recommendations",
       memberCount: 432,
@@ -110,7 +110,7 @@ const CommunitiesPage = () => {
       isModerator: false,
     },
     {
-      id: "7",
+      id: "gaming-hub",
       name: "Gaming Hub",
       description: "Discuss games, share gameplay, and find gaming partners",
       memberCount: 2890,
@@ -119,7 +119,7 @@ const CommunitiesPage = () => {
       isModerator: false,
     },
     {
-      id: "8",
+      id: "art-design",
       name: "Art & Design",
       description: "Showcase artwork and discuss design principles",
       memberCount: 1120,
