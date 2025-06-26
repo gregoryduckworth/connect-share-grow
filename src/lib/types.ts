@@ -49,6 +49,7 @@ export interface Reply {
   postId: string;
   createdAt: Date;
   likes: number;
+  parentReplyId?: string | null;
 }
 
 export interface Notification {
