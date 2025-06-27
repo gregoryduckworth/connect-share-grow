@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -36,7 +37,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
-import { api } from "@/lib/api";
+import { api, getMockFlaggedReports } from "@/lib/api";
 import type { Report } from "@/lib/types";
 import UserProfileLink from "@/components/user/UserProfileLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -136,7 +137,7 @@ const ModeratePage = () => {
   useEffect(() => {
     const loadFlaggedReports = async () => {
       try {
-        const reports = await api.getMockFlaggedReports();
+        const reports = await getMockFlaggedReports();
         setFlaggedReports(reports);
       } catch (error) {
         console.error("Failed to load flagged reports:", error);
