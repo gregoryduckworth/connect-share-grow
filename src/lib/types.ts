@@ -91,9 +91,11 @@ export interface AdminNotification {
 
 export interface Report {
   id: string;
-  type: "post" | "reply" | "user";
+  contentType: "post" | "reply" | "user";
+  contentId: string;
+  contentPreview: string;
   reportedBy: string;
-  reportedAt: Date;
+  createdAt: Date;
   reason: string;
   status: "pending" | "reviewed" | "resolved";
   content: string;
@@ -101,7 +103,8 @@ export interface Report {
   replyId?: string;
   userId?: string;
   communityId?: string;
-  originalContent?: string;
+  originalContent?: string | Record<string, unknown>;
+  originalLink?: string;
 }
 
 export interface Connection {

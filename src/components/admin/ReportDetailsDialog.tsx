@@ -41,6 +41,7 @@ interface Report {
     author?: string;
     fullText: string;
   };
+  originalLink?: string;
 }
 
 interface ReportDetailsDialogProps {
@@ -61,7 +62,7 @@ const ReportDetailsDialog = ({
   const { toast } = useToast();
   const [warnReason, setWarnReason] = useState("");
   const [suspendReason, setSuspendReason] = useState("");
-  const [currentAdmin] = useState("admin@example.com"); // Mock current admin
+  const [currentAdmin] = useState("admin@example.com");
 
   if (!report) return null;
 
@@ -256,6 +257,21 @@ const ReportDetailsDialog = ({
                   {report.contentId}
                 </span>
               </div>
+              {report.originalLink && report.contentType !== "user" && (
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-sm text-gray-600">
+                    Original Content
+                  </span>
+                  <a
+                    href={report.originalLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-social-primary hover:underline"
+                  >
+                    View Original
+                  </a>
+                </div>
+              )}
               <div>
                 <h4 className="font-semibold text-sm text-gray-700 mb-1 mt-2">
                   Report Summary

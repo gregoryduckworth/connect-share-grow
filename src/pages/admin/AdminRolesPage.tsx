@@ -49,6 +49,13 @@ const AdminRolesPage = () => {
             ) : (
               <User className="h-5 w-5" />
             ),
+          users: role.users.map((user) => ({
+            ...user,
+            joinDate:
+              user.joinDate instanceof Date
+                ? user.joinDate
+                : new Date(user.joinDate),
+          })),
         }))
       );
     });

@@ -4,10 +4,7 @@ import type {
   User,
   Reply,
   Notification,
-  AdminNotification,
   Report,
-  Connection,
-  ChatMessage,
   PostDetailData,
   PostDetailReply,
   CommunityDetail,
@@ -298,25 +295,141 @@ const NOTIFICATIONS_TABLE: Notification[] = [
 ];
 
 const REPORTS_TABLE: Report[] = [
+  // Post report
   {
     id: "rep1a2b3-c4d5-e6f7-g890-123456789abc",
-    type: "post",
+    contentType: "post",
+    contentId: "p1a2b3c4-d5e6-f789-0123-456789abcdef",
+    contentPreview:
+      "This post contains inappropriate language and violates community guidelines.",
     reportedBy: "c3d4e5f6-g7h8-9012-3456-789012cdefgh",
-    reportedAt: new Date("2024-01-24T10:30:00Z"),
+    createdAt: new Date("2024-01-24T10:30:00Z"),
     reason: "Inappropriate content",
     status: "pending",
     content:
       "This post contains inappropriate language and violates community guidelines.",
     postId: "p1a2b3c4-d5e6-f789-0123-456789abcdef",
     communityId: "photography-enthusiasts",
+    originalContent: {
+      title: "Best Camera Settings for Golden Hour Photography",
+      community: "Photography Enthusiasts",
+      author: "Alex Johnson",
+      fullText:
+        "Golden hour provides the most beautiful natural lighting for photography...",
+    },
+  },
+  // Reply report
+  {
+    id: "rep2b3c4-d5e6-f789-0123-456789abcdef",
+    contentType: "reply",
+    contentId: "r1a2b3c4-d5e6-f789-0123-456789abcdef",
+    contentPreview: "This reply is spam and not relevant to the discussion.",
+    reportedBy: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    createdAt: new Date("2024-01-25T11:00:00Z"),
+    reason: "Spam reply",
+    status: "reviewed",
+    content: "This reply is spam and not relevant to the discussion.",
+    postId: "p1a2b3c4-d5e6-f789-0123-456789abcdef",
+    replyId: "r1a2b3c4-d5e6-f789-0123-456789abcdef",
+    communityId: "photography-enthusiasts",
+    originalContent: {
+      parentPost: "Best Camera Settings for Golden Hour Photography",
+      author: "David Kim",
+      fullText:
+        "Great tips! I've been struggling with golden hour shots. The wide aperture suggestion really helped my portraits pop.",
+    },
+  },
+  // User report
+  {
+    id: "rep3c4d5-e6f7-g890-1234-567890bcdefg",
+    contentType: "user",
+    contentId: "e5f6g7h8-i9j0-1234-5678-901234efghij",
+    contentPreview:
+      "User has been sending harassing messages to other members.",
+    reportedBy: "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
+    createdAt: new Date("2024-01-26T09:15:00Z"),
+    reason: "Harassment",
+    status: "resolved",
+    content: "User has been sending harassing messages to other members.",
+    userId: "e5f6g7h8-i9j0-1234-5678-901234efghij",
+    communityId: "photography-enthusiasts",
+    originalContent: {
+      name: "David Kim",
+      email: "david.kim@example.com",
+      role: "user",
+      bio: "Travel blogger and photographer",
+      fullText: "Direct message content here.",
+    },
+  },
+  // Reply report with details
+  {
+    id: "rep4d5e6-f7g8-h901-2345-678901cdefgh",
+    contentType: "reply",
+    contentId: "r1a2b3c4-d5e6-f789-0123-456789abcdef",
+    contentPreview:
+      "This reply contains offensive language directed at another user.",
+    reportedBy: "d4e5f6g7-h8i9-0123-4567-890123defghi",
+    createdAt: new Date("2024-01-27T13:45:00Z"),
+    reason: "Offensive language",
+    status: "pending",
+    content: "This reply contains offensive language directed at another user.",
+    postId: "p1a2b3c4-d5e6-f789-0123-456789abcdef",
+    replyId: "r1a2b3c4-d5e6-f789-0123-456789abcdef",
+    communityId: "photography-enthusiasts",
+    originalContent: {
+      parentPost: "Best Camera Settings for Golden Hour Photography",
+      author: "David Kim",
+      fullText: "You're clueless if you think that's the best setting.",
+    },
+  },
+  // User report with details
+  {
+    id: "rep5e6f7-g8h9-i012-3456-789012defghi",
+    contentType: "user",
+    contentId: "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
+    contentPreview: "This user is impersonating another community member.",
+    reportedBy: "e5f6g7h8-i9j0-1234-5678-901234efghij",
+    createdAt: new Date("2024-01-27T14:10:00Z"),
+    reason: "Impersonation",
+    status: "pending",
+    content: "This user is impersonating another community member.",
+    userId: "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
+    communityId: "tech-discussions",
+    originalContent: {
+      name: "Sarah Chen",
+      email: "sarah.chen@example.com",
+      role: "moderator",
+      bio: "Tech enthusiast and community moderator",
+      fullText: "Impersonation details here.",
+    },
   },
 ];
 
 // Helper function to get user name by ID
 const getUserNameById = (userId: string): string => {
   const user = USERS_TABLE.find((u) => u.id === userId);
-  return user ? user.name : "Unknown User";
+  return user ? user.name : userId;
 };
+
+// Patch report mocks to use names for reportedBy and add original links
+REPORTS_TABLE.forEach((report) => {
+  if (report.reportedBy && report.reportedBy.length > 20) {
+    report.reportedBy = getUserNameById(report.reportedBy);
+  }
+  // Add a link to the original content
+  if (report.contentType === "post" && report.postId && report.communityId) {
+    report.originalLink = `/community/${report.communityId}/post/${report.postId}`;
+  } else if (
+    report.contentType === "reply" &&
+    report.postId &&
+    report.replyId &&
+    report.communityId
+  ) {
+    report.originalLink = `/community/${report.communityId}/post/${report.postId}#reply-${report.replyId}`;
+  } else if (report.contentType === "user" && report.userId) {
+    report.originalLink = `/user/${report.userId}`;
+  }
+});
 
 // Helper function to get community name by slug
 const getCommunityNameBySlug = (slug: string): string => {

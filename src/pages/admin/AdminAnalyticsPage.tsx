@@ -205,28 +205,28 @@ const AdminAnalyticsPage = () => {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <AdminMetricsCard
               title="Total Users"
-              value={platformStats.totalUsers.toLocaleString()}
+              value={platformStats?.totalUsers?.toLocaleString?.() ?? "-"}
               description="Registered platform users"
               icon={<Users className="h-4 w-4" />}
               trend={{ value: "+12% from last month", isPositive: true }}
             />
             <AdminMetricsCard
               title="Total Communities"
-              value={platformStats.totalCommunities}
+              value={platformStats?.totalCommunities?.toLocaleString?.() ?? "-"}
               description="Active communities"
               icon={<Users className="h-4 w-4" />}
               trend={{ value: "+2 this month", isPositive: true }}
             />
             <AdminMetricsCard
               title="Total Posts"
-              value={platformStats.totalPosts.toLocaleString()}
+              value={platformStats?.totalPosts?.toLocaleString?.() ?? "-"}
               description="Posts across all communities"
               icon={<MessageSquare className="h-4 w-4" />}
               trend={{ value: "+18% from last month", isPositive: true }}
             />
             <AdminMetricsCard
               title="Active Users"
-              value={platformStats.activeUsers.toLocaleString()}
+              value={platformStats?.activeUsers?.toLocaleString?.() ?? "-"}
               description="Users active in last 30 days"
               icon={<TrendingUp className="h-4 w-4" />}
               trend={{ value: "66% of total users", isPositive: true }}
@@ -248,12 +248,25 @@ const AdminAnalyticsPage = () => {
                     labelLine={false}
                     label={({ name, value }) => `${name}: ${value}`}
                     outerRadius={80}
-                    fill="#8884d8"
                     dataKey="value"
                   >
-                    {sizeDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
+                    {(sizeDistribution || []).map((entry, index) => {
+                      const COLORS = [
+                        "#8884d8",
+                        "#82ca9d",
+                        "#ffc658",
+                        "#ff8042",
+                        "#8dd1e1",
+                        "#a4de6c",
+                        "#d0ed57",
+                        "#d8854f",
+                        "#b47ddb",
+                        "#f47fa1",
+                      ];
+                      const color =
+                        entry.color || COLORS[index % COLORS.length];
+                      return <Cell key={`cell-${index}`} fill={color} />;
+                    })}
                   </Pie>
                   <Tooltip />
                 </PieChart>
