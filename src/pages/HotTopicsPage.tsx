@@ -14,7 +14,7 @@ interface TrendingPostUI {
   title: string;
   author: string;
   community: string;
-  communityId: string;
+  communitySlug: string;
   likes: number;
   replies: number;
   createdAt: Date;
@@ -39,8 +39,8 @@ const HotTopicsPage = () => {
   useEffect(() => {
     Promise.all([api.getHotPosts(), api.getCommunities()]).then(
       ([posts, communities]) => {
-        // Build a set of valid community IDs
-        const validCommunityIds = new Set(communities.map((c) => c.slug));
+        // Build a set of valid community slugs
+        const validCommunitySlugSet = new Set(communities.map((c) => c.slug));
         setTrendingCommunities(
           communities.map((c) => ({
             id: c.slug,
@@ -53,13 +53,13 @@ const HotTopicsPage = () => {
         );
         setTrendingPosts(
           posts
-            .filter((p) => validCommunityIds.has(p.communityId))
+            .filter((p) => validCommunitySlugSet.has(p.communityId))
             .map((p) => ({
               id: p.id,
               title: p.title,
               author: p.author,
               community: p.communityName,
-              communityId: p.communityId,
+              communitySlug: p.communityId,
               likes: p.likes,
               replies: p.replies,
               createdAt: p.createdAt,
@@ -134,7 +134,7 @@ const HotTopicsPage = () => {
                 key={post.id}
                 title={
                   <Link
-                    to={`/community/${post.communityId}/post/${post.id}`}
+                    to={`/community/${post.communitySlug}/post/${post.id}`}
                     className="hover:text-primary transition-colors"
                   >
                     {post.title}
@@ -171,7 +171,7 @@ const HotTopicsPage = () => {
                 }
                 actions={
                   <Link
-                    to={`/community/${post.communityId}/post/${post.id}`}
+                    to={`/community/${post.communitySlug}/post/${post.id}`}
                     className="flex-1"
                   >
                     <Button

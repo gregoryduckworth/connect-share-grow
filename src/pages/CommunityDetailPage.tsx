@@ -1,461 +1,230 @@
+
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { ArrowLeft, Users, Calendar, Tag, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Users,
-  MessageSquare,
-  Plus,
-  Settings,
-  ChevronRight,
-  Home,
-} from "lucide-react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import CommunityPost from "@/components/community/CommunityPost";
+import CreatePostForm from "@/components/community/CreatePostForm";
 import { useToast } from "@/components/ui/use-toast";
-import UserProfileDialog from "@/components/user/UserProfileDialog";
-import { api, mockPendingModeratorRoleChanges } from "@/lib/api";
-import type {
-  CommunityDetail,
-  CommunityPost as CommunityPostType,
-  Report,
-} from "@/lib/types";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationPrevious,
-  PaginationNext,
-} from "@/components/ui/pagination";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useEffect, useState } from "react";
-
-// Define the type for pending moderator role changes
-interface PendingModeratorRoleChange {
-  id: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    joinDate: Date;
-    role: string;
-    status: string;
-    communities: string[];
-  };
-  requestedBy: string;
-  requestedAt: Date;
-  newRole: string;
-  communityName: string;
-  status: string;
-}
-
-// Define the type for pending admin role changes
-interface PendingAdminRoleChange {
-  id: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    joinDate: Date;
-    role: string;
-    status: string;
-    communities: string[];
-  };
-  requestedBy: string;
-  requestedAt: Date;
-  newRole: string;
-}
+import { api } from "@/lib/api";
+import type { CommunityDetail, CommunityPost as CommunityPostType } from "@/lib/types";
 
 const CommunityDetailPage = () => {
-  const { communityId } = useParams();
+  const { communitySlug } = useParams<{ communitySlug: string }>();
   const { toast } = useToast();
-  const [showCreatePost, setShowCreatePost] = useState(false);
-  const [showModPanel, setShowModPanel] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [community, setCommunity] = useState<CommunityDetail | null>(null);
   const [posts, setPosts] = useState<CommunityPostType[]>([]);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [search, setSearch] = useState("");
-  const [modActionCount, setModActionCount] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (communityId) {
-      api.getCommunityDetail(communityId).then(setCommunity);
-      api.getCommunityPosts(communityId).then(setPosts);
-    }
-  }, [communityId]);
+    const fetchCommunityData = async () => {
+      if (!communitySlug) return;
+      
+      try {
+        setLoading(true);
+        const [communityData, communityPosts] = await Promise.all([
+          api.getCommunityDetail(communitySlug),
+          api.getCommunityPosts(communitySlug)
+        ]);
+        
+        setCommunity(communityData);
+        setPosts(communityPosts);
+      } catch (error) {
+        console.error("Error fetching community data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load community data",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  useEffect(() => {
-    if (communityId && community?.isModerator) {
-      Promise.all([
-        api.getReports(),
-        Promise.resolve(mockPendingModeratorRoleChanges),
-      ]).then(
-        ([reports, roleChanges]: [Report[], PendingModeratorRoleChange[]]) => {
-          const reportCount = reports.filter(
-            (r) => r.communityId === communityId && r.status === "pending"
-          ).length;
-          // Only count moderator role changes for this community
-          const roleChangeCount = roleChanges.filter(
-            (rc) =>
-              rc.status === "pending" &&
-              rc.communityName &&
-              rc.communityName.toLowerCase().replace(/\s+/g, "") ===
-                (community.name || "").toLowerCase().replace(/\s+/g, "")
-          ).length;
-          setModActionCount(reportCount + roleChangeCount);
-        }
-      );
-    }
-  }, [communityId, community?.isModerator, community?.name]);
+    fetchCommunityData();
+  }, [communitySlug, toast]);
 
-  const handleLikePost = (postId: string) => {
-    setPosts(
-      posts.map((post) =>
+  const handlePostCreated = () => {
+    // Refresh posts after creating a new one
+    if (communitySlug) {
+      api.getCommunityPosts(communitySlug).then(setPosts);
+    }
+  };
+
+  const handleLike = (postId: string) => {
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
         post.id === postId
           ? {
               ...post,
               isLiked: !post.isLiked,
-              likes: post.isLiked ? post.likes - 1 : post.likes + 1,
+              likes: post.isLiked ? post.likes - 1 : post.likes + 1
             }
           : post
       )
     );
   };
 
-  const handleCommentPost = (postId: string) => {
-    // Navigate to post detail page
-    window.location.href = `/community/${communityId}/post/${postId}`;
+  const handleComment = (postId: string) => {
+    // Navigate to post detail page for commenting
+    console.log("Navigate to post detail:", postId);
   };
 
-  const handlePinPost = (postId: string) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId ? { ...post, isPinned: !post.isPinned } : post
-      )
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6 bg-background min-h-screen">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-muted rounded w-1/3"></div>
+          <div className="h-4 bg-muted rounded w-2/3"></div>
+          <div className="h-32 bg-muted rounded"></div>
+        </div>
+      </div>
     );
-  };
+  }
 
-  // Filtered and paginated posts
-  const filteredPosts = posts.filter(
-    (post) =>
-      post.title.toLowerCase().includes(search.toLowerCase()) ||
-      post.content.toLowerCase().includes(search.toLowerCase()) ||
-      post.author.toLowerCase().includes(search.toLowerCase())
-  );
-  const sortedPosts = filteredPosts.slice().sort((a, b) => {
-    if (a.isPinned === b.isPinned) return 0;
-    return a.isPinned ? -1 : 1;
-  });
-  const totalPages = Math.ceil(sortedPosts.length / pageSize);
-  const paginatedPosts = sortedPosts.slice(
-    (page - 1) * pageSize,
-    page * pageSize
-  );
-
-  if (!community) return null;
+  if (!community) {
+    return (
+      <div className="p-6 space-y-6 bg-background min-h-screen">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold text-muted-foreground mb-4">
+            Community Not Found
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            The community you're looking for doesn't exist or has been removed.
+          </p>
+          <Link to="/communities">
+            <Button>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Communities
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
-      {/* Breadcrumbs */}
-      <div className="mb-6">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/" className="flex items-center gap-1">
-                  <Home className="h-4 w-4" />
-                  Home
-                </Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>
-              <ChevronRight className="h-4 w-4" />
-            </BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/communities">Communities</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>
-              <ChevronRight className="h-4 w-4" />
-            </BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbPage>{community.name}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-6">
+        <Link to="/communities">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-3">
-          {/* Community Header */}
-          <div className="mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
-              <div>
-                <h1 className="text-3xl font-bold text-social-primary mb-2">
-                  {community.name}
-                </h1>
-                <p className="text-social-muted mb-4">
-                  {community.description}
-                </p>
-
-                <div className="flex items-center gap-4 text-sm text-social-muted">
-                  <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    <span>
-                      {community.memberCount.toLocaleString()} members
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <MessageSquare className="h-4 w-4" />
-                    <span>{community.postCount} posts</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {community.isMember && (
-                  <Button onClick={() => setShowCreatePost(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Post
-                  </Button>
-                )}
-
-                {community.isModerator && (
-                  <div className="relative">
-                    <Button variant="outline" asChild>
-                      <Link to={`/community/${communityId}/moderate`}>
-                        <Settings className="h-4 w-4 mr-2" />
-                        Moderate
-                      </Link>
-                    </Button>
-                    {modActionCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 shadow-md border border-white">
-                        {modActionCount}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
+      {/* Community Info */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div className="space-y-2">
+              <CardTitle className="text-2xl text-social-primary">
+                {community.name}
+              </CardTitle>
+              <CardDescription className="text-base">
+                {community.description}
+              </CardDescription>
             </div>
-
-            <div className="flex flex-wrap gap-2">
-              {community.tags.map((tag, index) => (
-                <Badge key={index} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
+            {community.isModerator && (
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Moderate
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
+            <div className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              {community.memberCount.toLocaleString()} members
+            </div>
+            <div className="flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              {community.postCount} posts
             </div>
           </div>
-
-          {/* Search Bar */}
-          <div className="mb-6">
-            <div className="relative w-full">
-              <Card className="w-full p-0 border border-input bg-background shadow-none">
-                <div className="flex items-center gap-2 relative z-10 p-1 rounded-lg bg-white/90 border border-purple-200 w-full focus-within:border-purple-500 focus-within:shadow-lg focus-within:shadow-purple-200/40 transition-colors">
-                  <Search className="ml-3 text-social-primary h-5 w-5" />
-                  <Input
-                    type="text"
-                    placeholder="Search posts..."
-                    value={search}
-                    onChange={(e) => {
-                      setSearch(e.target.value);
-                      setPage(1);
-                    }}
-                    className="pl-2 py-3 border-0 bg-transparent focus:ring-0 focus:outline-none shadow-none min-w-0 flex-1"
-                    style={{ boxShadow: "none" }}
-                  />
-                </div>
-              </Card>
-            </div>
-          </div>
-
-          {/* Posts */}
-          <div className="space-y-4">
-            {paginatedPosts.map((post) => (
-              <div key={post.id}>
-                <Link
-                  to={`/community/${communityId}/post/${post.id}`}
-                  tabIndex={-1}
-                  className="block focus:outline-none"
-                  style={{ textDecoration: "none" }}
-                >
-                  <CommunityPost
-                    post={post}
-                    onLike={handleLikePost}
-                    onComment={handleCommentPost}
-                    onPin={handlePinPost}
-                    isModerator={community.isModerator}
-                    showPreview={true}
-                    onShowUserProfile={(userId) => setSelectedUserId(userId)}
-                  />
-                </Link>
-              </div>
+          
+          <div className="flex flex-wrap gap-2 mb-4">
+            {community.tags.map((tag, index) => (
+              <Badge key={index} variant="secondary">
+                <Tag className="h-3 w-3 mr-1" />
+                {tag}
+              </Badge>
             ))}
           </div>
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 mt-6">
-              <div className="flex-1 flex justify-center">
-                <Pagination>
-                  <PaginationContent className="flex flex-wrap gap-1 justify-center">
-                    <PaginationItem>
-                      <PaginationPrevious
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        className={
-                          page === 1
-                            ? "pointer-events-none opacity-50"
-                            : "cursor-pointer"
-                        }
-                        aria-label="Previous page"
-                      />
-                    </PaginationItem>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (pg) => (
-                        <PaginationItem key={pg}>
-                          <PaginationLink
-                            onClick={() => setPage(pg)}
-                            isActive={page === pg}
-                            className={`cursor-pointer ${
-                              page === pg
-                                ? "bg-accent text-primary font-bold"
-                                : ""
-                            }`}
-                            aria-label={`Go to page ${pg}`}
-                          >
-                            {pg}
-                          </PaginationLink>
-                        </PaginationItem>
-                      )
-                    )}
-                    <PaginationItem>
-                      <PaginationNext
-                        onClick={() =>
-                          setPage((p) => Math.min(totalPages, p + 1))
-                        }
-                        className={
-                          page === totalPages
-                            ? "pointer-events-none opacity-50"
-                            : "cursor-pointer"
-                        }
-                        aria-label="Next page"
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
-              <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                <label htmlFor="perPage" className="text-sm text-social-muted">
-                  Posts per page:
-                </label>
-                <Select
-                  value={String(pageSize)}
-                  onValueChange={(val) => {
-                    setPageSize(Number(val));
-                    setPage(1);
-                  }}
-                >
-                  <SelectTrigger id="perPage" className="w-24">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[5, 10, 15, 20].map((size) => (
-                      <SelectItem key={size} value={String(size)}>
-                        {size}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
-        </div>
 
-        {/* Sidebar */}
-        <div className="lg:col-span-1">
-          <div className="sticky top-8 flex flex-col">
-            {/* Moderators */}
-            <Card className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent mb-6">
-              <CardHeader>
-                <CardTitle>Moderators</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {community.moderators.map((moderator) => (
-                    <div key={moderator.id} className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-social-primary flex items-center justify-center text-white">
-                        <Users className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1">
-                        <button
-                          className="font-medium text-sm hover:text-social-primary transition-colors cursor-pointer"
-                          onClick={() => setSelectedUserId(moderator.id)}
-                        >
-                          {moderator.name}
-                        </button>
-                        <p className="text-xs text-social-muted">
-                          {moderator.role}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          Since {moderator.joinedAsModAt.toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Community Rules */}
-            <Card className="hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent mb-6">
-              <CardHeader>
-                <CardTitle>Community Rules</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ol className="space-y-2 text-sm">
-                  {community.rules.map((rule, index) => (
-                    <li key={index} className="flex">
-                      <span className="font-medium text-social-primary mr-2">
-                        {index + 1}.
-                      </span>
-                      <span className="text-social-muted">{rule}</span>
-                    </li>
-                  ))}
-                </ol>
-              </CardContent>
-            </Card>
+          <div className="flex gap-3">
+            {community.isMember ? (
+              <Button variant="outline">Leave Community</Button>
+            ) : (
+              <Button>Join Community</Button>
+            )}
+            <CreatePostForm 
+              communityId={communitySlug!} 
+              onPostCreated={handlePostCreated}
+            />
           </div>
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      {/* Posts Section */}
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Recent Posts</h2>
         </div>
+
+        {posts.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <p className="text-muted-foreground mb-4">
+                No posts yet in this community.
+              </p>
+              <CreatePostForm 
+                communityId={communitySlug!} 
+                onPostCreated={handlePostCreated}
+              />
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {posts.map((post) => (
+              <CommunityPost
+                key={post.id}
+                post={post}
+                onLike={handleLike}
+                onComment={handleComment}
+                isModerator={community.isModerator}
+                showPreview={true}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* User Profile Dialog */}
-      {selectedUserId && (
-        <UserProfileDialog
-          userId={selectedUserId}
-          isOpen={!!selectedUserId}
-          onClose={() => setSelectedUserId(null)}
-          currentUserId="current-user-id"
-        />
-      )}
+      {/* Community Rules */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Community Rules</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            {community.rules.map((rule, index) => (
+              <li key={index} className="flex items-start gap-2 text-sm">
+                <span className="font-medium text-social-primary">{index + 1}.</span>
+                <span>{rule}</span>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
     </div>
   );
 };
