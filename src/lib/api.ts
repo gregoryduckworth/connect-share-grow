@@ -14,49 +14,61 @@ import {
 
 // Mock data storage
 // --- USERS ---
-const mockUsers: User[] = [
+export const mockUsers: User[] = [
+  {
+    id: "admin-1",
+    email: "admin@example.com",
+    name: "Admin User",
+    role: "admin" as const,
+    isEmailVerified: true,
+    isSuspended: false,
+    language: "en",
+    createdAt: new Date(),
+    isActive: true,
+  },
   {
     id: "user-1",
-    name: "John Doe",
-    email: "john@example.com",
-    role: "user",
-    createdAt: new Date(2024, 4, 15),
-    isActive: true,
-    bio: "Photography enthusiast and community moderator",
-  },
-  {
-    id: "user-2",
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    role: "moderator",
-    createdAt: new Date(2024, 3, 10),
+    email: "user@example.com",
+    name: "Regular User",
+    role: "user" as const,
+    isEmailVerified: true,
+    isSuspended: false,
+    language: "en",
+    createdAt: new Date(),
     isActive: true,
   },
   {
-    id: "user-3",
-    name: "Bob Smith",
-    email: "bob@example.com",
-    role: "admin",
-    createdAt: new Date(2024, 2, 5),
+    id: "user-suspended",
+    email: "suspended@example.com",
+    name: "Suspended User",
+    role: "user" as const,
+    isEmailVerified: true,
+    isSuspended: true,
+    suspensionReason: "Violation of community guidelines",
+    language: "en",
+    createdAt: new Date(),
     isActive: true,
   },
   {
-    id: "user-4",
-    name: "Jane Smith",
-    email: "jane@example.com",
-    role: "user",
-    createdAt: new Date(2024, 2, 10),
-    isActive: true,
-  },
-  {
-    id: "user-5",
-    name: "Carlos Rivera",
-    email: "carlos@example.com",
-    role: "user",
-    createdAt: new Date(2024, 1, 5),
+    id: "user-unverified",
+    email: "unverified@example.com",
+    name: "Unverified User",
+    role: "user" as const,
+    isEmailVerified: false,
+    isSuspended: false,
+    language: "en",
+    createdAt: new Date(),
     isActive: true,
   },
 ];
+
+// Utility functions for user lookup
+export function getUserByEmail(email: string) {
+  return mockUsers.find((u) => u.email === email);
+}
+export function getUserById(id: string) {
+  return mockUsers.find((u) => u.id === id);
+}
 
 // --- COMMUNITIES ---
 const mockCommunities: Community[] = [

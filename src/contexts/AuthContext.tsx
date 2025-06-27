@@ -10,17 +10,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { t } from "@/lib/i18n";
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: "user" | "moderator" | "admin";
-  isEmailVerified: boolean;
-  isSuspended: boolean;
-  suspensionReason?: string;
-  language: string;
-}
+import { mockUsers } from "@/lib/api";
+import { User } from "@/lib/types";
 
 interface AuthContextType {
   user: User | null;
@@ -75,49 +66,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // Mock authentication - replace with Supabase auth
-      const mockUsers = {
-        "admin@example.com": {
-          id: "admin-1",
-          email: "admin@example.com",
-          name: "Admin User",
-          role: "admin" as const,
-          isEmailVerified: true,
-          isSuspended: false,
-          language: "en",
-        },
-        "user@example.com": {
-          id: "user-1",
-          email: "user@example.com",
-          name: "Regular User",
-          role: "user" as const,
-          isEmailVerified: true,
-          isSuspended: false,
-          language: "en",
-        },
-        "suspended@example.com": {
-          id: "user-suspended",
-          email: "suspended@example.com",
-          name: "Suspended User",
-          role: "user" as const,
-          isEmailVerified: true,
-          isSuspended: true,
-          suspensionReason: "Violation of community guidelines",
-          language: "en",
-        },
-        "unverified@example.com": {
-          id: "user-unverified",
-          email: "unverified@example.com",
-          name: "Unverified User",
-          role: "user" as const,
-          isEmailVerified: false,
-          isSuspended: false,
-          language: "en",
-        },
-      };
-
-      const userData = mockUsers[email as keyof typeof mockUsers];
-
+      // Use mockUsers from central api file (now an array)
+      const userData = mockUsers.find((u) => u.email === email);
       if (userData && password === "password123") {
         const user: User = userData;
         setUser(user);

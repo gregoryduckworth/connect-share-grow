@@ -36,6 +36,10 @@ export interface User {
   role: "user" | "moderator" | "admin";
   createdAt: Date;
   isActive: boolean;
+  isEmailVerified: boolean;
+  isSuspended: boolean;
+  suspensionReason?: string;
+  language?: string;
   avatar?: string;
   bio?: string;
   location?: string;
