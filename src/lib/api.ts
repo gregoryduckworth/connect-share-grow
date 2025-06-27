@@ -1,3 +1,4 @@
+
 import {
   Post,
   Community,
@@ -1103,7 +1104,7 @@ export const api = {
     );
   },
 
-  async submitReport(reportData) {
+  async submitReport(reportData: any) {
     const newReport = {
       id: generateUUID(`report-${Date.now()}`),
       ...reportData,
@@ -1122,7 +1123,7 @@ export function getMockFlaggedReports(communityId: string) {
 }
 
 // --- Community Detail Mocks with proper UUIDs ---
-const mockCommunityDetails = {
+const mockCommunityDetails: Record<string, any> = {
   [COMMUNITY_IDS.WEB_DEV]: {
     id: COMMUNITY_IDS.WEB_DEV,
     name: "Web Development",
@@ -1212,7 +1213,7 @@ const mockCommunityDetails = {
   },
 };
 
-const mockCommunityPosts = {
+const mockCommunityPosts: Record<string, any[]> = {
   [COMMUNITY_IDS.WEB_DEV]: [
     {
       id: POST_IDS.POST_1,
@@ -1364,4 +1365,4 @@ const mockAdminRoles = [
       },
     ],
   },
-};
+];
