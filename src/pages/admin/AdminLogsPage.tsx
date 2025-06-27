@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,14 +9,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, RotateCcw } from "lucide-react";
+import { Search, RotateCcw } from "lucide-react";
 import { adminLogs } from "@/lib/admin-logger";
 import AdminTablePagination from "@/components/admin/AdminTablePagination";
 import AdminTable from "@/components/admin/AdminTable";
 
 const AdminLogsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterBy, setFilterBy] = useState("all");
   const [actionFilter, setActionFilter] = useState("all");
   const [targetTypeFilter, setTargetTypeFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);

@@ -1,6 +1,11 @@
-
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Users, MessageCircle, Video, User, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -12,7 +17,9 @@ const LandingPage = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-social-primary rounded-full" />
-            <h1 className="text-xl font-bold text-social-primary">ConnectSphere</h1>
+            <h1 className="text-xl font-bold text-social-primary">
+              ConnectSphere
+            </h1>
           </div>
           <div className="flex items-center gap-4">
             <Link to="/login">
@@ -32,20 +39,28 @@ const LandingPage = () => {
             Connect. Share. Grow.
           </h1>
           <p className="text-xl text-social-secondary mb-8 max-w-2xl">
-            Join communities that share your passions. Engage in meaningful conversations. 
-            Build lasting connections with people who understand your interests.
+            Join communities that share your passions. Engage in meaningful
+            conversations. Build lasting connections with people who understand
+            your interests.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link to="/register">
-              <Button size="lg" className="bg-social-primary hover:bg-social-secondary">
-                <Users className="mr-2 h-5 w-5" /> 
+              <Button
+                size="lg"
+                className="bg-social-primary hover:bg-social-secondary"
+              >
+                <Users className="mr-2 h-5 w-5" />
                 Join Communities
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link to="/login">
-              <Button size="lg" variant="outline" className="border-social-primary text-social-primary hover:bg-social-accent/20">
-                <MessageCircle className="mr-2 h-5 w-5" /> 
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-social-primary text-social-primary hover:bg-social-accent/20"
+              >
+                <MessageCircle className="mr-2 h-5 w-5" />
                 Start Chatting
               </Button>
             </Link>
@@ -61,10 +76,15 @@ const LandingPage = () => {
               <CardTitle className="flex items-center gap-2 text-social-primary">
                 <Users /> Communities
               </CardTitle>
-              <CardDescription>Join groups based on your interests</CardDescription>
+              <CardDescription>
+                Join groups based on your interests
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p>Find and connect with people who share your passions. Discover communities for gaming, art, tech, sports, and more.</p>
+              <p>
+                Find and connect with people who share your passions. Discover
+                communities for gaming, art, tech, sports, and more.
+              </p>
             </CardContent>
           </Card>
 
@@ -76,7 +96,10 @@ const LandingPage = () => {
               <CardDescription>Message your friends anytime</CardDescription>
             </CardHeader>
             <CardContent>
-              <p>Stay connected with friends through our intuitive messaging platform. Share updates, photos, and memories.</p>
+              <p>
+                Stay connected with friends through our intuitive messaging
+                platform. Share updates, photos, and memories.
+              </p>
             </CardContent>
           </Card>
 
@@ -88,7 +111,10 @@ const LandingPage = () => {
               <CardDescription>Face-to-face conversations</CardDescription>
             </CardHeader>
             <CardContent>
-              <p>Connect on a personal level with video calls. Schedule group calls with your communities or chat one-on-one.</p>
+              <p>
+                Connect on a personal level with video calls. Schedule group
+                calls with your communities or chat one-on-one.
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -100,7 +126,8 @@ const LandingPage = () => {
           <div className="max-w-2xl">
             <h2 className="text-3xl font-bold mb-4">Ready to Connect?</h2>
             <p className="text-lg mb-8 opacity-90">
-              Join thousands of users who are already building meaningful connections on ConnectSphere.
+              Join thousands of users who are already building meaningful
+              connections on ConnectSphere.
             </p>
             <Link to="/register">
               <Button size="lg" variant="secondary">
@@ -118,7 +145,9 @@ const LandingPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 bg-social-primary rounded-full" />
-              <span className="text-sm text-gray-600">© 2024 ConnectSphere. All rights reserved.</span>
+              <span className="text-sm text-gray-600">
+                © 2024 ConnectSphere. All rights reserved.
+              </span>
             </div>
           </div>
         </div>

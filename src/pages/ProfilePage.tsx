@@ -8,10 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
 import { User, Camera, MapPin, Calendar, Users } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ProfilePage = () => {
   const { toast } = useToast();
-  const [isCurrentUser] = useState(true); // Mock current user check
+  const { user } = useAuth();
+  const [isCurrentUser] = useState(!!user); // Use context for current user check
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     name: "John Doe",

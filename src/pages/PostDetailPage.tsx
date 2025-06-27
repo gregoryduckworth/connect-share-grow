@@ -31,6 +31,7 @@ import { useToast } from "@/components/ui/use-toast";
 import ReportModal from "@/components/ui/ReportModal";
 import UserProfileLink from "@/components/user/UserProfileLink";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Reply {
   id: string;
@@ -48,6 +49,7 @@ interface Reply {
 const PostDetailPage = () => {
   const { communityId, postId } = useParams();
   const { toast } = useToast();
+  const { user, isModerator: checkIsModerator } = useAuth();
   const [newReply, setNewReply] = useState("");
   const [replyToId, setReplyToId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState<{ [key: string]: string }>(
@@ -64,7 +66,7 @@ const PostDetailPage = () => {
   } | null>(null);
 
   const [post, setPost] = useState<PostDetailData | null>(null);
-  const [isModerator, setIsModerator] = useState(true); // TODO: Replace with real user/role logic
+  const isModerator = checkIsModerator();
 
   useEffect(() => {
     if (postId) {
@@ -199,7 +201,7 @@ const PostDetailPage = () => {
     });
   };
 
-  const currentUserId = "user-1"; // TODO: Replace with actual user context
+  const currentUserId = user?.id || "";
 
   const openReportModal = (context: typeof reportContext) => {
     setReportContext(context);

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import ChatInterface from "@/components/chat/ChatInterface";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Chat {
   id: string;
@@ -38,7 +39,8 @@ const ChatPage = () => {
   const [newChatDialogOpen, setNewChatDialogOpen] = useState(false);
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
   const [groupName, setGroupName] = useState("");
-  const currentUser = "current-user";
+  const { user } = useAuth();
+  const currentUser = user?.name || "";
 
   // Mock friends data
   const friends: Friend[] = [
