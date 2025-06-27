@@ -1,5 +1,18 @@
-
-import type { Post, Community, User, Reply, Notification, AdminNotification, Report, Connection, ChatMessage, PostDetailData, PostDetailReply, CommunityDetail, CommunityPost } from "./types";
+import type {
+  Post,
+  Community,
+  User,
+  Reply,
+  Notification,
+  AdminNotification,
+  Report,
+  Connection,
+  ChatMessage,
+  PostDetailData,
+  PostDetailReply,
+  CommunityDetail,
+  CommunityPost,
+} from "./types";
 
 // Mock Database Tables - separated by type for easier management
 const USERS_TABLE: User[] = [
@@ -15,7 +28,7 @@ const USERS_TABLE: User[] = [
     language: "en",
     avatar: "",
     bio: "Photography enthusiast and nature lover",
-    location: "San Francisco, CA"
+    location: "San Francisco, CA",
   },
   {
     id: "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
@@ -29,7 +42,7 @@ const USERS_TABLE: User[] = [
     language: "en",
     avatar: "",
     bio: "Tech enthusiast and community moderator",
-    location: "New York, NY"
+    location: "New York, NY",
   },
   {
     id: "c3d4e5f6-g7h8-9012-3456-789012cdefgh",
@@ -43,7 +56,7 @@ const USERS_TABLE: User[] = [
     language: "en",
     avatar: "",
     bio: "Fitness trainer and wellness coach",
-    location: "Austin, TX"
+    location: "Austin, TX",
   },
   {
     id: "d4e5f6g7-h8i9-0123-4567-890123defghi",
@@ -57,7 +70,7 @@ const USERS_TABLE: User[] = [
     language: "en",
     avatar: "",
     bio: "Community administrator and developer",
-    location: "Seattle, WA"
+    location: "Seattle, WA",
   },
   {
     id: "e5f6g7h8-i9j0-1234-5678-901234efghij",
@@ -71,15 +84,16 @@ const USERS_TABLE: User[] = [
     language: "en",
     avatar: "",
     bio: "Travel blogger and photographer",
-    location: "Los Angeles, CA"
-  }
+    location: "Los Angeles, CA",
+  },
 ];
 
 const COMMUNITIES_TABLE: Community[] = [
   {
     slug: "photography-enthusiasts",
     name: "Photography Enthusiasts",
-    description: "A community for photographers of all skill levels to share tips, techniques, and showcase their work.",
+    description:
+      "A community for photographers of all skill levels to share tips, techniques, and showcase their work.",
     memberCount: 1247,
     postCount: 89,
     category: "Creative Arts",
@@ -88,12 +102,13 @@ const COMMUNITIES_TABLE: Community[] = [
     lastActivity: new Date("2024-01-25T14:30:00Z"),
     createdBy: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
     status: "active",
-    moderators: ["b2c3d4e5-f6g7-8901-2345-678901bcdefg"]
+    moderators: ["b2c3d4e5-f6g7-8901-2345-678901bcdefg"],
   },
   {
     slug: "tech-discussions",
     name: "Tech Discussions",
-    description: "Discuss the latest trends in technology, programming languages, and software development.",
+    description:
+      "Discuss the latest trends in technology, programming languages, and software development.",
     memberCount: 2156,
     postCount: 234,
     category: "Technology",
@@ -102,12 +117,16 @@ const COMMUNITIES_TABLE: Community[] = [
     lastActivity: new Date("2024-01-24T16:20:00Z"),
     createdBy: "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
     status: "active",
-    moderators: ["b2c3d4e5-f6g7-8901-2345-678901bcdefg", "d4e5f6g7-h8i9-0123-4567-890123defghi"]
+    moderators: [
+      "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
+      "d4e5f6g7-h8i9-0123-4567-890123defghi",
+    ],
   },
   {
     slug: "fitness-wellness",
     name: "Fitness & Wellness",
-    description: "Share workout routines, nutrition tips, and wellness advice for a healthier lifestyle.",
+    description:
+      "Share workout routines, nutrition tips, and wellness advice for a healthier lifestyle.",
     memberCount: 892,
     postCount: 156,
     category: "Health & Fitness",
@@ -116,12 +135,13 @@ const COMMUNITIES_TABLE: Community[] = [
     lastActivity: new Date("2024-01-23T12:45:00Z"),
     createdBy: "c3d4e5f6-g7h8-9012-3456-789012cdefgh",
     status: "active",
-    moderators: ["c3d4e5f6-g7h8-9012-3456-789012cdefgh"]
+    moderators: ["c3d4e5f6-g7h8-9012-3456-789012cdefgh"],
   },
   {
     slug: "entrepreneurs-united",
     name: "Entrepreneurs United",
-    description: "Connect with fellow entrepreneurs, share business insights, and grow your network.",
+    description:
+      "Connect with fellow entrepreneurs, share business insights, and grow your network.",
     memberCount: 1834,
     postCount: 167,
     category: "Business",
@@ -130,28 +150,58 @@ const COMMUNITIES_TABLE: Community[] = [
     lastActivity: new Date("2024-01-21T09:30:00Z"),
     createdBy: "e5f6g7h8-i9j0-1234-5678-901234efghij",
     status: "active",
-    moderators: ["e5f6g7h8-i9j0-1234-5678-901234efghij"]
-  }
+    moderators: ["e5f6g7h8-i9j0-1234-5678-901234efghij"],
+  },
 ];
 
 const POSTS_TABLE: Post[] = [
   {
     id: "p1a2b3c4-d5e6-f789-0123-456789abcdef",
     title: "Best Camera Settings for Golden Hour Photography",
-    content: "Golden hour provides the most beautiful natural lighting for photography. Here are my recommended camera settings: Use a wide aperture (f/1.4-f/2.8) for shallow depth of field, keep ISO low (100-400) to minimize noise, and adjust shutter speed based on your subject movement. Don't forget to shoot in RAW format for maximum editing flexibility!",
-    author: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    content:
+      "Golden hour provides the most beautiful natural lighting for photography. Here are my recommended camera settings: Use a wide aperture (f/1.4-f/2.8) for shallow depth of field, keep ISO low (100-400) to minimize noise, and adjust shutter speed based on your subject movement. Don't forget to shoot in RAW format for maximum editing flexibility!",
+    author: "a1b2c3d4-e5f6-7890-1234-567890abcdef", // Alex Johnson
     communityId: "photography-enthusiasts",
     communityName: "Photography Enthusiasts",
     createdAt: new Date("2024-01-25T14:30:00Z"),
     likes: 45,
     replies: 12,
     isLiked: true,
-    isHot: true
+    isHot: true,
+  },
+  {
+    id: "p6a7b8c9-d0e1-f234-5678-901234bcdefg",
+    title: "How to Edit Photos Like a Pro",
+    content:
+      "Editing is just as important as taking the photo! What software do you use and what are your favorite editing tips for beginners?",
+    author: "a1b2c3d4-e5f6-7890-1234-567890abcdef", // Alex Johnson
+    communityId: "photography-enthusiasts",
+    communityName: "Photography Enthusiasts",
+    createdAt: new Date("2024-01-20T10:00:00Z"),
+    likes: 22,
+    replies: 5,
+    isLiked: false,
+    isHot: false,
+  },
+  {
+    id: "p7b8c9d0-e1f2-g345-6789-012345cdefgh",
+    title: "Show Us Your Best Wildlife Shots!",
+    content:
+      "Let's have a thread for wildlife photography. Share your favorite animal photos and the story behind them!",
+    author: "e5f6g7h8-i9j0-1234-5678-901234efghij", // David Kim
+    communityId: "photography-enthusiasts",
+    communityName: "Photography Enthusiasts",
+    createdAt: new Date("2024-01-18T09:00:00Z"),
+    likes: 31,
+    replies: 7,
+    isLiked: false,
+    isHot: false,
   },
   {
     id: "p2b3c4d5-e6f7-g890-1234-567890bcdefg",
     title: "The Future of React Server Components",
-    content: "React Server Components are revolutionizing how we think about server-side rendering and client-side interactivity. This new paradigm allows us to run components on the server, reducing bundle size and improving performance. Let's discuss the implications and best practices for implementing RSCs in production applications.",
+    content:
+      "React Server Components are revolutionizing how we think about server-side rendering and client-side interactivity. This new paradigm allows us to run components on the server, reducing bundle size and improving performance. Let's discuss the implications and best practices for implementing RSCs in production applications.",
     author: "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
     communityId: "tech-discussions",
     communityName: "Tech Discussions",
@@ -159,62 +209,67 @@ const POSTS_TABLE: Post[] = [
     likes: 67,
     replies: 18,
     isLiked: false,
-    isHot: true
+    isHot: true,
   },
   {
     id: "p3c4d5e6-f7g8-h901-2345-678901cdefgh",
     title: "My 30-Day Fitness Transformation Journey",
-    content: "I wanted to share my incredible 30-day fitness transformation journey with everyone. Through consistent daily workouts, proper nutrition planning, and staying motivated, I've seen amazing results. Here's my detailed workout routine, meal plans, and the mindset shifts that made all the difference.",
+    content:
+      "I wanted to share my incredible 30-day fitness transformation journey with everyone. Through consistent daily workouts, proper nutrition planning, and staying motivated, I've seen amazing results. Here's my detailed workout routine, meal plans, and the mindset shifts that made all the difference.",
     author: "c3d4e5f6-g7h8-9012-3456-789012cdefgh",
     communityId: "fitness-wellness",
     communityName: "Fitness & Wellness",
     createdAt: new Date("2024-01-23T12:45:00Z"),
     likes: 23,
     replies: 8,
-    isLiked: false
+    isLiked: false,
   },
   {
     id: "p4d5e6f7-g8h9-i012-3456-789012defghi",
     title: "Building a Sustainable Startup Culture",
-    content: "Creating a lasting company culture is one of the biggest challenges for entrepreneurs. After building three startups, I've learned that culture isn't something you can force - it grows organically from your values and actions. Here are the key principles that have helped me build strong, sustainable teams.",
+    content:
+      "Creating a lasting company culture is one of the biggest challenges for entrepreneurs. After building three startups, I've learned that culture isn't something you can force - it grows organically from your values and actions. Here are the key principles that have helped me build strong, sustainable teams.",
     author: "e5f6g7h8-i9j0-1234-5678-901234efghij",
     communityId: "entrepreneurs-united",
     communityName: "Entrepreneurs United",
     createdAt: new Date("2024-01-22T18:15:00Z"),
     likes: 34,
     replies: 15,
-    isLiked: true
-  }
+    isLiked: true,
+  },
 ];
 
 const REPLIES_TABLE: Reply[] = [
   {
     id: "r1a2b3c4-d5e6-f789-0123-456789abcdef",
-    content: "Great tips! I've been struggling with golden hour shots. The wide aperture suggestion really helped my portraits pop.",
+    content:
+      "Great tips! I've been struggling with golden hour shots. The wide aperture suggestion really helped my portraits pop.",
     author: "e5f6g7h8-i9j0-1234-5678-901234efghij",
     postId: "p1a2b3c4-d5e6-f789-0123-456789abcdef",
     createdAt: new Date("2024-01-25T15:45:00Z"),
     likes: 8,
-    parentReplyId: null
+    parentReplyId: null,
   },
   {
     id: "r2b3c4d5-e6f7-g890-1234-567890bcdefg",
-    content: "RSCs are game-changing! We've implemented them in our production app and saw a 40% reduction in bundle size.",
+    content:
+      "RSCs are game-changing! We've implemented them in our production app and saw a 40% reduction in bundle size.",
     author: "d4e5f6g7-h8i9-0123-4567-890123defghi",
     postId: "p2b3c4d5-e6f7-g890-1234-567890bcdefg",
     createdAt: new Date("2024-01-24T17:30:00Z"),
     likes: 12,
-    parentReplyId: null
+    parentReplyId: null,
   },
   {
     id: "r3c4d5e6-f7g8-h901-2345-678901cdefgh",
-    content: "Amazing transformation! What was your biggest challenge during the 30 days?",
+    content:
+      "Amazing transformation! What was your biggest challenge during the 30 days?",
     author: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
     postId: "p3c4d5e6-f7g8-h901-2345-678901cdefgh",
     createdAt: new Date("2024-01-23T14:20:00Z"),
     likes: 3,
-    parentReplyId: null
-  }
+    parentReplyId: null,
+  },
 ];
 
 const NOTIFICATIONS_TABLE: Notification[] = [
@@ -227,7 +282,7 @@ const NOTIFICATIONS_TABLE: Notification[] = [
     isRead: false,
     userId: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
     postId: "p1a2b3c4-d5e6-f789-0123-456789abcdef",
-    communityId: "photography-enthusiasts"
+    communityId: "photography-enthusiasts",
   },
   {
     id: "n2b3c4d5-e6f7-g890-1234-567890bcdefg",
@@ -238,8 +293,8 @@ const NOTIFICATIONS_TABLE: Notification[] = [
     isRead: false,
     userId: "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
     postId: "p2b3c4d5-e6f7-g890-1234-567890bcdefg",
-    communityId: "tech-discussions"
-  }
+    communityId: "tech-discussions",
+  },
 ];
 
 const REPORTS_TABLE: Report[] = [
@@ -250,21 +305,22 @@ const REPORTS_TABLE: Report[] = [
     reportedAt: new Date("2024-01-24T10:30:00Z"),
     reason: "Inappropriate content",
     status: "pending",
-    content: "This post contains inappropriate language and violates community guidelines.",
+    content:
+      "This post contains inappropriate language and violates community guidelines.",
     postId: "p1a2b3c4-d5e6-f789-0123-456789abcdef",
-    communityId: "photography-enthusiasts"
-  }
+    communityId: "photography-enthusiasts",
+  },
 ];
 
 // Helper function to get user name by ID
 const getUserNameById = (userId: string): string => {
-  const user = USERS_TABLE.find(u => u.id === userId);
+  const user = USERS_TABLE.find((u) => u.id === userId);
   return user ? user.name : "Unknown User";
 };
 
 // Helper function to get community name by slug
 const getCommunityNameBySlug = (slug: string): string => {
-  const community = COMMUNITIES_TABLE.find(c => c.slug === slug);
+  const community = COMMUNITIES_TABLE.find((c) => c.slug === slug);
   return community ? community.name : "Unknown Community";
 };
 
@@ -277,8 +333,10 @@ export const api = {
       author: getUserNameById(post.author),
     }));
   },
-  
-  getPostDetail: async (postId: string): Promise<PostDetailData | undefined> => {
+
+  getPostDetail: async (
+    postId: string
+  ): Promise<PostDetailData | undefined> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
     const post = POSTS_TABLE.find((post) => post.id === postId);
     if (!post) return undefined;
@@ -313,38 +371,37 @@ export const api = {
       communityName: post.communityName,
     };
   },
-  
+
   getReports: async (): Promise<Report[]> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 400));
     return REPORTS_TABLE;
   },
-  
+
   getUsers: async (): Promise<User[]> => {
-    await new Promise(resolve => setTimeout(resolve, 600));
+    await new Promise((resolve) => setTimeout(resolve, 600));
     return USERS_TABLE;
   },
-  
+
   getCommunities: async (): Promise<Community[]> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     return COMMUNITIES_TABLE;
   },
-  
+
   getHotPosts: async (): Promise<Post[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return POSTS_TABLE
-      .filter(post => post.isHot)
-      .map(post => ({
-        ...post,
-        author: getUserNameById(post.author),
-        communityName: getCommunityNameBySlug(post.communityId)
-      }));
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    return POSTS_TABLE.filter((post) => post.isHot).map((post) => ({
+      ...post,
+      author: getUserNameById(post.author),
+      communityName: getCommunityNameBySlug(post.communityId),
+    }));
   },
-  
-  getCommunityPosts: async (communitySlug: string): Promise<CommunityPost[]> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    return POSTS_TABLE
-      .filter(post => post.communityId === communitySlug)
-      .map(post => ({
+
+  getCommunityPosts: async (
+    communitySlug: string
+  ): Promise<CommunityPost[]> => {
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    return POSTS_TABLE.filter((post) => post.communityId === communitySlug).map(
+      (post) => ({
         id: post.id,
         title: post.title,
         content: post.content,
@@ -356,16 +413,19 @@ export const api = {
         isPinned: false,
         isLocked: false,
         commentsLocked: false,
-        tags: []
-      }));
+        tags: [],
+      })
+    );
   },
-  
-  getCommunityDetail: async (communitySlug: string): Promise<CommunityDetail | null> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const community = COMMUNITIES_TABLE.find(c => c.slug === communitySlug);
-    
+
+  getCommunityDetail: async (
+    communitySlug: string
+  ): Promise<CommunityDetail | null> => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const community = COMMUNITIES_TABLE.find((c) => c.slug === communitySlug);
+
     if (!community) return null;
-    
+
     return {
       id: community.slug,
       name: community.name,
@@ -374,33 +434,40 @@ export const api = {
       postCount: community.postCount,
       tags: community.tags,
       isMember: community.isJoined,
-      isModerator: community.moderators?.includes("b2c3d4e5-f6g7-8901-2345-678901bcdefg") || false,
-      moderators: community.moderators?.map(modId => {
-        const user = USERS_TABLE.find(u => u.id === modId);
-        return {
-          id: modId,
-          name: user?.name || "Unknown User",
-          role: "moderator",
-          joinedAsModAt: new Date("2024-01-10T14:20:00Z")
-        };
-      }) || [],
+      isModerator:
+        community.moderators?.includes(
+          "b2c3d4e5-f6g7-8901-2345-678901bcdefg"
+        ) || false,
+      moderators:
+        community.moderators?.map((modId) => {
+          const user = USERS_TABLE.find((u) => u.id === modId);
+          return {
+            id: modId,
+            name: user?.name || "Unknown User",
+            role: "moderator",
+            joinedAsModAt: new Date("2024-01-10T14:20:00Z"),
+          };
+        }) || [],
       rules: [
         "Be respectful to all community members",
         "Stay on topic and relevant to the community",
         "No spam or self-promotion without permission",
         "Use appropriate language and content",
-        "Follow platform-wide community guidelines"
-      ]
+        "Follow platform-wide community guidelines",
+      ],
     };
   },
-  
-  createPost: async (communitySlug: string, postData: {
-    title: string;
-    content: string;
-    tags?: string[];
-  }): Promise<Post> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
+
+  createPost: async (
+    communitySlug: string,
+    postData: {
+      title: string;
+      content: string;
+      tags?: string[];
+    }
+  ): Promise<Post> => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const newPost: Post = {
       id: `p${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       title: postData.title,
@@ -411,22 +478,24 @@ export const api = {
       createdAt: new Date(),
       likes: 0,
       replies: 0,
-      isLiked: false
+      isLiked: false,
     };
-    
+
     POSTS_TABLE.push(newPost);
     return newPost;
   },
 
   // Notification methods
   getNotifications: async (): Promise<Notification[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
     return NOTIFICATIONS_TABLE;
   },
 
   markNotificationAsRead: async (notificationId: string): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    const notification = NOTIFICATIONS_TABLE.find(n => n.id === notificationId);
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    const notification = NOTIFICATIONS_TABLE.find(
+      (n) => n.id === notificationId
+    );
     if (notification) {
       notification.isRead = true;
     }
@@ -434,7 +503,7 @@ export const api = {
 
   // Report methods
   submitReport: async (reportData: any): Promise<Report> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 400));
     const newReport: Report = {
       id: `rep${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       type: reportData.type,
@@ -444,95 +513,104 @@ export const api = {
       status: "pending",
       content: reportData.content,
       postId: reportData.postId,
-      communityId: reportData.communityId
+      communityId: reportData.communityId,
     };
-    
+
     REPORTS_TABLE.push(newReport);
     return newReport;
   },
 
   // Admin methods
   getAdminRoles: async (): Promise<any[]> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 400));
     return [
       {
         name: "Admin",
         description: "Full platform access and control",
-        permissions: ["Manage users", "Manage communities", "Access analytics", "System settings"],
+        permissions: [
+          "Manage users",
+          "Manage communities",
+          "Access analytics",
+          "System settings",
+        ],
         userCount: 1,
-        users: USERS_TABLE.filter(u => u.role === "admin"),
+        users: USERS_TABLE.filter((u) => u.role === "admin"),
         icon: "admin",
-        color: "bg-red-500"
+        color: "bg-red-500",
       },
       {
-        name: "Moderator", 
+        name: "Moderator",
         description: "Community moderation and user management",
-        permissions: ["Moderate content", "Manage community posts", "Handle reports"],
+        permissions: [
+          "Moderate content",
+          "Manage community posts",
+          "Handle reports",
+        ],
         userCount: 1,
-        users: USERS_TABLE.filter(u => u.role === "moderator"),
+        users: USERS_TABLE.filter((u) => u.role === "moderator"),
         icon: "moderator",
-        color: "bg-blue-500"
+        color: "bg-blue-500",
       },
       {
         name: "User",
         description: "Standard user access",
         permissions: ["Create posts", "Join communities", "Comment and like"],
-        userCount: USERS_TABLE.filter(u => u.role === "user").length,
-        users: USERS_TABLE.filter(u => u.role === "user").slice(0, 5),
+        userCount: USERS_TABLE.filter((u) => u.role === "user").length,
+        users: USERS_TABLE.filter((u) => u.role === "user").slice(0, 5),
         icon: "user",
-        color: "bg-green-500"
-      }
+        color: "bg-green-500",
+      },
     ];
   },
 
   getAdminUsers: async (): Promise<User[]> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 400));
     return USERS_TABLE;
   },
 
   getPendingAdminRoleChanges: async (): Promise<any[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
     return [];
   },
 
   getAdminReports: async (): Promise<Report[]> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 400));
     return REPORTS_TABLE;
   },
 
   getAdminCommunities: async (): Promise<Community[]> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 400));
     return COMMUNITIES_TABLE;
   },
 
   getPendingCommunities: async (): Promise<Community[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
     return [];
   },
 
   // Analytics methods
   getAnalyticsCommunities: async (): Promise<any[]> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    return COMMUNITIES_TABLE.map(c => ({
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    return COMMUNITIES_TABLE.map((c) => ({
       name: c.name,
       members: c.memberCount,
       posts: c.postCount,
-      activity: Math.floor(Math.random() * 100)
+      activity: Math.floor(Math.random() * 100),
     }));
   },
 
   getPlatformStats: async (): Promise<any> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
     return {
       totalUsers: USERS_TABLE.length,
       totalCommunities: COMMUNITIES_TABLE.length,
       totalPosts: POSTS_TABLE.length,
-      totalReports: REPORTS_TABLE.length
+      totalReports: REPORTS_TABLE.length,
     };
   },
 
   getActivityData: async (): Promise<any[]> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await new Promise((resolve) => setTimeout(resolve, 400));
     return [
       { name: "Mon", posts: 12, users: 24 },
       { name: "Tue", posts: 19, users: 32 },
@@ -540,19 +618,19 @@ export const api = {
       { name: "Thu", posts: 22, users: 45 },
       { name: "Fri", posts: 18, users: 38 },
       { name: "Sat", posts: 25, users: 52 },
-      { name: "Sun", posts: 20, users: 41 }
+      { name: "Sun", posts: 20, users: 41 },
     ];
   },
 
   getSizeDistribution: async (): Promise<any[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
     return [
       { name: "Small (1-100)", value: 45 },
       { name: "Medium (101-500)", value: 30 },
       { name: "Large (501-1000)", value: 20 },
-      { name: "Very Large (1000+)", value: 5 }
+      { name: "Very Large (1000+)", value: 5 },
     ];
-  }
+  },
 };
 
 // Mock pending moderator role changes
@@ -566,14 +644,14 @@ export const mockPendingModeratorRoleChanges = [
       joinDate: new Date("2024-01-12T11:30:00Z"),
       role: "user",
       status: "active",
-      communities: ["entrepreneurs-united"]
+      communities: ["entrepreneurs-united"],
     },
     requestedBy: "d4e5f6g7-h8i9-0123-4567-890123defghi",
     requestedAt: new Date("2024-01-20T14:15:00Z"),
     newRole: "moderator",
     communityName: "Entrepreneurs United",
-    status: "pending"
-  }
+    status: "pending",
+  },
 ];
 
 // Export mockUsers for backward compatibility
@@ -581,6 +659,6 @@ export const mockUsers = USERS_TABLE;
 
 // Mock flagged reports for moderation page
 export const getMockFlaggedReports = async (): Promise<Report[]> => {
-  await new Promise(resolve => setTimeout(resolve, 400));
-  return REPORTS_TABLE.filter(report => report.status === "pending");
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  return REPORTS_TABLE.filter((report) => report.status === "pending");
 };

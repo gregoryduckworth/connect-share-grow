@@ -1,16 +1,41 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Users, Calendar, Tag, Settings } from "lucide-react";
+import {
+  ArrowLeft,
+  Users,
+  Calendar,
+  Tag,
+  Settings,
+  User,
+  Home,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import CommunityPost from "@/components/community/CommunityPost";
 import CreatePostForm from "@/components/community/CreatePostForm";
 import { useToast } from "@/components/ui/use-toast";
 import { api } from "@/lib/api";
-import type { CommunityDetail, CommunityPost as CommunityPostType } from "@/lib/types";
+import type {
+  CommunityDetail,
+  CommunityPost as CommunityPostType,
+} from "@/lib/types";
+import UserProfileLink from "@/components/user/UserProfileLink";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 const CommunityDetailPage = () => {
   const { communitySlug } = useParams<{ communitySlug: string }>();
@@ -22,14 +47,13 @@ const CommunityDetailPage = () => {
   useEffect(() => {
     const fetchCommunityData = async () => {
       if (!communitySlug) return;
-      
+
       try {
         setLoading(true);
         const [communityData, communityPosts] = await Promise.all([
           api.getCommunityDetail(communitySlug),
-          api.getCommunityPosts(communitySlug)
+          api.getCommunityPosts(communitySlug),
         ]);
-        
         setCommunity(communityData);
         setPosts(communityPosts);
       } catch (error) {
@@ -37,7 +61,7 @@ const CommunityDetailPage = () => {
         toast({
           title: "Error",
           description: "Failed to load community data",
-          variant: "destructive"
+          variant: "destructive",
         });
       } finally {
         setLoading(false);
@@ -55,13 +79,13 @@ const CommunityDetailPage = () => {
   };
 
   const handleLike = (postId: string) => {
-    setPosts(prevPosts =>
-      prevPosts.map(post =>
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
         post.id === postId
           ? {
               ...post,
               isLiked: !post.isLiked,
-              likes: post.isLiked ? post.likes - 1 : post.likes + 1
+              likes: post.isLiked ? post.likes - 1 : post.likes + 1,
             }
           : post
       )
@@ -96,7 +120,7 @@ const CommunityDetailPage = () => {
             The community you're looking for doesn't exist or has been removed.
           </p>
           <Link to="/communities">
-            <Button>
+            <Button variant="ghost">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Communities
             </Button>
@@ -110,121 +134,182 @@ const CommunityDetailPage = () => {
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Link to="/communities">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-        </Link>
+        {/* Breadcrumbs */}
+        <div className="mb-6">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/communities" className="flex items-center gap-1">
+                    <Home className="h-4 w-4" />
+                    Communities
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator>
+                <ChevronRight className="h-4 w-4" />
+              </BreadcrumbSeparator>
+              <BreadcrumbItem>
+                <span className="text-muted-foreground">{community.name}</span>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
       </div>
 
-      {/* Community Info */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div className="space-y-2">
-              <CardTitle className="text-2xl text-social-primary">
-                {community.name}
-              </CardTitle>
-              <CardDescription className="text-base">
-                {community.description}
-              </CardDescription>
-            </div>
-            {community.isModerator && (
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                Moderate
-              </Button>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
-            <div className="flex items-center gap-1">
-              <Users className="h-4 w-4" />
-              {community.memberCount.toLocaleString()} members
-            </div>
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              {community.postCount} posts
-            </div>
-          </div>
-          
-          <div className="flex flex-wrap gap-2 mb-4">
-            {community.tags.map((tag, index) => (
-              <Badge key={index} variant="secondary">
-                <Tag className="h-3 w-3 mr-1" />
-                {tag}
-              </Badge>
-            ))}
-          </div>
-
-          <div className="flex gap-3">
-            {community.isMember ? (
-              <Button variant="outline">Leave Community</Button>
-            ) : (
-              <Button>Join Community</Button>
-            )}
-            <CreatePostForm 
-              communityId={communitySlug!} 
-              onPostCreated={handlePostCreated}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Separator />
-
-      {/* Posts Section */}
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Recent Posts</h2>
-        </div>
-
-        {posts.length === 0 ? (
+      {/* Main Content + Sidebar Layout */}
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Main Content */}
+        <div className="flex-1 min-w-0 space-y-6">
+          {/* Community Info */}
           <Card>
-            <CardContent className="text-center py-12">
-              <p className="text-muted-foreground mb-4">
-                No posts yet in this community.
-              </p>
-              <CreatePostForm 
-                communityId={communitySlug!} 
-                onPostCreated={handlePostCreated}
-              />
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div className="space-y-2">
+                  <CardTitle className="text-2xl text-social-primary">
+                    {community.name}
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    {community.description}
+                  </CardDescription>
+                </div>
+                {community.isModerator && (
+                  <Button variant="outline" size="sm">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Moderate
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4" />
+                  {community.memberCount.toLocaleString()} members
+                </div>
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  {community.postCount} posts
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 mb-4">
+                {community.tags.map((tag, index) => (
+                  <Badge key={index} variant="secondary">
+                    <Tag className="h-3 w-3 mr-1" />
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                {community.isMember ? (
+                  <Button variant="outline">Leave Community</Button>
+                ) : (
+                  <Button>Join Community</Button>
+                )}
+                <CreatePostForm
+                  communityId={communitySlug!}
+                  onPostCreated={handlePostCreated}
+                />
+              </div>
             </CardContent>
           </Card>
-        ) : (
-          <div className="space-y-4">
-            {posts.map((post) => (
-              <CommunityPost
-                key={post.id}
-                post={post}
-                onLike={handleLike}
-                onComment={handleComment}
-                isModerator={community.isModerator}
-                showPreview={true}
-              />
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* Community Rules */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Community Rules</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2">
-            {community.rules.map((rule, index) => (
-              <li key={index} className="flex items-start gap-2 text-sm">
-                <span className="font-medium text-social-primary">{index + 1}.</span>
-                <span>{rule}</span>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+          <Separator />
+
+          {/* Posts Section */}
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Recent Posts</h2>
+            </div>
+
+            {posts.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <p className="text-muted-foreground mb-4">
+                    No posts yet in this community.
+                  </p>
+                  <CreatePostForm
+                    communityId={communitySlug!}
+                    onPostCreated={handlePostCreated}
+                  />
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {posts.map((post) => (
+                  <CommunityPost
+                    key={post.id}
+                    post={post}
+                    onLike={handleLike}
+                    onComment={handleComment}
+                    isModerator={community.isModerator}
+                    showPreview={true}
+                    communitySlug={communitySlug}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <aside className="w-full lg:w-80 flex-shrink-0 space-y-6 lg:sticky lg:top-8 self-start h-fit">
+          {/* Moderators */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Moderators</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {community.moderators.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  No moderators listed.
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {community.moderators.map((mod) => (
+                    <li
+                      key={mod.id}
+                      className="flex items-center gap-2 text-sm"
+                    >
+                      <User className="h-4 w-4 text-social-primary" />
+                      <UserProfileLink
+                        userId={mod.id}
+                        userName={mod.name}
+                        currentUserId={"current-user-id"}
+                        className="font-medium hover:underline hover:text-social-primary transition-colors"
+                      />
+                      <span className="text-muted-foreground">
+                        ({mod.role})
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Community Rules */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Community Rules</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {community.rules.map((rule, index) => (
+                  <li key={index} className="flex items-start gap-2 text-sm">
+                    <span className="font-medium text-social-primary">
+                      {index + 1}.
+                    </span>
+                    <span>{rule}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
     </div>
   );
 };

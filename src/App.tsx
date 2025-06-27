@@ -1,9 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -82,15 +77,15 @@ function App() {
               <Route path="home" element={<Index />} />
               <Route path="communities" element={<CommunitiesPage />} />
               <Route
-                path="community/:communityId"
+                path="community/:communitySlug"
                 element={<CommunityDetailPage />}
               />
               <Route
-                path="community/:communityId/post/:postId"
+                path="community/:communitySlug/post/:postId"
                 element={<PostDetailPage />}
               />
               <Route
-                path="community/:communityId/moderate"
+                path="community/:communitySlug/moderate"
                 element={
                   <ProtectedRoute requireModerator={true}>
                     <ModeratePage />

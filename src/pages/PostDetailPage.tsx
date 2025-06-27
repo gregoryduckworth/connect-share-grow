@@ -106,10 +106,6 @@ const PostDetailPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post && post.replies.length > 0 && post.replies[0].replies[0]]);
 
-  if (!post) {
-    return null; // or a loading spinner, or any placeholder you prefer
-  }
-
   const handleLikePost = () => {
     setPost((prev) => ({
       ...prev,
@@ -430,6 +426,28 @@ const PostDetailPage = () => {
     </Card>
   );
 
+  if (!post) {
+    return (
+      <div className="p-4 md:p-6 min-h-screen bg-background">
+        <div className="mb-6">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/" className="flex items-center gap-1">
+                    <Home className="h-4 w-4" />
+                    Home
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+        {/* Optionally add a loading spinner or message here */}
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       {/* Breadcrumbs */}
@@ -449,7 +467,7 @@ const PostDetailPage = () => {
             </BreadcrumbSeparator>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to={`/community/${communityId}`}>
+                <Link to={`/community/${post.communityId}`}>
                   {post.communityName}
                 </Link>
               </BreadcrumbLink>
