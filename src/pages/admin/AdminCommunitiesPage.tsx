@@ -13,6 +13,7 @@ import CommunityRejectionDialog from "@/components/admin/CommunityRejectionDialo
 import CommunitySuspendDialog from "@/components/admin/CommunitySuspendDialog";
 import CommunityActivateDialog from "@/components/admin/CommunityActivateDialog";
 import { api } from "@/lib/api";
+import type { Community as ApiCommunity } from "@/lib/types";
 
 interface Community {
   id: string;
@@ -76,8 +77,54 @@ const AdminCommunitiesPage = () => {
 
   // Load mock data from api.ts
   useEffect(() => {
-    api.getAdminCommunities().then(setCommunities);
-    api.getPendingCommunities().then(setPendingCommunities);
+    const loadCommunities = async () => {
+      try {
+        const apiCommunities = await api.getAdminCommunities();
+        const transformedCommunities = apiCommunities.map((c: ApiCommunity) => ({
+          id: c.slug,
+          name: c.name,
+          description: c.description,
+          memberCount: c.memberCount,
+          postCount: c.postCount,
+          category: c.category,
+          createdAt: new Date(),
+          status: (c.status || "active") as "active" | "suspended" | "pending",
+          moderators: c.moderators || [],
+          tags: c.tags,
+          createdBy: c.createdBy || "",
+          requestedAt: new Date(),
+        }));
+        setCommunities(transformedCommunities);
+      } catch (error) {
+        console.error("Failed to load communities:", error);
+      }
+    };
+
+    const loadPendingCommunities = async () => {
+      try {
+        const apiPendingCommunities = await api.getPendingCommunities();
+        const transformedPendingCommunities = apiPendingCommunities.map((c: ApiCommunity) => ({
+          id: c.slug,
+          name: c.name,
+          description: c.description,
+          memberCount: c.memberCount,
+          postCount: c.postCount,
+          category: c.category,
+          createdAt: new Date(),
+          status: "pending" as const,
+          moderators: c.moderators || [],
+          tags: c.tags,
+          createdBy: c.createdBy || "",
+          requestedAt: new Date(),
+        }));
+        setPendingCommunities(transformedPendingCommunities);
+      } catch (error) {
+        console.error("Failed to load pending communities:", error);
+      }
+    };
+
+    loadCommunities();
+    loadPendingCommunities();
   }, []);
 
   const filteredCommunities = communities.filter(
@@ -104,7 +151,6 @@ const AdminCommunitiesPage = () => {
         title: "Community Suspended",
         description: `${community.name} has been suspended.\nReason: ${reason}`,
       });
-      // Notify all moderators
       if (community.moderators && community.moderators.length > 0) {
         community.moderators.forEach((mod) => {
           toast({
@@ -134,7 +180,6 @@ const AdminCommunitiesPage = () => {
         title: "Community Activated",
         description: `${community.name} has been activated.\nMessage: ${message}`,
       });
-      // Notify all moderators
       if (community.moderators && community.moderators.length > 0) {
         community.moderators.forEach((mod) => {
           toast({
@@ -211,7 +256,6 @@ const AdminCommunitiesPage = () => {
     }
   };
 
-  // Columns for pending communities
   const pendingColumns = [
     {
       header: "Community",
@@ -283,7 +327,6 @@ const AdminCommunitiesPage = () => {
     },
   ];
 
-  // Columns for all communities
   const allColumns = [
     {
       header: "Community",

@@ -36,7 +36,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
-import { api, getMockFlaggedReports } from "@/lib/api";
+import { api } from "@/lib/api";
 import type { Report } from "@/lib/types";
 import UserProfileLink from "@/components/user/UserProfileLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -134,8 +134,17 @@ const ModeratePage = () => {
   const [flaggedReports, setFlaggedReports] = useState<Report[]>([]);
 
   useEffect(() => {
+    const loadFlaggedReports = async () => {
+      try {
+        const reports = await api.getMockFlaggedReports();
+        setFlaggedReports(reports);
+      } catch (error) {
+        console.error("Failed to load flagged reports:", error);
+      }
+    };
+
     if (communityId) {
-      setFlaggedReports(getMockFlaggedReports(communityId));
+      loadFlaggedReports();
     }
   }, [communityId]);
 

@@ -13,6 +13,7 @@ import AdminRoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
 import UserSuspendDialog from "@/components/admin/UserSuspendDialog";
 import UserActivateDialog from "@/components/admin/UserActivateDialog";
 import { api } from "@/lib/api";
+import type { User } from "@/lib/types";
 
 interface AppUser {
   id: string;
@@ -42,8 +43,36 @@ const AdminUsersPage = () => {
 
   // Load users and pending role changes from api.ts
   useEffect(() => {
-    api.getAdminUsers().then(setUsers);
-    api.getPendingAdminRoleChanges().then(setPendingAdminRoleChanges);
+    const loadUsers = async () => {
+      try {
+        const apiUsers = await api.getAdminUsers();
+        const transformedUsers = apiUsers.map((u: User) => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          joinDate: u.createdAt,
+          role: u.role,
+          status: u.isSuspended ? "suspended" : u.isActive ? "active" : "banned",
+          communities: [],
+          suspensionReason: u.suspensionReason,
+        }));
+        setUsers(transformedUsers);
+      } catch (error) {
+        console.error("Failed to load users:", error);
+      }
+    };
+
+    const loadPendingRoleChanges = async () => {
+      try {
+        const pendingChanges = await api.getPendingAdminRoleChanges();
+        setPendingAdminRoleChanges(pendingChanges);
+      } catch (error) {
+        console.error("Failed to load pending role changes:", error);
+      }
+    };
+
+    loadUsers();
+    loadPendingRoleChanges();
   }, []);
 
   const filteredUsers = users.filter(
