@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Shield, Search, User, AlertTriangle } from "lucide-react";
+import { Shield, Search, User as UserIcon, AlertTriangle } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import UserProfileDialog from "@/components/admin/UserProfileDialog";
 import RoleChangeDialog from "@/components/admin/RoleChangeDialog";
@@ -46,7 +46,7 @@ const AdminUsersPage = () => {
     const loadUsers = async () => {
       try {
         const apiUsers = await api.getAdminUsers();
-        const transformedUsers = apiUsers.map((u: User) => ({
+        const transformedUsers: AppUser[] = apiUsers.map((u: User) => ({
           id: u.id,
           name: u.name,
           email: u.email,
@@ -270,7 +270,7 @@ const AdminUsersPage = () => {
             accessor: (user: AppUser) => (
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-social-primary flex items-center justify-center text-white flex-shrink-0">
-                  <User className="h-4 w-4" />
+                  <UserIcon className="h-4 w-4" />
                 </div>
                 <span className="font-medium truncate">{user.name}</span>
               </div>
