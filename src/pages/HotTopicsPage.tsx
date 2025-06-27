@@ -40,14 +40,14 @@ const HotTopicsPage = () => {
     Promise.all([api.getHotPosts(), api.getCommunities()]).then(
       ([posts, communities]) => {
         // Build a set of valid community IDs
-        const validCommunityIds = new Set(communities.map((c) => c.id));
+        const validCommunityIds = new Set(communities.map((c) => c.slug));
         setTrendingCommunities(
           communities.map((c) => ({
-            id: c.id,
+            id: c.slug,
             name: c.name,
             description: c.description,
             memberCount: c.memberCount,
-            growthRate: Math.round(Math.random() * 20 * 10) / 10, // mock growth
+            growthRate: Math.round(Math.random() * 20 * 10) / 10,
             category: c.category,
           }))
         );

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,20 +14,10 @@ import {
 } from "@/components/ui/pagination";
 import CommunityCard from "@/components/community/CommunityCard";
 import { mockPendingModeratorRoleChanges } from "@/lib/api";
-import type { Report } from "@/lib/types";
+import type { Report, Community } from "@/lib/types";
 import { api } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
-interface Community {
-  id: string;
-  name: string;
-  description: string;
-  memberCount: number;
-  tags: string[];
-  isJoined: boolean;
-  isModerator: boolean;
-}
-
-// Define the type for pending moderator role changes
 interface PendingModeratorRoleChange {
   id: string;
   user: {
@@ -48,89 +38,28 @@ interface PendingModeratorRoleChange {
 
 const CommunitiesPage = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const communitiesPerPage = 6;
+  const [allCommunities, setAllCommunities] = useState<Community[]>([]);
 
-  // Mock data - in a real app, this would come from an API
-  const [allCommunities, setAllCommunities] = useState<Community[]>([
-    {
-      id: "photography",
-      name: "Photography Enthusiasts",
-      description:
-        "A place for photographers to share their work and discuss techniques",
-      memberCount: 1250,
-      tags: ["Photography", "Art", "Camera"],
-      isJoined: true,
-      isModerator: true,
-    },
-    {
-      id: "tech-innovators",
-      name: "Tech Innovators",
-      description: "Discussing the latest in technology and innovation",
-      memberCount: 890,
-      tags: ["Technology", "Innovation", "Startups"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "cooking-adventures",
-      name: "Cooking Adventures",
-      description: "Share recipes, cooking tips, and culinary experiences",
-      memberCount: 2100,
-      tags: ["Cooking", "Recipes", "Food"],
-      isJoined: true,
-      isModerator: false,
-    },
-    {
-      id: "travel-stories",
-      name: "Travel Stories",
-      description: "Share your travel experiences and get recommendations",
-      memberCount: 756,
-      tags: ["Travel", "Adventure", "Culture"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "fitness-health",
-      name: "Fitness & Health",
-      description: "Tips, motivation, and discussions about fitness and health",
-      memberCount: 1543,
-      tags: ["Fitness", "Health", "Wellness"],
-      isJoined: true,
-      isModerator: false,
-    },
-    {
-      id: "book-club",
-      name: "Book Club",
-      description: "Monthly book discussions and reading recommendations",
-      memberCount: 432,
-      tags: ["Books", "Reading", "Literature"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "gaming-hub",
-      name: "Gaming Hub",
-      description: "Discuss games, share gameplay, and find gaming partners",
-      memberCount: 2890,
-      tags: ["Gaming", "Entertainment", "Community"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "art-design",
-      name: "Art & Design",
-      description: "Showcase artwork and discuss design principles",
-      memberCount: 1120,
-      tags: ["Art", "Design", "Creative"],
-      isJoined: false,
-      isModerator: false,
-    },
-  ]);
+  useEffect(() => {
+    api.getCommunities().then((data) => {
+      setAllCommunities(data as Community[]);
+    });
+  }, []);
+
+  // Add isModerator property dynamically based on user id and community.moderators
+  const communitiesWithModerator = allCommunities.map((community) => ({
+    ...community,
+    isModerator: user
+      ? community.moderators?.includes(user.id) ?? false
+      : false,
+  }));
 
   // Only show communities the user is a member of
-  const myCommunities = allCommunities.filter(
+  const myCommunities = communitiesWithModerator.filter(
     (community) => community.isJoined
   );
   const filteredCommunities = myCommunities.filter(
@@ -155,7 +84,7 @@ const CommunitiesPage = () => {
   const handleJoinCommunity = (communityId: string) => {
     setAllCommunities((communities) =>
       communities.map((community) =>
-        community.id === communityId
+        community.slug === communityId
           ? {
               ...community,
               isJoined: !community.isJoined,
@@ -167,7 +96,7 @@ const CommunitiesPage = () => {
       )
     );
 
-    const community = allCommunities.find((c) => c.id === communityId);
+    const community = allCommunities.find((c) => c.slug === communityId);
     toast({
       title: community?.isJoined ? "Left community" : "Joined community",
       description: community?.isJoined
@@ -193,7 +122,7 @@ const CommunitiesPage = () => {
   // Fetch moderation actions for all communities the user moderates
   useEffect(() => {
     // Only for communities the user moderates
-    const moderatedCommunities = allCommunities.filter((c) => c.isModerator);
+    const moderatedCommunities = allCommunities.filter((c) => c.moderators);
     Promise.all(
       moderatedCommunities.map((community) =>
         Promise.all([
@@ -208,7 +137,7 @@ const CommunitiesPage = () => {
               (r) =>
                 r.communityId &&
                 r.status === "pending" &&
-                r.communityId === community.id
+                r.communityId === community.slug
             ).length;
             const roleChangeCount = roleChanges.filter(
               (rc) =>
@@ -279,8 +208,8 @@ const CommunitiesPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         {myCommunities.map((community) => (
           <CommunityCard
-            key={community.id}
-            id={community.id}
+            key={community.slug}
+            id={community.slug}
             name={community.name}
             description={community.description}
             memberCount={community.memberCount}

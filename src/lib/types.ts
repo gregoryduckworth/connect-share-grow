@@ -14,7 +14,7 @@ export interface Post {
 }
 
 export interface Community {
-  id: string;
+  slug: string;
   name: string;
   description: string;
   memberCount: number;

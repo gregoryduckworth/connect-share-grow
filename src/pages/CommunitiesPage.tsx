@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,9 +21,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
 
 interface Community {
-  id: string;
+  slug: string;
   name: string;
   description: string;
   memberCount: number;
@@ -42,193 +43,21 @@ const CommunitiesPage = () => {
     perPageOptions[0]
   );
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
+  const [allCommunities, setAllCommunities] = useState<Community[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - in a real app, this would come from an API
-  const [allCommunities, setAllCommunities] = useState<Community[]>([
-    {
-      id: "1",
-      name: "Photography Enthusiasts",
-      description:
-        "A place for photographers to share their work and discuss techniques",
-      memberCount: 1250,
-      tags: ["Photography", "Art", "Camera"],
-      isJoined: true,
-      isModerator: true,
-    },
-    {
-      id: "2",
-      name: "Tech Innovators",
-      description: "Discussing the latest in technology and innovation",
-      memberCount: 890,
-      tags: ["Technology", "Innovation", "Startups"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "3",
-      name: "Cooking Adventures",
-      description: "Share recipes, cooking tips, and culinary experiences",
-      memberCount: 2100,
-      tags: ["Cooking", "Recipes", "Food"],
-      isJoined: true,
-      isModerator: false,
-    },
-    {
-      id: "4",
-      name: "Travel Stories",
-      description: "Share your travel experiences and get recommendations",
-      memberCount: 756,
-      tags: ["Travel", "Adventure", "Culture"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "5",
-      name: "Fitness & Health",
-      description: "Tips, motivation, and discussions about fitness and health",
-      memberCount: 1543,
-      tags: ["Fitness", "Health", "Wellness"],
-      isJoined: true,
-      isModerator: false,
-    },
-    {
-      id: "6",
-      name: "Book Club",
-      description: "Monthly book discussions and reading recommendations",
-      memberCount: 432,
-      tags: ["Books", "Reading", "Literature"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "7",
-      name: "Gaming Hub",
-      description: "Discuss games, share gameplay, and find gaming partners",
-      memberCount: 2890,
-      tags: ["Gaming", "Entertainment", "Community"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "8",
-      name: "Art & Design",
-      description: "Showcase artwork and discuss design principles",
-      memberCount: 1120,
-      tags: ["Art", "Design", "Creative"],
-      isJoined: false,
-      isModerator: false,
-    },
-    // Additional mocked communities for pagination
-    {
-      id: "9",
-      name: "Music Makers",
-      description:
-        "A community for musicians and music lovers to collaborate and share.",
-      memberCount: 980,
-      tags: ["Music", "Collaboration", "Instruments"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "10",
-      name: "Sustainable Living",
-      description: "Discuss eco-friendly habits and sustainable lifestyles.",
-      memberCount: 1340,
-      tags: ["Sustainability", "Eco", "Green"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "11",
-      name: "Parenting Support",
-      description: "Advice and support for parents at every stage.",
-      memberCount: 760,
-      tags: ["Parenting", "Family", "Support"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "12",
-      name: "Entrepreneurs United",
-      description: "Connect with fellow entrepreneurs and share business tips.",
-      memberCount: 2105,
-      tags: ["Business", "Entrepreneurship", "Startups"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "13",
-      name: "Pet Lovers",
-      description: "Share stories, tips, and photos of your pets.",
-      memberCount: 1580,
-      tags: ["Pets", "Animals", "Care"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "14",
-      name: "Language Exchange",
-      description: "Practice and learn new languages with others.",
-      memberCount: 1200,
-      tags: ["Languages", "Learning", "Exchange"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "15",
-      name: "Film Buffs",
-      description: "Discuss movies, directors, and the art of filmmaking.",
-      memberCount: 890,
-      tags: ["Movies", "Film", "Discussion"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "16",
-      name: "Science Explorers",
-      description: "Explore the wonders of science and discovery.",
-      memberCount: 1010,
-      tags: ["Science", "Discovery", "Learning"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "17",
-      name: "Mindfulness & Meditation",
-      description: "Share mindfulness practices and meditation tips.",
-      memberCount: 670,
-      tags: ["Mindfulness", "Meditation", "Wellness"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "18",
-      name: "Home Gardeners",
-      description: "Tips and inspiration for home gardening enthusiasts.",
-      memberCount: 940,
-      tags: ["Gardening", "Plants", "Home"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "19",
-      name: "Cycling Community",
-      description: "Connect with cyclists and share your rides.",
-      memberCount: 800,
-      tags: ["Cycling", "Fitness", "Outdoors"],
-      isJoined: false,
-      isModerator: false,
-    },
-    {
-      id: "20",
-      name: "Board Game Society",
-      description: "Discuss and play board games with others.",
-      memberCount: 540,
-      tags: ["Board Games", "Fun", "Strategy"],
-      isJoined: false,
-      isModerator: false,
-    },
-  ]);
+  useEffect(() => {
+    setLoading(true);
+    api.getCommunities().then((data) => {
+      setAllCommunities(
+        data.map((community) => ({
+          ...community,
+          isModerator: false,
+        }))
+      );
+      setLoading(false);
+    });
+  }, []);
 
   // Sort and filter communities
   const filteredCommunities = allCommunities
@@ -261,7 +90,7 @@ const CommunitiesPage = () => {
   const handleJoinCommunity = (communityId: string) => {
     setAllCommunities((communities) =>
       communities.map((community) =>
-        community.id === communityId
+        community.slug === communityId
           ? {
               ...community,
               isJoined: !community.isJoined,
@@ -273,7 +102,7 @@ const CommunitiesPage = () => {
       )
     );
 
-    const community = allCommunities.find((c) => c.id === communityId);
+    const community = allCommunities.find((c) => c.slug === communityId);
     toast({
       title: community?.isJoined ? "Left community" : "Joined community",
       description: community?.isJoined
@@ -284,7 +113,7 @@ const CommunitiesPage = () => {
 
   const handleCreateCommunity = (communityData: Community) => {
     // In a real app, this would make an API call
-    console.log("Creating community:", communityData);
+    setAllCommunities((prev) => [communityData, ...prev]);
     toast({
       title: "Community created!",
       description: "Your new community has been created successfully.",
@@ -372,8 +201,8 @@ const CommunitiesPage = () => {
       >
         {getCurrentPageCommunities(filteredCommunities).map((community) => (
           <CommunityCard
-            key={community.id}
-            id={community.id}
+            key={community.slug}
+            id={community.slug}
             name={community.name}
             description={community.description}
             memberCount={community.memberCount}
