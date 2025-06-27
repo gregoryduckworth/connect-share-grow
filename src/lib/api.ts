@@ -1,3 +1,4 @@
+
 import type { Post, Community, User, Reply, Notification, AdminNotification, Report, Connection, ChatMessage, PostDetailData, PostDetailReply, CommunityDetail, CommunityPost } from "./types";
 
 // Mock Database Tables - separated by type for easier management
@@ -118,15 +119,15 @@ const COMMUNITIES_TABLE: Community[] = [
     moderators: ["c3d4e5f6-g7h8-9012-3456-789012cdefgh"]
   },
   {
-    slug: "travel-adventures",
-    name: "Travel Adventures",
-    description: "Share your travel experiences, tips, and discover new destinations around the world.",
-    memberCount: 1534,
-    postCount: 201,
-    category: "Travel & Lifestyle",
-    tags: ["travel", "adventure", "destinations", "culture"],
+    slug: "entrepreneurs-united",
+    name: "Entrepreneurs United",
+    description: "Connect with fellow entrepreneurs, share business insights, and grow your network.",
+    memberCount: 1834,
+    postCount: 167,
+    category: "Business",
+    tags: ["entrepreneurship", "business", "startups", "networking"],
     isJoined: false,
-    lastActivity: new Date("2024-01-22T18:15:00Z"),
+    lastActivity: new Date("2024-01-21T09:30:00Z"),
     createdBy: "e5f6g7h8-i9j0-1234-5678-901234efghij",
     status: "active",
     moderators: ["e5f6g7h8-i9j0-1234-5678-901234efghij"]
@@ -174,11 +175,11 @@ const POSTS_TABLE: Post[] = [
   },
   {
     id: "p4d5e6f7-g8h9-i012-3456-789012defghi",
-    title: "Hidden Gems in Southeast Asia",
-    content: "Just returned from an amazing backpacking trip through Southeast Asia! I discovered some incredible hidden gems that aren't in typical travel guides. From secluded beaches in the Philippines to mountain villages in Vietnam, here are my top 10 off-the-beaten-path destinations that every traveler should consider.",
+    title: "Building a Sustainable Startup Culture",
+    content: "Creating a lasting company culture is one of the biggest challenges for entrepreneurs. After building three startups, I've learned that culture isn't something you can force - it grows organically from your values and actions. Here are the key principles that have helped me build strong, sustainable teams.",
     author: "e5f6g7h8-i9j0-1234-5678-901234efghij",
-    communityId: "travel-adventures",
-    communityName: "Travel Adventures",
+    communityId: "entrepreneurs-united",
+    communityName: "Entrepreneurs United",
     createdAt: new Date("2024-01-22T18:15:00Z"),
     likes: 34,
     replies: 15,
@@ -216,6 +217,45 @@ const REPLIES_TABLE: Reply[] = [
   }
 ];
 
+const NOTIFICATIONS_TABLE: Notification[] = [
+  {
+    id: "n1a2b3c4-d5e6-f789-0123-456789abcdef",
+    type: "reply",
+    title: "New reply to your post",
+    message: "David Kim replied to your post about camera settings",
+    timestamp: new Date("2024-01-25T15:45:00Z"),
+    isRead: false,
+    userId: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    postId: "p1a2b3c4-d5e6-f789-0123-456789abcdef",
+    communityId: "photography-enthusiasts"
+  },
+  {
+    id: "n2b3c4d5-e6f7-g890-1234-567890bcdefg",
+    type: "mention",
+    title: "You were mentioned",
+    message: "Emma Wilson mentioned you in Tech Discussions",
+    timestamp: new Date("2024-01-24T17:30:00Z"),
+    isRead: false,
+    userId: "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
+    postId: "p2b3c4d5-e6f7-g890-1234-567890bcdefg",
+    communityId: "tech-discussions"
+  }
+];
+
+const REPORTS_TABLE: Report[] = [
+  {
+    id: "rep1a2b3-c4d5-e6f7-g890-123456789abc",
+    type: "post",
+    reportedBy: "c3d4e5f6-g7h8-9012-3456-789012cdefgh",
+    reportedAt: new Date("2024-01-24T10:30:00Z"),
+    reason: "Inappropriate content",
+    status: "pending",
+    content: "This post contains inappropriate language and violates community guidelines.",
+    postId: "p1a2b3c4-d5e6-f789-0123-456789abcdef",
+    communityId: "photography-enthusiasts"
+  }
+];
+
 // Helper function to get user name by ID
 const getUserNameById = (userId: string): string => {
   const user = USERS_TABLE.find(u => u.id === userId);
@@ -237,12 +277,12 @@ export const api = {
       author: getUserNameById(post.author),
     }));
   },
+  
   getPostDetail: async (postId: string): Promise<PostDetailData | undefined> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
     const post = POSTS_TABLE.find((post) => post.id === postId);
     if (!post) return undefined;
 
-    // Fetch replies for the post
     const replies: PostDetailReply[] = REPLIES_TABLE.filter(
       (reply) => reply.postId === postId
     ).map((reply) => ({
@@ -252,7 +292,7 @@ export const api = {
       timestamp: reply.createdAt,
       likes: reply.likes,
       isLiked: false,
-      replies: [], // Mocked as no nested replies in this example
+      replies: [],
     }));
 
     return {
@@ -273,30 +313,22 @@ export const api = {
       communityName: post.communityName,
     };
   },
+  
   getReports: async (): Promise<Report[]> => {
     await new Promise(resolve => setTimeout(resolve, 400));
-    return [
-      {
-        id: "rep1a2b3-c4d5-e6f7-g890-123456789abc",
-        type: "post",
-        reportedBy: "c3d4e5f6-g7h8-9012-3456-789012cdefgh",
-        reportedAt: new Date("2024-01-24T10:30:00Z"),
-        reason: "Inappropriate content",
-        status: "pending",
-        content: "This post contains inappropriate language and violates community guidelines.",
-        postId: "p1a2b3c4-d5e6-f789-0123-456789abcdef",
-        communityId: "photography-enthusiasts"
-      }
-    ];
+    return REPORTS_TABLE;
   },
+  
   getUsers: async (): Promise<User[]> => {
     await new Promise(resolve => setTimeout(resolve, 600));
     return USERS_TABLE;
   },
+  
   getCommunities: async (): Promise<Community[]> => {
     await new Promise(resolve => setTimeout(resolve, 500));
     return COMMUNITIES_TABLE;
   },
+  
   getHotPosts: async (): Promise<Post[]> => {
     await new Promise(resolve => setTimeout(resolve, 300));
     return POSTS_TABLE
@@ -307,6 +339,7 @@ export const api = {
         communityName: getCommunityNameBySlug(post.communityId)
       }));
   },
+  
   getCommunityPosts: async (communitySlug: string): Promise<CommunityPost[]> => {
     await new Promise(resolve => setTimeout(resolve, 400));
     return POSTS_TABLE
@@ -326,6 +359,7 @@ export const api = {
         tags: []
       }));
   },
+  
   getCommunityDetail: async (communitySlug: string): Promise<CommunityDetail | null> => {
     await new Promise(resolve => setTimeout(resolve, 300));
     const community = COMMUNITIES_TABLE.find(c => c.slug === communitySlug);
@@ -359,6 +393,7 @@ export const api = {
       ]
     };
   },
+  
   createPost: async (communitySlug: string, postData: {
     title: string;
     content: string;
@@ -370,7 +405,7 @@ export const api = {
       id: `p${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       title: postData.title,
       content: postData.content,
-      author: "a1b2c3d4-e5f6-7890-1234-567890abcdef", // Current user ID
+      author: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
       communityId: communitySlug,
       communityName: getCommunityNameBySlug(communitySlug),
       createdAt: new Date(),
@@ -382,6 +417,142 @@ export const api = {
     POSTS_TABLE.push(newPost);
     return newPost;
   },
+
+  // Notification methods
+  getNotifications: async (): Promise<Notification[]> => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return NOTIFICATIONS_TABLE;
+  },
+
+  markNotificationAsRead: async (notificationId: string): Promise<void> => {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    const notification = NOTIFICATIONS_TABLE.find(n => n.id === notificationId);
+    if (notification) {
+      notification.isRead = true;
+    }
+  },
+
+  // Report methods
+  submitReport: async (reportData: any): Promise<Report> => {
+    await new Promise(resolve => setTimeout(resolve, 400));
+    const newReport: Report = {
+      id: `rep${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      type: reportData.type,
+      reportedBy: reportData.reportedBy,
+      reportedAt: new Date(),
+      reason: reportData.reason,
+      status: "pending",
+      content: reportData.content,
+      postId: reportData.postId,
+      communityId: reportData.communityId
+    };
+    
+    REPORTS_TABLE.push(newReport);
+    return newReport;
+  },
+
+  // Admin methods
+  getAdminRoles: async (): Promise<any[]> => {
+    await new Promise(resolve => setTimeout(resolve, 400));
+    return [
+      {
+        name: "Admin",
+        description: "Full platform access and control",
+        permissions: ["Manage users", "Manage communities", "Access analytics", "System settings"],
+        userCount: 1,
+        users: USERS_TABLE.filter(u => u.role === "admin"),
+        icon: "admin",
+        color: "bg-red-500"
+      },
+      {
+        name: "Moderator", 
+        description: "Community moderation and user management",
+        permissions: ["Moderate content", "Manage community posts", "Handle reports"],
+        userCount: 1,
+        users: USERS_TABLE.filter(u => u.role === "moderator"),
+        icon: "moderator",
+        color: "bg-blue-500"
+      },
+      {
+        name: "User",
+        description: "Standard user access",
+        permissions: ["Create posts", "Join communities", "Comment and like"],
+        userCount: USERS_TABLE.filter(u => u.role === "user").length,
+        users: USERS_TABLE.filter(u => u.role === "user").slice(0, 5),
+        icon: "user",
+        color: "bg-green-500"
+      }
+    ];
+  },
+
+  getAdminUsers: async (): Promise<User[]> => {
+    await new Promise(resolve => setTimeout(resolve, 400));
+    return USERS_TABLE;
+  },
+
+  getPendingAdminRoleChanges: async (): Promise<any[]> => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return [];
+  },
+
+  getAdminReports: async (): Promise<Report[]> => {
+    await new Promise(resolve => setTimeout(resolve, 400));
+    return REPORTS_TABLE;
+  },
+
+  getAdminCommunities: async (): Promise<Community[]> => {
+    await new Promise(resolve => setTimeout(resolve, 400));
+    return COMMUNITIES_TABLE;
+  },
+
+  getPendingCommunities: async (): Promise<Community[]> => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return [];
+  },
+
+  // Analytics methods
+  getAnalyticsCommunities: async (): Promise<any[]> => {
+    await new Promise(resolve => setTimeout(resolve, 400));
+    return COMMUNITIES_TABLE.map(c => ({
+      name: c.name,
+      members: c.memberCount,
+      posts: c.postCount,
+      activity: Math.floor(Math.random() * 100)
+    }));
+  },
+
+  getPlatformStats: async (): Promise<any> => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return {
+      totalUsers: USERS_TABLE.length,
+      totalCommunities: COMMUNITIES_TABLE.length,
+      totalPosts: POSTS_TABLE.length,
+      totalReports: REPORTS_TABLE.length
+    };
+  },
+
+  getActivityData: async (): Promise<any[]> => {
+    await new Promise(resolve => setTimeout(resolve, 400));
+    return [
+      { name: "Mon", posts: 12, users: 24 },
+      { name: "Tue", posts: 19, users: 32 },
+      { name: "Wed", posts: 15, users: 28 },
+      { name: "Thu", posts: 22, users: 45 },
+      { name: "Fri", posts: 18, users: 38 },
+      { name: "Sat", posts: 25, users: 52 },
+      { name: "Sun", posts: 20, users: 41 }
+    ];
+  },
+
+  getSizeDistribution: async (): Promise<any[]> => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return [
+      { name: "Small (1-100)", value: 45 },
+      { name: "Medium (101-500)", value: 30 },
+      { name: "Large (501-1000)", value: 20 },
+      { name: "Very Large (1000+)", value: 5 }
+    ];
+  }
 };
 
 // Mock pending moderator role changes
@@ -395,12 +566,21 @@ export const mockPendingModeratorRoleChanges = [
       joinDate: new Date("2024-01-12T11:30:00Z"),
       role: "user",
       status: "active",
-      communities: ["travel-adventures"]
+      communities: ["entrepreneurs-united"]
     },
     requestedBy: "d4e5f6g7-h8i9-0123-4567-890123defghi",
     requestedAt: new Date("2024-01-20T14:15:00Z"),
     newRole: "moderator",
-    communityName: "Travel Adventures",
+    communityName: "Entrepreneurs United",
     status: "pending"
   }
 ];
+
+// Export mockUsers for backward compatibility
+export const mockUsers = USERS_TABLE;
+
+// Mock flagged reports for moderation page
+export const getMockFlaggedReports = async (): Promise<Report[]> => {
+  await new Promise(resolve => setTimeout(resolve, 400));
+  return REPORTS_TABLE.filter(report => report.status === "pending");
+};
