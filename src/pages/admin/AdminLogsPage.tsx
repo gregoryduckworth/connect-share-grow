@@ -143,14 +143,29 @@ const AdminLogsPage = () => {
   ];
 
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="admin-logs-page"
+    >
       <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h1 className="text-3xl font-bold text-social-primary mb-2">
+        <div
+          className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+          data-testid="admin-logs-header"
+        >
+          <h1
+            className="text-3xl font-bold text-social-primary mb-2"
+            data-testid="admin-logs-title"
+          >
             Audit Log
           </h1>
-          <div className="flex flex-col md:flex-row gap-2">
-            <div className="relative w-full md:w-64">
+          <div
+            className="flex flex-col md:flex-row gap-2"
+            data-testid="admin-logs-filters"
+          >
+            <div
+              className="relative w-full md:w-64"
+              data-testid="admin-logs-search-container"
+            >
               <div
                 className="absolute inset-0 pointer-events-none rounded-lg border border-purple-200 bg-gradient-to-r from-purple-100/40 to-blue-100/20"
                 style={{ zIndex: 0 }}
@@ -165,6 +180,7 @@ const AdminLogsPage = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   type="text"
                   autoComplete="off"
+                  data-testid="admin-logs-search-input"
                 />
               </div>
             </div>
@@ -173,9 +189,18 @@ const AdminLogsPage = () => {
                 <SelectValue placeholder="Action Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Actions</SelectItem>
+                <SelectItem
+                  value="all"
+                  data-testid="admin-logs-action-filter-all"
+                >
+                  All Actions
+                </SelectItem>
                 {actionTypes.map((action) => (
-                  <SelectItem key={action} value={action}>
+                  <SelectItem
+                    key={action}
+                    value={action}
+                    data-testid={`admin-logs-action-filter-${action}`}
+                  >
                     {formatActionText(action)}
                   </SelectItem>
                 ))}
@@ -189,9 +214,18 @@ const AdminLogsPage = () => {
                 <SelectValue placeholder="Target Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem
+                  value="all"
+                  data-testid="admin-logs-target-filter-all"
+                >
+                  All Types
+                </SelectItem>
                 {targetTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
+                  <SelectItem
+                    key={type}
+                    value={type}
+                    data-testid={`admin-logs-target-filter-${type}`}
+                  >
                     {type.charAt(0).toUpperCase() + type.slice(1)}
                   </SelectItem>
                 ))}
@@ -201,6 +235,7 @@ const AdminLogsPage = () => {
               variant="default"
               onClick={clearFilters}
               className="flex items-center gap-2 px-4 py-0 h-12 min-w-[100px]"
+              data-testid="admin-logs-clear-filters"
             >
               <RotateCcw className="h-4 w-4" />
               Clear
@@ -212,10 +247,14 @@ const AdminLogsPage = () => {
           columns={columns}
           data={paginatedLogs}
           emptyMessage={
-            <div className="text-center p-8 text-social-muted">
+            <div
+              className="text-center p-8 text-social-muted"
+              data-testid="admin-logs-empty"
+            >
               No logs found matching your search criteria.
             </div>
           }
+          data-testid="admin-logs-table"
         />
         {filteredLogs.length > 0 && (
           <AdminTablePagination
@@ -228,6 +267,7 @@ const AdminLogsPage = () => {
               setPageSize(size);
               setCurrentPage(1);
             }}
+            data-testid="admin-logs-pagination"
           />
         )}
       </div>

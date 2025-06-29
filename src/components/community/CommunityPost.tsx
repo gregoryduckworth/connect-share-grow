@@ -87,6 +87,7 @@ const CommunityPost = ({
           : ""
       }`}
       style={{ transition: "transform 0.2s", willChange: "transform" }}
+      data-testid={`community-post-card-${post.id}`}
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
@@ -98,13 +99,29 @@ const CommunityPost = ({
             </Avatar>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-lg">{post.title}</h3>
+                <h3
+                  className="font-semibold text-lg"
+                  data-testid="community-post-title"
+                >
+                  {post.title}
+                </h3>
                 {post.isPinned && (
-                  <Pin className="h-4 w-4 text-social-primary" />
+                  <Pin
+                    className="h-4 w-4 text-social-primary"
+                    data-testid="community-post-pinned"
+                  />
                 )}
-                {post.isLocked && <Lock className="h-4 w-4 text-red-500" />}
+                {post.isLocked && (
+                  <Lock
+                    className="h-4 w-4 text-red-500"
+                    data-testid="community-post-locked"
+                  />
+                )}
               </div>
-              <p className="text-sm text-social-muted">
+              <p
+                className="text-sm text-social-muted"
+                data-testid="community-post-meta"
+              >
                 by{" "}
                 <UserProfileLink
                   userId={`user-${post.author
@@ -130,6 +147,7 @@ const CommunityPost = ({
                     onPin(post.id);
                   }}
                   className="text-xs"
+                  data-testid="community-post-pin-button"
                 >
                   <Pin className="h-3 w-3 mr-1" />
                   {post.isPinned ? "Unpin" : "Pin"}
@@ -147,6 +165,7 @@ const CommunityPost = ({
                         onUnlock(post.id);
                       }}
                       className="text-xs border-green-400 text-green-500 hover:bg-green-50"
+                      data-testid="community-post-unlock-button"
                     >
                       <Unlock className="h-3 w-3 mr-1" />
                       Unlock Post
@@ -162,6 +181,7 @@ const CommunityPost = ({
                         handleLockClick("post");
                       }}
                       className="text-xs border-red-400 text-red-500 hover:bg-red-50"
+                      data-testid="community-post-lock-button"
                     >
                       <Lock className="h-3 w-3 mr-1" />
                       Lock Post
@@ -179,6 +199,7 @@ const CommunityPost = ({
                         onUnlockComments(post.id);
                       }}
                       className="text-xs border-green-400 text-green-500 hover:bg-green-50"
+                      data-testid="community-post-unlock-comments-button"
                     >
                       <Unlock className="h-3 w-3 mr-1" />
                       Unlock Comments
@@ -194,6 +215,7 @@ const CommunityPost = ({
                         handleLockClick("comments");
                       }}
                       className="text-xs border-orange-400 text-orange-500 hover:bg-orange-50"
+                      data-testid="community-post-lock-comments-button"
                     >
                       <Lock className="h-3 w-3 mr-1" />
                       Lock Comments
@@ -206,7 +228,10 @@ const CommunityPost = ({
 
       <CardContent className="pt-0">
         {post.isLocked && post.lockReason && (
-          <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-md">
+          <div
+            className="mb-3 p-3 bg-red-50 border border-red-200 rounded-md"
+            data-testid="community-post-lock-reason"
+          >
             <p className="text-sm text-red-700">
               <Lock className="h-4 w-4 inline mr-1" />
               <strong>Post Locked:</strong> {post.lockReason}
@@ -215,7 +240,10 @@ const CommunityPost = ({
         )}
 
         {post.commentsLocked && post.commentsLockReason && (
-          <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded-md">
+          <div
+            className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded-md"
+            data-testid="community-post-lock-comments-reason"
+          >
             <p className="text-sm text-orange-700">
               <Lock className="h-4 w-4 inline mr-1" />
               <strong>Comments Locked:</strong> {post.commentsLockReason}
@@ -223,13 +251,23 @@ const CommunityPost = ({
           </div>
         )}
 
-        <p className="text-social-foreground mb-4">
+        <p
+          className="text-social-foreground mb-4"
+          data-testid="community-post-content"
+        >
           {showPreview ? truncateContent(post.content) : post.content}
         </p>
 
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div
+          className="flex flex-wrap gap-2 mb-4"
+          data-testid="community-post-tags"
+        >
           {post.tags.map((tag, index) => (
-            <Badge key={index} variant="secondary">
+            <Badge
+              key={index}
+              variant="secondary"
+              data-testid={`community-post-tag-${tag}`}
+            >
               {tag}
             </Badge>
           ))}
@@ -248,6 +286,7 @@ const CommunityPost = ({
               post.isLiked ? "text-red-500" : "text-social-muted"
             }`}
             disabled={post.isLocked}
+            data-testid="community-post-like-button"
           >
             <Heart
               className={`h-4 w-4 ${post.isLiked ? "fill-current" : ""}`}
@@ -264,6 +303,7 @@ const CommunityPost = ({
               onComment(post.id);
             }}
             className="flex items-center gap-2 text-social-muted"
+            data-testid="community-post-comment-button"
           >
             <MessageSquare className="h-4 w-4" />
             {post.comments} {showPreview ? "replies" : ""}

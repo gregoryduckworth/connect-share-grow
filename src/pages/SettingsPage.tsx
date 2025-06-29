@@ -93,21 +93,38 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
-      <div className="mb-6 text-left">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="settings-page-root"
+    >
+      <div className="mb-6 text-left" data-testid="settings-header">
+        <h1
+          className="text-2xl sm:text-3xl font-bold text-foreground mb-2"
+          data-testid="settings-title"
+        >
           {t("settings.title")}
         </h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
+        <p
+          className="text-sm sm:text-base text-muted-foreground"
+          data-testid="settings-subtitle"
+        >
           Manage your account preferences and privacy settings
         </p>
       </div>
 
-      <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 mb-6">
+      <Tabs
+        defaultValue="profile"
+        className="w-full"
+        data-testid="settings-tabs"
+      >
+        <TabsList
+          className="grid w-full grid-cols-4 mb-6"
+          data-testid="settings-tabs-list"
+        >
           <TabsTrigger
             value="profile"
             className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+            data-testid="settings-tab-profile"
           >
             <User className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">{t("settings.profile")}</span>
@@ -116,6 +133,7 @@ const SettingsPage = () => {
           <TabsTrigger
             value="notifications"
             className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+            data-testid="settings-tab-notifications"
           >
             <Bell className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">
@@ -126,6 +144,7 @@ const SettingsPage = () => {
           <TabsTrigger
             value="privacy"
             className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+            data-testid="settings-tab-privacy"
           >
             <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">{t("settings.privacy")}</span>
@@ -134,6 +153,7 @@ const SettingsPage = () => {
           <TabsTrigger
             value="appearance"
             className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+            data-testid="settings-tab-appearance"
           >
             <Palette className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline">{t("settings.appearance")}</span>
@@ -141,7 +161,11 @@ const SettingsPage = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile" className="mt-6">
+        <TabsContent
+          value="profile"
+          className="mt-6"
+          data-testid="settings-tab-content-profile"
+        >
           <Card>
             <CardHeader className="text-left">
               <CardTitle>Profile Information</CardTitle>
@@ -162,6 +186,7 @@ const SettingsPage = () => {
                         displayName: e.target.value,
                       }))
                     }
+                    data-testid="settings-profile-displayname-input"
                   />
                 </div>
                 <div className="space-y-2">
@@ -175,6 +200,7 @@ const SettingsPage = () => {
                         location: e.target.value,
                       }))
                     }
+                    data-testid="settings-profile-location-input"
                   />
                 </div>
               </div>
@@ -189,17 +215,25 @@ const SettingsPage = () => {
                     setProfile((prev) => ({ ...prev, bio: e.target.value }))
                   }
                   rows={3}
+                  data-testid="settings-profile-bio-textarea"
                 />
               </div>
 
-              <Button onClick={handleSaveProfile}>
+              <Button
+                onClick={handleSaveProfile}
+                data-testid="settings-profile-save-btn"
+              >
                 {t("settings.save")} Profile
               </Button>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="notifications" className="mt-6">
+        <TabsContent
+          value="notifications"
+          className="mt-6"
+          data-testid="settings-tab-content-notifications"
+        >
           <Card>
             <CardHeader className="text-left">
               <CardTitle>Notification Preferences</CardTitle>
@@ -208,7 +242,10 @@ const SettingsPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 text-left">
-              <div className="flex items-center justify-between">
+              <div
+                className="flex items-center justify-between"
+                data-testid="settings-notifications-community-updates-row"
+              >
                 <div>
                   <Label
                     htmlFor="communityUpdates"
@@ -229,10 +266,14 @@ const SettingsPage = () => {
                       communityUpdates: checked,
                     }))
                   }
+                  data-testid="settings-notifications-community-updates-switch"
                 />
               </div>
 
-              <div className="flex items-center justify-between">
+              <div
+                className="flex items-center justify-between"
+                data-testid="settings-notifications-direct-messages-row"
+              >
                 <div>
                   <Label
                     htmlFor="directMessages"
@@ -253,10 +294,14 @@ const SettingsPage = () => {
                       directMessages: checked,
                     }))
                   }
+                  data-testid="settings-notifications-direct-messages-switch"
                 />
               </div>
 
-              <div className="flex items-center justify-between">
+              <div
+                className="flex items-center justify-between"
+                data-testid="settings-notifications-connection-requests-row"
+              >
                 <div>
                   <Label
                     htmlFor="connectionRequests"
@@ -277,17 +322,25 @@ const SettingsPage = () => {
                       connectionRequests: checked,
                     }))
                   }
+                  data-testid="settings-notifications-connection-requests-switch"
                 />
               </div>
 
-              <Button onClick={handleSaveNotifications}>
+              <Button
+                onClick={handleSaveNotifications}
+                data-testid="settings-notifications-save-btn"
+              >
                 Save Notification Settings
               </Button>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="privacy" className="mt-6">
+        <TabsContent
+          value="privacy"
+          className="mt-6"
+          data-testid="settings-tab-content-privacy"
+        >
           <Card>
             <CardHeader className="text-left">
               <CardTitle>Privacy Settings</CardTitle>
@@ -296,7 +349,10 @@ const SettingsPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 text-left">
-              <div className="flex items-center justify-between">
+              <div
+                className="flex items-center justify-between"
+                data-testid="settings-privacy-show-location-row"
+              >
                 <div>
                   <Label
                     htmlFor="showLocation"
@@ -314,10 +370,14 @@ const SettingsPage = () => {
                   onCheckedChange={(checked) =>
                     setPrivacy((prev) => ({ ...prev, showLocation: checked }))
                   }
+                  data-testid="settings-privacy-show-location-switch"
                 />
               </div>
 
-              <div className="flex items-center justify-between">
+              <div
+                className="flex items-center justify-between"
+                data-testid="settings-privacy-allow-dms-row"
+              >
                 <div>
                   <Label
                     htmlFor="allowDirectMessages"
@@ -338,15 +398,25 @@ const SettingsPage = () => {
                       allowDirectMessages: checked,
                     }))
                   }
+                  data-testid="settings-privacy-allow-dms-switch"
                 />
               </div>
 
-              <Button onClick={handleSavePrivacy}>Save Privacy Settings</Button>
+              <Button
+                onClick={handleSavePrivacy}
+                data-testid="settings-privacy-save-btn"
+              >
+                Save Privacy Settings
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="appearance" className="mt-6">
+        <TabsContent
+          value="appearance"
+          className="mt-6"
+          data-testid="settings-tab-content-appearance"
+        >
           <Card>
             <CardHeader className="text-left">
               <CardTitle>Appearance Settings</CardTitle>
@@ -357,27 +427,54 @@ const SettingsPage = () => {
             <CardContent className="space-y-6 text-left">
               <div className="space-y-2">
                 <Label htmlFor="theme">Theme</Label>
-                <Select value={theme} onValueChange={setTheme}>
-                  <SelectTrigger>
+                <Select
+                  value={theme}
+                  onValueChange={setTheme}
+                  data-testid="settings-appearance-theme-select"
+                >
+                  <SelectTrigger data-testid="settings-appearance-theme-trigger">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="system">System</SelectItem>
+                    <SelectItem
+                      value="light"
+                      data-testid="settings-appearance-theme-light"
+                    >
+                      Light
+                    </SelectItem>
+                    <SelectItem
+                      value="dark"
+                      data-testid="settings-appearance-theme-dark"
+                    >
+                      Dark
+                    </SelectItem>
+                    <SelectItem
+                      value="system"
+                      data-testid="settings-appearance-theme-system"
+                    >
+                      System
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="language">{t("settings.language")}</Label>
-                <Select value={language} onValueChange={handleLanguageChange}>
-                  <SelectTrigger>
+                <Select
+                  value={language}
+                  onValueChange={handleLanguageChange}
+                  data-testid="settings-appearance-language-select"
+                >
+                  <SelectTrigger data-testid="settings-appearance-language-trigger">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {getSupportedLanguages().map((lang) => (
-                      <SelectItem key={lang.code} value={lang.code}>
+                      <SelectItem
+                        key={lang.code}
+                        value={lang.code}
+                        data-testid={`settings-appearance-language-option-${lang.code}`}
+                      >
                         {lang.name}
                       </SelectItem>
                     ))}
@@ -385,7 +482,10 @@ const SettingsPage = () => {
                 </Select>
               </div>
 
-              <Button onClick={handleSaveAppearance}>
+              <Button
+                onClick={handleSaveAppearance}
+                data-testid="settings-appearance-save-btn"
+              >
                 {t("settings.save")} Appearance Settings
               </Button>
             </CardContent>

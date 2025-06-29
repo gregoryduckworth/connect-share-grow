@@ -131,11 +131,17 @@ const CommunityDetailPage = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="community-detail-page"
+    >
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div
+        className="flex items-center gap-4 mb-6"
+        data-testid="community-detail-header"
+      >
         {/* Breadcrumbs */}
-        <div className="mb-6">
+        <div className="mb-6" data-testid="community-detail-breadcrumbs">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
@@ -158,23 +164,39 @@ const CommunityDetailPage = () => {
       </div>
 
       {/* Main Content + Sidebar Layout */}
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div
+        className="flex flex-col lg:flex-row gap-8"
+        data-testid="community-detail-layout"
+      >
         {/* Main Content */}
-        <div className="flex-1 min-w-0 space-y-6">
+        <div
+          className="flex-1 min-w-0 space-y-6"
+          data-testid="community-detail-main"
+        >
           {/* Community Info */}
-          <Card>
+          <Card data-testid="community-detail-info-card">
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div className="space-y-2">
-                  <CardTitle className="text-2xl text-social-primary">
+                  <CardTitle
+                    className="text-2xl text-social-primary"
+                    data-testid="community-detail-title"
+                  >
                     {community.name}
                   </CardTitle>
-                  <CardDescription className="text-base">
+                  <CardDescription
+                    className="text-base"
+                    data-testid="community-detail-description"
+                  >
                     {community.description}
                   </CardDescription>
                 </div>
                 {community.isModerator && (
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="community-moderate-button"
+                  >
                     <Settings className="h-4 w-4 mr-2" />
                     Moderate
                   </Button>
@@ -183,19 +205,32 @@ const CommunityDetailPage = () => {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
-                <div className="flex items-center gap-1">
+                <div
+                  className="flex items-center gap-1"
+                  data-testid="community-detail-members"
+                >
                   <Users className="h-4 w-4" />
                   {community.memberCount.toLocaleString()} members
                 </div>
-                <div className="flex items-center gap-1">
+                <div
+                  className="flex items-center gap-1"
+                  data-testid="community-detail-posts"
+                >
                   <Calendar className="h-4 w-4" />
                   {community.postCount} posts
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div
+                className="flex flex-wrap gap-2 mb-4"
+                data-testid="community-detail-tags"
+              >
                 {community.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary">
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    data-testid={`community-detail-tag-${tag}`}
+                  >
                     <Tag className="h-3 w-3 mr-1" />
                     {tag}
                   </Badge>
@@ -204,13 +239,21 @@ const CommunityDetailPage = () => {
 
               <div className="flex gap-3">
                 {community.isMember ? (
-                  <Button variant="outline">Leave Community</Button>
+                  <Button
+                    variant="outline"
+                    data-testid="leave-community-button"
+                  >
+                    Leave Community
+                  </Button>
                 ) : (
-                  <Button>Join Community</Button>
+                  <Button data-testid="join-community-button">
+                    Join Community
+                  </Button>
                 )}
                 <CreatePostForm
                   communityId={communitySlug!}
                   onPostCreated={handlePostCreated}
+                  data-testid="create-post-form"
                 />
               </div>
             </CardContent>
@@ -219,9 +262,17 @@ const CommunityDetailPage = () => {
           <Separator />
 
           {/* Posts Section */}
-          <div className="space-y-6">
+          <div
+            className="space-y-6"
+            data-testid="community-detail-posts-section"
+          >
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Recent Posts</h2>
+              <h2
+                className="text-xl font-semibold"
+                data-testid="community-detail-posts-title"
+              >
+                Recent Posts
+              </h2>
             </div>
 
             {posts.length === 0 ? (
@@ -233,6 +284,7 @@ const CommunityDetailPage = () => {
                   <CreatePostForm
                     communityId={communitySlug!}
                     onPostCreated={handlePostCreated}
+                    data-testid="create-post-form-empty"
                   />
                 </CardContent>
               </Card>
@@ -247,6 +299,7 @@ const CommunityDetailPage = () => {
                     isModerator={community.isModerator}
                     showPreview={true}
                     communitySlug={communitySlug}
+                    data-testid={`community-post-${post.id}`}
                   />
                 ))}
               </div>
@@ -255,9 +308,12 @@ const CommunityDetailPage = () => {
         </div>
 
         {/* Sidebar */}
-        <aside className="w-full lg:w-80 flex-shrink-0 space-y-6 lg:sticky lg:top-8 self-start h-fit">
+        <aside
+          className="w-full lg:w-80 flex-shrink-0 space-y-6 lg:sticky lg:top-8 self-start h-fit"
+          data-testid="community-detail-sidebar"
+        >
           {/* Moderators */}
-          <Card>
+          <Card data-testid="community-detail-moderators-card">
             <CardHeader>
               <CardTitle>Moderators</CardTitle>
             </CardHeader>
@@ -272,6 +328,7 @@ const CommunityDetailPage = () => {
                     <li
                       key={mod.id}
                       className="flex items-center gap-2 text-sm"
+                      data-testid={`community-detail-moderator-${mod.id}`}
                     >
                       <User className="h-4 w-4 text-social-primary" />
                       <UserProfileLink
@@ -291,14 +348,18 @@ const CommunityDetailPage = () => {
           </Card>
 
           {/* Community Rules */}
-          <Card>
+          <Card data-testid="community-detail-rules-card">
             <CardHeader>
               <CardTitle>Community Rules</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
                 {community.rules.map((rule, index) => (
-                  <li key={index} className="flex items-start gap-2 text-sm">
+                  <li
+                    key={index}
+                    className="flex items-start gap-2 text-sm"
+                    data-testid={`community-detail-rule-${index + 1}`}
+                  >
                     <span className="font-medium text-social-primary">
                       {index + 1}.
                     </span>

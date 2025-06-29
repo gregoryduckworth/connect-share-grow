@@ -13,7 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const ProfilePage = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [isCurrentUser] = useState(!!user); // Use context for current user check
+  const [isCurrentUser] = useState(!!user);
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     name: "John Doe",
@@ -83,23 +83,33 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="profile-page-root"
+    >
       <div className="grid gap-6">
         {/* Profile Header */}
-        <Card>
+        <Card data-testid="profile-header-card">
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex flex-col items-center">
-                <div className="relative">
-                  <Avatar className="h-24 w-24">
+                <div
+                  className="relative"
+                  data-testid="profile-avatar-container"
+                >
+                  <Avatar className="h-24 w-24" data-testid="profile-avatar">
                     {profileData.avatar ? (
                       <img
                         src={profileData.avatar}
                         alt="Profile"
                         className="h-full w-full object-cover"
+                        data-testid="profile-avatar-img"
                       />
                     ) : (
-                      <AvatarFallback className="bg-social-primary text-white text-2xl">
+                      <AvatarFallback
+                        className="bg-social-primary text-white text-2xl"
+                        data-testid="profile-avatar-fallback"
+                      >
                         <User className="h-12 w-12" />
                       </AvatarFallback>
                     )}
@@ -112,10 +122,12 @@ const ProfilePage = () => {
                         onChange={handleAvatarUpload}
                         className="hidden"
                         id="avatar-upload"
+                        data-testid="profile-avatar-upload-input"
                       />
                       <label
                         htmlFor="avatar-upload"
                         className="absolute bottom-0 right-0 bg-social-primary text-white p-2 rounded-full cursor-pointer hover:bg-social-primary/80 transition-colors"
+                        data-testid="profile-avatar-upload-label"
                       >
                         <Camera className="h-4 w-4" />
                       </label>
@@ -137,27 +149,47 @@ const ProfilePage = () => {
                           }))
                         }
                         className="text-2xl font-bold mb-2"
+                        data-testid="profile-name-input"
                       />
                     ) : (
-                      <h1 className="text-2xl font-bold">{profileData.name}</h1>
+                      <h1
+                        className="text-2xl font-bold"
+                        data-testid="profile-name"
+                      >
+                        {profileData.name}
+                      </h1>
                     )}
-                    <p className="text-social-muted">{profileData.email}</p>
+                    <p
+                      className="text-social-muted"
+                      data-testid="profile-email"
+                    >
+                      {profileData.email}
+                    </p>
                   </div>
 
                   {isCurrentUser && (
                     <div className="flex gap-2">
                       {isEditing ? (
                         <>
-                          <Button onClick={handleSave}>Save Changes</Button>
+                          <Button
+                            onClick={handleSave}
+                            data-testid="profile-save-btn"
+                          >
+                            Save Changes
+                          </Button>
                           <Button
                             variant="outline"
                             onClick={() => setIsEditing(false)}
+                            data-testid="profile-cancel-btn"
                           >
                             Cancel
                           </Button>
                         </>
                       ) : (
-                        <Button onClick={() => setIsEditing(true)}>
+                        <Button
+                          onClick={() => setIsEditing(true)}
+                          data-testid="profile-edit-btn"
+                        >
                           Edit Profile
                         </Button>
                       )}
@@ -166,11 +198,19 @@ const ProfilePage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-social-muted">
+                  <div
+                    className="flex items-center gap-2 text-social-muted"
+                    data-testid="profile-age-row"
+                  >
                     <Calendar className="h-4 w-4" />
-                    <span>Age: {calculateAge(profileData.dateOfBirth)}</span>
+                    <span data-testid="profile-age">
+                      Age: {calculateAge(profileData.dateOfBirth)}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2 text-social-muted">
+                  <div
+                    className="flex items-center gap-2 text-social-muted"
+                    data-testid="profile-location-row"
+                  >
                     <MapPin className="h-4 w-4" />
                     <span>
                       {isEditing ? (
@@ -183,15 +223,21 @@ const ProfilePage = () => {
                             }))
                           }
                           placeholder="Your location"
+                          data-testid="profile-location-input"
                         />
                       ) : (
-                        profileData.location
+                        <span data-testid="profile-location">
+                          {profileData.location}
+                        </span>
                       )}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-social-muted">
+                  <div
+                    className="flex items-center gap-2 text-social-muted"
+                    data-testid="profile-join-date-row"
+                  >
                     <User className="h-4 w-4" />
-                    <span>
+                    <span data-testid="profile-join-date">
                       Member since {profileData.joinDate.toLocaleDateString()}
                     </span>
                   </div>
@@ -202,9 +248,9 @@ const ProfilePage = () => {
         </Card>
 
         {/* Bio Section */}
-        <Card>
+        <Card data-testid="profile-bio-card">
           <CardHeader>
-            <CardTitle>About</CardTitle>
+            <CardTitle data-testid="profile-bio-title">About</CardTitle>
           </CardHeader>
           <CardContent>
             {isEditing ? (
@@ -222,34 +268,52 @@ const ProfilePage = () => {
                     }
                     placeholder="Tell us about yourself..."
                     rows={4}
+                    data-testid="profile-bio-input"
                   />
                 </div>
               </div>
             ) : (
-              <p className="text-social-foreground">{profileData.bio}</p>
+              <p className="text-social-foreground" data-testid="profile-bio">
+                {profileData.bio}
+              </p>
             )}
           </CardContent>
         </Card>
 
         {/* Communities Section - Only visible to current user */}
         {isCurrentUser && (
-          <Card>
+          <Card data-testid="profile-communities-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle
+                className="flex items-center gap-2"
+                data-testid="profile-communities-title"
+              >
                 <Users className="h-5 w-5" />
                 My Communities
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4">
+              <div
+                className="grid gap-4"
+                data-testid="profile-communities-list"
+              >
                 {profileData.communities.map((community, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    data-testid={`profile-community-row-${index}`}
                   >
                     <div>
-                      <h4 className="font-medium">{community.name}</h4>
-                      <p className="text-sm text-gray-500">
+                      <h4
+                        className="font-medium"
+                        data-testid={`profile-community-name-${index}`}
+                      >
+                        {community.name}
+                      </h4>
+                      <p
+                        className="text-sm text-gray-500"
+                        data-testid={`profile-community-joined-${index}`}
+                      >
                         Joined {community.joinedAt.toLocaleDateString()}
                       </p>
                     </div>
@@ -257,6 +321,7 @@ const ProfilePage = () => {
                       variant={
                         community.role === "Moderator" ? "default" : "secondary"
                       }
+                      data-testid={`profile-community-role-badge-${index}`}
                     >
                       {community.role}
                     </Badge>

@@ -40,27 +40,48 @@ const AdminSettingsPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
-      <div className="flex items-center gap-3 mb-2">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="admin-settings-page"
+    >
+      <div
+        className="flex items-center gap-3 mb-2"
+        data-testid="admin-settings-header"
+      >
         <div>
-          <h1 className="text-3xl font-bold text-social-primary leading-tight">
+          <h1
+            className="text-3xl font-bold text-social-primary leading-tight"
+            data-testid="admin-settings-title"
+          >
             Admin Settings
           </h1>
-          <p className="text-social-muted text-base">
+          <p
+            className="text-social-muted text-base"
+            data-testid="admin-settings-description"
+          >
             Configure platform settings and policies
           </p>
         </div>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-3">
+      <div
+        className="grid gap-8 md:grid-cols-3"
+        data-testid="admin-settings-cards"
+      >
         {/* General Settings */}
-        <Card className="shadow-md border-2 border-social-primary/10 col-span-1">
+        <Card
+          className="shadow-md border-2 border-social-primary/10 col-span-1"
+          data-testid="general-settings-card"
+        >
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle
+              className="flex items-center gap-2 text-lg"
+              data-testid="general-settings-title"
+            >
               <Shield className="h-5 w-5 text-social-primary" />
               General Settings
             </CardTitle>
-            <CardDescription>
+            <CardDescription data-testid="general-settings-description">
               Basic platform configuration and display settings
             </CardDescription>
           </CardHeader>
@@ -74,10 +95,14 @@ const AdminSettingsPage = () => {
                   handleSettingChange("siteName", e.target.value)
                 }
                 className="bg-white"
+                data-testid="input-site-name"
               />
             </div>
             <Separator />
-            <div className="flex items-center justify-between w-full">
+            <div
+              className="flex items-center justify-between w-full"
+              data-testid="setting-allow-registration"
+            >
               <div className="flex flex-col items-start text-left">
                 <Label className="font-semibold text-base">
                   Allow New User Registration
@@ -91,9 +116,13 @@ const AdminSettingsPage = () => {
                 onCheckedChange={(checked) =>
                   handleSettingChange("allowRegistration", checked)
                 }
+                data-testid="switch-allow-registration"
               />
             </div>
-            <div className="flex items-center justify-between w-full">
+            <div
+              className="flex items-center justify-between w-full"
+              data-testid="setting-require-email-verification"
+            >
               <div className="flex flex-col items-start text-left">
                 <Label className="font-semibold text-base">
                   Require Email Verification
@@ -107,24 +136,34 @@ const AdminSettingsPage = () => {
                 onCheckedChange={(checked) =>
                   handleSettingChange("requireEmailVerification", checked)
                 }
+                data-testid="switch-require-email-verification"
               />
             </div>
           </CardContent>
         </Card>
 
         {/* Community Settings */}
-        <Card className="shadow-md border-2 border-social-secondary/10 col-span-1">
+        <Card
+          className="shadow-md border-2 border-social-secondary/10 col-span-1"
+          data-testid="community-settings-card"
+        >
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle
+              className="flex items-center gap-2 text-lg"
+              data-testid="community-settings-title"
+            >
               <Flag className="h-5 w-5 text-social-secondary" />
               Community Settings
             </CardTitle>
-            <CardDescription>
+            <CardDescription data-testid="community-settings-description">
               Configure how communities are created and managed
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center justify-between w-full">
+            <div
+              className="flex items-center justify-between w-full"
+              data-testid="setting-auto-approve-communities"
+            >
               <div className="flex flex-col items-start text-left">
                 <Label className="font-semibold text-base">
                   Auto-approve Communities
@@ -138,6 +177,7 @@ const AdminSettingsPage = () => {
                 onCheckedChange={(checked) =>
                   handleSettingChange("autoApproveCommunities", checked)
                 }
+                data-testid="switch-auto-approve-communities"
               />
             </div>
             <div className="space-y-2">
@@ -155,6 +195,7 @@ const AdminSettingsPage = () => {
                   )
                 }
                 className="bg-white"
+                data-testid="input-max-community-name-length"
               />
             </div>
             <div className="space-y-2">
@@ -170,24 +211,34 @@ const AdminSettingsPage = () => {
                   )
                 }
                 className="bg-white"
+                data-testid="input-max-post-title-length"
               />
             </div>
           </CardContent>
         </Card>
 
         {/* Moderation Settings (full width on mobile, 1 col on desktop) */}
-        <Card className="shadow-md border-2 border-social-accent/10 md:col-span-1 col-span-3">
+        <Card
+          className="shadow-md border-2 border-social-accent/10 md:col-span-1 col-span-3"
+          data-testid="moderation-settings-card"
+        >
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
+            <CardTitle
+              className="flex items-center gap-2 text-lg"
+              data-testid="moderation-settings-title"
+            >
               <Users className="h-5 w-5 text-social-accent" />
               Moderation Settings
             </CardTitle>
-            <CardDescription>
+            <CardDescription data-testid="moderation-settings-description">
               Configure moderation policies and thresholds
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center justify-between w-full">
+            <div
+              className="flex items-center justify-between w-full"
+              data-testid="setting-moderator-requests-enabled"
+            >
               <div className="flex flex-col items-start text-left">
                 <Label className="font-semibold text-base">
                   Enable Moderator Requests
@@ -201,6 +252,7 @@ const AdminSettingsPage = () => {
                 onCheckedChange={(checked) =>
                   handleSettingChange("moderatorRequestsEnabled", checked)
                 }
+                data-testid="switch-moderator-requests-enabled"
               />
             </div>
             <div className="space-y-2">
@@ -218,6 +270,7 @@ const AdminSettingsPage = () => {
                   )
                 }
                 className="bg-white"
+                data-testid="input-inactive-moderator-threshold"
               />
               <p className="text-sm text-muted-foreground">
                 Alert admins when moderators have been inactive for this many
@@ -232,6 +285,7 @@ const AdminSettingsPage = () => {
         <Button
           onClick={handleSaveSettings}
           className="bg-social-primary hover:bg-social-secondary px-8 py-2 text-lg font-semibold shadow-md"
+          data-testid="save-settings-button"
         >
           Save Settings
         </Button>

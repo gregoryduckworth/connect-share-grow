@@ -99,13 +99,25 @@ const AdminAnalyticsPage = () => {
   );
 
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="admin-analytics-page"
+    >
       {/* Header with filters */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold text-social-primary mb-2">
+      <div
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+        data-testid="admin-analytics-header"
+      >
+        <h1
+          className="text-3xl font-bold text-social-primary mb-2"
+          data-testid="admin-analytics-title"
+        >
           Analytics & Statistics
         </h1>
-        <div className="flex flex-col md:flex-row gap-2">
+        <div
+          className="flex flex-col md:flex-row gap-2"
+          data-testid="admin-analytics-filters"
+        >
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -113,6 +125,7 @@ const AdminAnalyticsPage = () => {
                 role="combobox"
                 aria-expanded={open}
                 className="w-full md:w-48 justify-between px-4 py-0 h-12 flex items-center bg-white/90 border border-purple-200 rounded-lg shadow-none focus:border-purple-500 focus:shadow-lg focus:shadow-purple-200/40 transition-colors"
+                data-testid="admin-analytics-community-filter"
               >
                 {selectedCommunity === "all"
                   ? "All Communities"
@@ -122,7 +135,10 @@ const AdminAnalyticsPage = () => {
             </PopoverTrigger>
             <PopoverContent className="w-48 p-0">
               <Command>
-                <CommandInput placeholder="Search communities..." />
+                <CommandInput
+                  placeholder="Search communities..."
+                  data-testid="admin-analytics-community-search"
+                />
                 <CommandList>
                   <CommandEmpty>No community found.</CommandEmpty>
                   <CommandGroup>
@@ -132,6 +148,7 @@ const AdminAnalyticsPage = () => {
                         setSelectedCommunity("all");
                         setOpen(false);
                       }}
+                      data-testid="admin-analytics-community-all"
                     >
                       <Check
                         className={`mr-2 h-4 w-4 ${
@@ -150,6 +167,7 @@ const AdminAnalyticsPage = () => {
                           setSelectedCommunity(community.id);
                           setOpen(false);
                         }}
+                        data-testid={`admin-analytics-community-option-${community.id}`}
                       >
                         <Check
                           className={`mr-2 h-4 w-4 ${
@@ -171,16 +189,28 @@ const AdminAnalyticsPage = () => {
               <SelectValue placeholder="Time Range" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7">7 days</SelectItem>
-              <SelectItem value="30">30 days</SelectItem>
-              <SelectItem value="90">90 days</SelectItem>
-              <SelectItem value="365">1 year</SelectItem>
+              <SelectItem value="7" data-testid="admin-analytics-timerange-7">
+                7 days
+              </SelectItem>
+              <SelectItem value="30" data-testid="admin-analytics-timerange-30">
+                30 days
+              </SelectItem>
+              <SelectItem value="90" data-testid="admin-analytics-timerange-90">
+                90 days
+              </SelectItem>
+              <SelectItem
+                value="365"
+                data-testid="admin-analytics-timerange-365"
+              >
+                1 year
+              </SelectItem>
             </SelectContent>
           </Select>
           <Button
             variant="default"
             onClick={resetFilters}
             className="flex items-center gap-2 px-4 py-0 h-12 min-w-[100px]"
+            data-testid="admin-analytics-reset-button"
           >
             <RotateCcw className="h-4 w-4" />
             Reset
@@ -189,26 +219,35 @@ const AdminAnalyticsPage = () => {
       </div>
 
       {/* Filter indicator */}
-      <div className="flex items-center gap-2 text-sm">
+      <div
+        className="flex items-center gap-2 text-sm"
+        data-testid="admin-analytics-filter-indicator"
+      >
         <span className="text-muted-foreground">Showing:</span>
-        <Badge variant="default">
+        <Badge variant="default" data-testid="admin-analytics-filter-community">
           {selectedCommunity === "all"
             ? "All Communities"
             : selectedCommunityData?.name}
         </Badge>
-        <Badge variant="default">Last {timeRange} days</Badge>
+        <Badge variant="default" data-testid="admin-analytics-filter-timerange">
+          Last {timeRange} days
+        </Badge>
       </div>
 
       {/* Platform Overview Metrics */}
       {selectedCommunity === "all" && platformStats && (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div
+            className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+            data-testid="admin-analytics-metrics-cards"
+          >
             <AdminMetricsCard
               title="Total Users"
               value={platformStats?.totalUsers?.toLocaleString?.() ?? "-"}
               description="Registered platform users"
               icon={<Users className="h-4 w-4" />}
               trend={{ value: "+12% from last month", isPositive: true }}
+              data-testid="admin-analytics-metric-users"
             />
             <AdminMetricsCard
               title="Total Communities"
@@ -216,6 +255,7 @@ const AdminAnalyticsPage = () => {
               description="Active communities"
               icon={<Users className="h-4 w-4" />}
               trend={{ value: "+2 this month", isPositive: true }}
+              data-testid="admin-analytics-metric-communities"
             />
             <AdminMetricsCard
               title="Total Posts"
@@ -223,6 +263,7 @@ const AdminAnalyticsPage = () => {
               description="Posts across all communities"
               icon={<MessageSquare className="h-4 w-4" />}
               trend={{ value: "+18% from last month", isPositive: true }}
+              data-testid="admin-analytics-metric-posts"
             />
             <AdminMetricsCard
               title="Active Users"
@@ -230,11 +271,12 @@ const AdminAnalyticsPage = () => {
               description="Users active in last 30 days"
               icon={<TrendingUp className="h-4 w-4" />}
               trend={{ value: "66% of total users", isPositive: true }}
+              data-testid="admin-analytics-metric-active-users"
             />
           </div>
 
           {/* Community Size Distribution */}
-          <Card>
+          <Card data-testid="admin-analytics-size-distribution-card">
             <CardHeader>
               <CardTitle>Community Size Distribution</CardTitle>
             </CardHeader>
@@ -249,6 +291,7 @@ const AdminAnalyticsPage = () => {
                     label={({ name, value }) => `${name}: ${value}`}
                     outerRadius={80}
                     dataKey="value"
+                    data-testid="admin-analytics-size-distribution-pie"
                   >
                     {(sizeDistribution || []).map((entry, index) => {
                       const COLORS = [
@@ -265,7 +308,13 @@ const AdminAnalyticsPage = () => {
                       ];
                       const color =
                         entry.color || COLORS[index % COLORS.length];
-                      return <Cell key={`cell-${index}`} fill={color} />;
+                      return (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={color}
+                          data-testid={`admin-analytics-size-distribution-segment-${index}`}
+                        />
+                      );
                     })}
                   </Pie>
                   <Tooltip />
@@ -278,13 +327,17 @@ const AdminAnalyticsPage = () => {
 
       {/* Community-specific metrics */}
       {selectedCommunity !== "all" && selectedCommunityData && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div
+          className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+          data-testid="admin-analytics-community-metrics"
+        >
           <AdminMetricsCard
             title="Members"
             value={selectedCommunityData.members}
             description="Total community members"
             icon={<Users className="h-4 w-4" />}
             trend={{ value: "+8 this week", isPositive: true }}
+            data-testid="admin-analytics-community-metric-members"
           />
           <AdminMetricsCard
             title="Posts"
@@ -292,6 +345,7 @@ const AdminAnalyticsPage = () => {
             description="Total posts in community"
             icon={<MessageSquare className="h-4 w-4" />}
             trend={{ value: "+15 this week", isPositive: true }}
+            data-testid="admin-analytics-community-metric-posts"
           />
           <AdminMetricsCard
             title="Comments"
@@ -299,6 +353,7 @@ const AdminAnalyticsPage = () => {
             description="Total comments"
             icon={<MessageSquare className="h-4 w-4" />}
             trend={{ value: "+42 this week", isPositive: true }}
+            data-testid="admin-analytics-community-metric-comments"
           />
           <AdminMetricsCard
             title="Engagement Rate"
@@ -309,12 +364,13 @@ const AdminAnalyticsPage = () => {
             description="Comments per post"
             icon={<TrendingUp className="h-4 w-4" />}
             trend={{ value: "Above average", isPositive: true }}
+            data-testid="admin-analytics-community-metric-engagement"
           />
         </div>
       )}
 
       {/* Activity Chart */}
-      <Card>
+      <Card data-testid="admin-analytics-activity-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
@@ -323,7 +379,10 @@ const AdminAnalyticsPage = () => {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={activityData}>
+            <LineChart
+              data={activityData}
+              data-testid="admin-analytics-activity-chart"
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
@@ -334,18 +393,21 @@ const AdminAnalyticsPage = () => {
                 dataKey="users"
                 stroke="#8884d8"
                 name="Active Users"
+                data-testid="admin-analytics-activity-users"
               />
               <Line
                 type="monotone"
                 dataKey="posts"
                 stroke="#82ca9d"
                 name="Posts"
+                data-testid="admin-analytics-activity-posts"
               />
               <Line
                 type="monotone"
                 dataKey="comments"
                 stroke="#ffc658"
                 name="Comments"
+                data-testid="admin-analytics-activity-comments"
               />
             </LineChart>
           </ResponsiveContainer>
@@ -353,21 +415,39 @@ const AdminAnalyticsPage = () => {
       </Card>
 
       {/* Community Breakdown */}
-      <Card>
+      <Card data-testid="admin-analytics-breakdown-card">
         <CardHeader>
           <CardTitle>Community Breakdown</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={communityBreakdown}>
+            <BarChart
+              data={communityBreakdown}
+              data-testid="admin-analytics-breakdown-chart"
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="members" fill="#8884d8" name="Members" />
-              <Bar dataKey="posts" fill="#82ca9d" name="Posts" />
-              <Bar dataKey="comments" fill="#ffc658" name="Comments" />
+              <Bar
+                dataKey="members"
+                fill="#8884d8"
+                name="Members"
+                data-testid="admin-analytics-breakdown-members"
+              />
+              <Bar
+                dataKey="posts"
+                fill="#82ca9d"
+                name="Posts"
+                data-testid="admin-analytics-breakdown-posts"
+              />
+              <Bar
+                dataKey="comments"
+                fill="#ffc658"
+                name="Comments"
+                data-testid="admin-analytics-breakdown-comments"
+              />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

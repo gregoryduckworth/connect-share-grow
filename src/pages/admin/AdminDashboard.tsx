@@ -20,20 +20,38 @@ import InactiveModeratorAlert from "@/components/admin/InactiveModeratorAlert";
 
 const AdminDashboard = () => {
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="admin-dashboard-page"
+    >
+      <div
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+        data-testid="admin-dashboard-header"
+      >
         <div>
-          <h1 className="text-3xl font-bold text-social-primary mb-2">
+          <h1
+            className="text-3xl font-bold text-social-primary mb-2"
+            data-testid="admin-dashboard-title"
+          >
             Admin Dashboard
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
+          <p
+            className="text-sm sm:text-base text-muted-foreground"
+            data-testid="admin-dashboard-description"
+          >
             Manage your platform and monitor activity
           </p>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="md:col-span-1">
+      <div
+        className="grid gap-6 md:grid-cols-2"
+        data-testid="admin-dashboard-quick-actions"
+      >
+        <Card
+          className="md:col-span-1"
+          data-testid="admin-dashboard-quick-actions-card"
+        >
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
@@ -47,6 +65,7 @@ const AdminDashboard = () => {
                 variant="outline"
                 size="sm"
                 className="w-full justify-start h-10"
+                data-testid="admin-dashboard-manage-users"
               >
                 <Users className="h-4 w-4 mr-3" />
                 Manage Users
@@ -57,6 +76,7 @@ const AdminDashboard = () => {
                 variant="outline"
                 size="sm"
                 className="w-full justify-start h-10"
+                data-testid="admin-dashboard-manage-communities"
               >
                 <MessageSquare className="h-4 w-4 mr-3" />
                 Manage Communities
@@ -67,6 +87,7 @@ const AdminDashboard = () => {
                 variant="outline"
                 size="sm"
                 className="w-full justify-start h-10"
+                data-testid="admin-dashboard-review-reports"
               >
                 <AlertTriangle className="h-4 w-4 mr-3" />
                 Review Reports
@@ -75,7 +96,10 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-1">
+        <Card
+          className="md:col-span-1"
+          data-testid="admin-dashboard-moderation-card"
+        >
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
@@ -89,6 +113,7 @@ const AdminDashboard = () => {
                 variant="outline"
                 size="sm"
                 className="w-full justify-start h-10"
+                data-testid="admin-dashboard-manage-roles"
               >
                 <Shield className="h-4 w-4 mr-3" />
                 Manage Roles
@@ -99,6 +124,7 @@ const AdminDashboard = () => {
                 variant="outline"
                 size="sm"
                 className="w-full justify-start h-10"
+                data-testid="admin-dashboard-view-logs"
               >
                 <AlertTriangle className="h-4 w-4 mr-3" />
                 View Audit Logs
@@ -109,6 +135,7 @@ const AdminDashboard = () => {
                 variant="outline"
                 size="sm"
                 className="w-full justify-start h-10"
+                data-testid="admin-dashboard-settings"
               >
                 <Settings className="h-4 w-4 mr-3" />
                 Platform Settings
@@ -118,8 +145,11 @@ const AdminDashboard = () => {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+      <div
+        className="grid gap-4 md:grid-cols-3"
+        data-testid="admin-dashboard-metrics"
+      >
+        <Card data-testid="admin-dashboard-metric-users">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-500" />
@@ -135,7 +165,7 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card data-testid="admin-dashboard-metric-communities">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium flex items-center gap-2">
               <MessageSquare className="h-4 w-4 text-blue-500" />
@@ -151,7 +181,7 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card data-testid="admin-dashboard-metric-health">
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-medium flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-orange-500" />
@@ -170,10 +200,13 @@ const AdminDashboard = () => {
         </Card>
       </div>
 
-      <InactiveModeratorAlert />
+      <InactiveModeratorAlert data-testid="admin-dashboard-inactive-moderator-alert" />
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+      <div
+        className="grid gap-6 md:grid-cols-2"
+        data-testid="admin-dashboard-approvals-reports"
+      >
+        <Card data-testid="admin-dashboard-approvals-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5 text-primary" />
@@ -189,7 +222,11 @@ const AdminDashboard = () => {
                 </p>
               </div>
               <Link to="/admin/communities">
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  data-testid="admin-dashboard-approvals-view-all"
+                >
                   View All
                   <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
@@ -198,7 +235,7 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card data-testid="admin-dashboard-reports-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
@@ -214,7 +251,11 @@ const AdminDashboard = () => {
                 </p>
               </div>
               <Link to="/admin/reports">
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  data-testid="admin-dashboard-reports-review-all"
+                >
                   Review All
                   <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>

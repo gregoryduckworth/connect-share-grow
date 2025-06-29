@@ -17,7 +17,7 @@ const AdminReportsPage = () => {
 
   // Load reports from api.ts
   useEffect(() => {
-    api.getAdminReports().then(setReports);
+    api.getReports().then(setReports);
   }, []);
 
   const handleViewContent = (report) => {
@@ -153,7 +153,10 @@ const AdminReportsPage = () => {
   );
 
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="admin-reports-page"
+    >
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-social-primary mb-2">
@@ -170,7 +173,11 @@ const AdminReportsPage = () => {
             </CardContent>
           </Card>
         ) : (
-          <Tabs defaultValue="all" className="space-y-6">
+          <Tabs
+            defaultValue="all"
+            className="space-y-6"
+            data-testid="admin-reports-tabs"
+          >
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="all">
                 All Reports ({pendingReports.length})
@@ -214,6 +221,7 @@ const AdminReportsPage = () => {
         report={selectedReport}
         onResolve={handleResolve}
         onLockContent={handleLockContent}
+        data-testid="admin-report-details-dialog"
       />
     </div>
   );

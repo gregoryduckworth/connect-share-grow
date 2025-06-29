@@ -62,7 +62,10 @@ const AdminRolesPage = () => {
   }, []);
 
   const RoleCard = ({ role }: { role: Role }) => (
-    <Card className="flex flex-col h-full">
+    <Card
+      className="flex flex-col h-full"
+      data-testid={`admin-role-card-${role.name}`}
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
@@ -169,19 +172,32 @@ const AdminRolesPage = () => {
   );
 
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="admin-roles-page"
+    >
       <div>
-        <h1 className="text-3xl font-bold text-social-primary mb-2">
+        <h1
+          className="text-3xl font-bold text-social-primary mb-2"
+          data-testid="admin-roles-title"
+        >
           Roles & Permissions
         </h1>
-        <p className="text-social-muted">
+        <p className="text-social-muted" data-testid="admin-roles-description">
           Manage user roles and view their permissions across the platform
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div
+        className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+        data-testid="admin-roles-grid"
+      >
         {roles.map((role) => (
-          <RoleCard key={role.name} role={role} />
+          <RoleCard
+            key={role.name}
+            role={role}
+            data-testid={`admin-role-card-${role.name}`}
+          />
         ))}
       </div>
     </div>

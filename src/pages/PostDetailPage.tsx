@@ -449,9 +449,12 @@ const PostDetailPage = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="post-detail-page"
+    >
       {/* Breadcrumbs */}
-      <div className="mb-6">
+      <div className="mb-6" data-testid="post-detail-breadcrumbs">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -488,6 +491,7 @@ const PostDetailPage = () => {
           className={`mb-6 w-full ${
             post.isPinned ? "border-social-primary bg-social-accent/10" : ""
           }`}
+          data-testid="post-detail-card"
         >
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
@@ -499,13 +503,26 @@ const PostDetailPage = () => {
                 </Avatar>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-bold">{post.title}</h1>
+                    <h1 className="text-2xl font-bold" data-testid="post-title">
+                      {post.title}
+                    </h1>
                     {post.isPinned && (
-                      <Pin className="h-5 w-5 text-social-primary" />
+                      <Pin
+                        className="h-5 w-5 text-social-primary"
+                        data-testid="post-pinned-icon"
+                      />
                     )}
-                    {post.isLocked && <Lock className="h-5 w-5 text-red-500" />}
+                    {post.isLocked && (
+                      <Lock
+                        className="h-5 w-5 text-red-500"
+                        data-testid="post-locked-icon"
+                      />
+                    )}
                   </div>
-                  <p className="text-sm text-social-muted">
+                  <p
+                    className="text-sm text-social-muted"
+                    data-testid="post-author"
+                  >
                     by{" "}
                     <UserProfileLink
                       userId={`user-${post.author
@@ -529,6 +546,7 @@ const PostDetailPage = () => {
                       )
                     }
                     className="text-xs"
+                    data-testid="pin-post-btn"
                   >
                     <Pin className="h-3 w-3 mr-1" />
                     {post.isPinned ? "Unpin" : "Pin"}
@@ -549,6 +567,7 @@ const PostDetailPage = () => {
                       )
                     }
                     className="text-xs border-green-400 text-green-500 hover:bg-green-50"
+                    data-testid="unlock-post-btn"
                   >
                     <Unlock className="h-3 w-3 mr-1" />
                     Unlock Post
@@ -568,6 +587,7 @@ const PostDetailPage = () => {
                       )
                     }
                     className="text-xs border-red-400 text-red-500 hover:bg-red-50"
+                    data-testid="lock-post-btn"
                   >
                     <Lock className="h-3 w-3 mr-1" />
                     Lock Post
@@ -585,6 +605,7 @@ const PostDetailPage = () => {
                       originalContent: post.content,
                     })
                   }
+                  data-testid="report-post-btn"
                 >
                   Report
                 </Button>
@@ -594,7 +615,10 @@ const PostDetailPage = () => {
 
           <CardContent className="pt-0">
             {post.isLocked && post.lockReason && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <div
+                className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md"
+                data-testid="post-locked-message"
+              >
                 <p className="text-sm text-red-700">
                   <Lock className="h-4 w-4 inline mr-1" />
                   <strong>Post Locked:</strong> {post.lockReason}
@@ -602,13 +626,20 @@ const PostDetailPage = () => {
               </div>
             )}
 
-            <p className="text-social-foreground mb-4 text-lg leading-relaxed">
+            <p
+              className="text-social-foreground mb-4 text-lg leading-relaxed"
+              data-testid="post-content"
+            >
               {post.content}
             </p>
 
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-4" data-testid="post-tags">
               {post.tags.map((tag, index) => (
-                <Badge key={index} variant="secondary">
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  data-testid={`post-tag-${tag}`}
+                >
                   {tag}
                 </Badge>
               ))}
@@ -623,6 +654,7 @@ const PostDetailPage = () => {
                   post.isLiked ? "text-red-500" : "text-social-muted"
                 }`}
                 disabled={post.isLocked}
+                data-testid="like-post-btn"
               >
                 <Heart
                   className={`h-4 w-4 ${post.isLiked ? "fill-current" : ""}`}
@@ -630,7 +662,10 @@ const PostDetailPage = () => {
                 {post.likes}
               </Button>
 
-              <div className="flex items-center gap-2 text-social-muted">
+              <div
+                className="flex items-center gap-2 text-social-muted"
+                data-testid="post-replies-count"
+              >
                 <MessageSquare className="h-4 w-4" />
                 {post.comments} replies
               </div>
@@ -639,8 +674,8 @@ const PostDetailPage = () => {
         </Card>
 
         {/* Replies Section */}
-        <div className="space-y-4 w-full">
-          <h2 className="text-xl font-semibold">
+        <div className="space-y-4 w-full" data-testid="replies-section">
+          <h2 className="text-xl font-semibold" data-testid="replies-title">
             Replies ({post.replies.length})
           </h2>
 
@@ -650,7 +685,7 @@ const PostDetailPage = () => {
 
           {/* Main Reply Form */}
           {!post.isLocked && !post.commentsLocked && (
-            <Card className="ml-4">
+            <Card className="ml-4" data-testid="main-reply-form">
               <CardContent className="pt-4">
                 <div className="flex gap-3">
                   <Avatar className="h-10 w-10 bg-social-primary text-white">
@@ -665,11 +700,13 @@ const PostDetailPage = () => {
                       onChange={(e) => setNewReply(e.target.value)}
                       className="flex-1"
                       rows={3}
+                      data-testid="main-reply-input"
                     />
                     <Button
                       onClick={() => handleSubmitReply()}
                       disabled={!newReply.trim()}
                       className="self-end"
+                      data-testid="main-reply-submit-btn"
                     >
                       <Send className="h-4 w-4" />
                     </Button>
@@ -680,7 +717,10 @@ const PostDetailPage = () => {
           )}
 
           {post.commentsLocked && post.commentsLockReason && (
-            <div className="ml-4 p-3 bg-orange-50 border border-orange-200 rounded-md">
+            <div
+              className="ml-4 p-3 bg-orange-50 border border-orange-200 rounded-md"
+              data-testid="comments-locked-message"
+            >
               <p className="text-sm text-orange-700">
                 <Lock className="h-4 w-4 inline mr-1" />
                 <strong>Comments Locked:</strong> {post.commentsLockReason}
@@ -697,6 +737,7 @@ const PostDetailPage = () => {
           isOpen={!!selectedUserId}
           onClose={() => setSelectedUserId(null)}
           currentUserId="current-user-id"
+          data-testid="user-profile-dialog"
         />
       )}
 
@@ -713,6 +754,7 @@ const PostDetailPage = () => {
               description: "Thank you for helping us keep the community safe.",
             })
           }
+          data-testid="report-modal"
         />
       )}
     </div>

@@ -11,11 +11,17 @@ import { Link } from "react-router-dom";
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-social-accent/20 to-white">
+    <div
+      className="min-h-screen bg-gradient-to-b from-social-accent/20 to-white"
+      data-testid="landing-page"
+    >
       {/* Header */}
-      <header className="container mx-auto px-4 py-6">
+      <header
+        className="container mx-auto px-4 py-6"
+        data-testid="landing-header"
+      >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" data-testid="landing-logo">
             <div className="w-8 h-8 bg-social-primary rounded-full" />
             <h1 className="text-xl font-bold text-social-primary">
               ConnectSphere
@@ -23,22 +29,33 @@ const LandingPage = () => {
           </div>
           <div className="flex items-center gap-4">
             <Link to="/login">
-              <Button variant="ghost">Sign In</Button>
+              <Button variant="ghost" data-testid="sign-in-btn">
+                Sign In
+              </Button>
             </Link>
             <Link to="/register">
-              <Button>Get Started</Button>
+              <Button data-testid="get-started-btn">Get Started</Button>
             </Link>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-left">
+      <section
+        className="container mx-auto px-4 py-20 text-left"
+        data-testid="landing-hero-section"
+      >
         <div className="max-w-4xl">
-          <h1 className="text-4xl md:text-6xl font-bold text-social-primary mb-6">
+          <h1
+            className="text-4xl md:text-6xl font-bold text-social-primary mb-6"
+            data-testid="landing-hero-title"
+          >
             Connect. Share. Grow.
           </h1>
-          <p className="text-xl text-social-secondary mb-8 max-w-2xl">
+          <p
+            className="text-xl text-social-secondary mb-8 max-w-2xl"
+            data-testid="landing-hero-description"
+          >
             Join communities that share your passions. Engage in meaningful
             conversations. Build lasting connections with people who understand
             your interests.
@@ -48,6 +65,7 @@ const LandingPage = () => {
               <Button
                 size="lg"
                 className="bg-social-primary hover:bg-social-secondary"
+                data-testid="join-communities-btn"
               >
                 <Users className="mr-2 h-5 w-5" />
                 Join Communities
@@ -59,6 +77,7 @@ const LandingPage = () => {
                 size="lg"
                 variant="outline"
                 className="border-social-primary text-social-primary hover:bg-social-accent/20"
+                data-testid="start-chatting-btn"
               >
                 <MessageCircle className="mr-2 h-5 w-5" />
                 Start Chatting
@@ -69,9 +88,15 @@ const LandingPage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-16">
+      <section
+        className="container mx-auto px-4 py-16"
+        data-testid="landing-features-section"
+      >
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <Card className="hover-scale text-left">
+          <Card
+            className="hover-scale text-left"
+            data-testid="feature-card-communities"
+          >
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-social-primary">
                 <Users /> Communities
@@ -88,7 +113,10 @@ const LandingPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover-scale text-left">
+          <Card
+            className="hover-scale text-left"
+            data-testid="feature-card-chat"
+          >
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-social-primary">
                 <MessageCircle /> Chat
@@ -103,7 +131,10 @@ const LandingPage = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover-scale text-left">
+          <Card
+            className="hover-scale text-left"
+            data-testid="feature-card-video"
+          >
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-social-primary">
                 <Video /> Video Calls
@@ -121,16 +152,31 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-social-primary text-white py-16">
+      <section
+        className="bg-social-primary text-white py-16"
+        data-testid="landing-cta-section"
+      >
         <div className="container mx-auto px-4 text-left">
           <div className="max-w-2xl">
-            <h2 className="text-3xl font-bold mb-4">Ready to Connect?</h2>
-            <p className="text-lg mb-8 opacity-90">
+            <h2
+              className="text-3xl font-bold mb-4"
+              data-testid="landing-cta-title"
+            >
+              Ready to Connect?
+            </h2>
+            <p
+              className="text-lg mb-8 opacity-90"
+              data-testid="landing-cta-description"
+            >
               Join thousands of users who are already building meaningful
               connections on ConnectSphere.
             </p>
             <Link to="/register">
-              <Button size="lg" variant="secondary">
+              <Button
+                size="lg"
+                variant="secondary"
+                data-testid="create-profile-btn"
+              >
                 <User className="mr-2 h-5 w-5" />
                 Create Your Profile
               </Button>
@@ -140,7 +186,7 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-50 py-8">
+      <footer className="bg-gray-50 py-8" data-testid="landing-footer">
         <div className="container mx-auto px-4 text-left">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

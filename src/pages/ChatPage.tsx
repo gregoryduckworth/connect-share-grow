@@ -189,26 +189,32 @@ const ChatPage = () => {
   const selectedChatData = chats.find((chat) => chat.id === selectedChat);
 
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="chat-page"
+    >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-8rem)]">
         {/* Chat List */}
         {showChatList && (
-          <div className="lg:col-span-1">
-            <Card className="h-full border border-border">
+          <div className="lg:col-span-1" data-testid="chat-list-container">
+            <Card
+              className="h-full border border-border"
+              data-testid="chat-list-card"
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle>Messages</CardTitle>
+                  <CardTitle data-testid="chat-list-title">Messages</CardTitle>
                   <Dialog
                     open={newChatDialogOpen}
                     onOpenChange={setNewChatDialogOpen}
                   >
                     <DialogTrigger asChild>
-                      <Button size="sm">
+                      <Button size="sm" data-testid="new-chat-btn">
                         <Plus className="h-4 w-4 mr-2" />
                         New Chat
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent data-testid="new-chat-dialog">
                       <DialogHeader>
                         <DialogTitle>Start New Chat</DialogTitle>
                       </DialogHeader>
@@ -225,6 +231,7 @@ const ChatPage = () => {
                                 onClick={() =>
                                   handleStartIndividualChat(friend.id)
                                 }
+                                data-testid={`start-individual-chat-${friend.id}`}
                               >
                                 <div className="flex items-center gap-3">
                                   <Avatar className="h-8 w-8 bg-social-primary text-white">
@@ -247,6 +254,7 @@ const ChatPage = () => {
                                       ? "bg-green-500"
                                       : "bg-gray-300"
                                   }`}
+                                  data-testid={`friend-status-${friend.id}`}
                                 />
                               </div>
                             ))}
@@ -262,12 +270,14 @@ const ChatPage = () => {
                             value={groupName}
                             onChange={(e) => setGroupName(e.target.value)}
                             className="mb-3"
+                            data-testid="group-name-input"
                           />
                           <div className="space-y-2 max-h-40 overflow-y-auto">
                             {friends.map((friend) => (
                               <div
                                 key={friend.id}
                                 className="flex items-center space-x-2"
+                                data-testid={`group-friend-checkbox-${friend.id}`}
                               >
                                 <Checkbox
                                   id={friend.id}
@@ -278,6 +288,7 @@ const ChatPage = () => {
                                       checked as boolean
                                     )
                                   }
+                                  data-testid={`group-checkbox-${friend.id}`}
                                 />
                                 <label
                                   htmlFor={friend.id}
@@ -294,6 +305,7 @@ const ChatPage = () => {
                               selectedFriends.length === 0 || !groupName.trim()
                             }
                             className="w-full mt-3"
+                            data-testid="create-group-btn"
                           >
                             <Users className="h-4 w-4 mr-2" />
                             Create Group
@@ -317,6 +329,7 @@ const ChatPage = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         style={{ boxShadow: "none" }}
+                        data-testid="chat-search-input"
                       />
                     </div>
                   </div>
@@ -327,6 +340,7 @@ const ChatPage = () => {
                   className="space-y-1 max-h-[60vh] overflow-y-auto py-6"
                   role="listbox"
                   aria-label="Chat list"
+                  data-testid="chat-list"
                 >
                   {filteredChats.map((chat) => (
                     <div
@@ -346,6 +360,7 @@ const ChatPage = () => {
                         if (e.key === "Enter" || e.key === " ")
                           setSelectedChat(chat.id);
                       }}
+                      data-testid={`chat-list-item-${chat.id}`}
                     >
                       <Avatar className="h-10 w-10 bg-social-primary text-white">
                         <div className="flex h-full w-full items-center justify-center font-bold">
@@ -374,13 +389,19 @@ const ChatPage = () => {
                               : chat.lastMessage}
                           </p>
                           {chat.unreadCount > 0 && (
-                            <Badge className="bg-muted text-primary rounded-full px-2 py-0.5 text-xs font-semibold ml-2">
+                            <Badge
+                              className="bg-muted text-primary rounded-full px-2 py-0.5 text-xs font-semibold ml-2"
+                              data-testid={`unread-badge-${chat.id}`}
+                            >
                               {chat.unreadCount}
                             </Badge>
                           )}
                         </div>
                         {chat.type === "group" && (
-                          <p className="text-xs text-gray-400">
+                          <p
+                            className="text-xs text-gray-400"
+                            data-testid={`group-participants-${chat.id}`}
+                          >
                             {chat.participants.length} participants
                           </p>
                         )}
@@ -395,6 +416,7 @@ const ChatPage = () => {
                     size="sm"
                     onClick={() => setShowChatList(false)}
                     aria-label="Hide chat list"
+                    data-testid="hide-chat-list-btn"
                   >
                     Hide
                   </Button>
@@ -405,8 +427,11 @@ const ChatPage = () => {
         )}
 
         {/* Chat Window */}
-        <div className={`lg:col-span-2 ${!showChatList ? "col-span-1" : ""}`}>
-          <Card className="h-full">
+        <div
+          className={`lg:col-span-2 ${!showChatList ? "col-span-1" : ""}`}
+          data-testid="chat-window-container"
+        >
+          <Card className="h-full" data-testid="chat-window-card">
             {selectedChatData ? (
               <ChatInterface
                 chatId={selectedChatData.id}
@@ -414,9 +439,13 @@ const ChatPage = () => {
                 chatType={selectedChatData.type}
                 participants={selectedChatData.participants}
                 currentUser={currentUser}
+                data-testid="chat-interface"
               />
             ) : (
-              <CardContent className="h-full flex items-center justify-center">
+              <CardContent
+                className="h-full flex items-center justify-center"
+                data-testid="chat-empty-state"
+              >
                 <div className="text-center text-gray-500">
                   <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-300" />
                   <h3 className="text-lg font-medium mb-2">

@@ -121,20 +121,29 @@ const CommunitiesPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="communities-page"
+    >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-social-primary mb-2">
+          <h1
+            className="text-3xl font-bold text-social-primary mb-2"
+            data-testid="communities-title"
+          >
             All Communities
           </h1>
-          <p className="text-social-muted">
+          <p
+            className="text-social-muted"
+            data-testid="communities-description"
+          >
             Communities for you to connect, share, and grow together.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-end gap-2 w-full sm:w-auto">
           <CreateCommunityDialog
             trigger={
-              <Button>
+              <Button data-testid="create-community-button">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Community
               </Button>
@@ -160,6 +169,7 @@ const CommunitiesPage = () => {
               }}
               className="pl-2 py-3 border-0 bg-transparent focus:ring-0 focus:outline-none shadow-none min-w-0 flex-1"
               style={{ boxShadow: "none" }}
+              data-testid="communities-search-input"
             />
             <div className="flex items-center gap-2 min-w-[200px] sm:min-w-[260px] md:min-w-[320px] lg:min-w-[340px]">
               <label
@@ -175,12 +185,17 @@ const CommunitiesPage = () => {
                 <SelectTrigger
                   id="sortOrder"
                   className="w-full bg-white/90 border-0 shadow-none px-2"
+                  data-testid="communities-sort-trigger"
                 >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="desc">Members: High to Low</SelectItem>
-                  <SelectItem value="asc">Members: Low to High</SelectItem>
+                  <SelectItem value="desc" data-testid="sort-desc">
+                    Members: High to Low
+                  </SelectItem>
+                  <SelectItem value="asc" data-testid="sort-asc">
+                    Members: Low to High
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -198,6 +213,7 @@ const CommunitiesPage = () => {
               : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
           }
         `}
+        data-testid="communities-grid"
       >
         {getCurrentPageCommunities(filteredCommunities).map((community) => (
           <CommunityCard
@@ -210,6 +226,7 @@ const CommunitiesPage = () => {
             isJoined={community.isJoined}
             isModerator={community.isModerator}
             onJoinLeave={handleJoinCommunity}
+            data-testid={`community-card-${community.slug}`}
           />
         ))}
       </div>

@@ -79,21 +79,26 @@ const AdminCommunitiesPage = () => {
   useEffect(() => {
     const loadCommunities = async () => {
       try {
-        const apiCommunities = await api.getAdminCommunities();
-        const transformedCommunities = apiCommunities.map((c: ApiCommunity) => ({
-          id: c.slug,
-          name: c.name,
-          description: c.description,
-          memberCount: c.memberCount,
-          postCount: c.postCount,
-          category: c.category,
-          createdAt: new Date(),
-          status: (c.status || "active") as "active" | "suspended" | "pending",
-          moderators: c.moderators || [],
-          tags: c.tags,
-          createdBy: c.createdBy || "",
-          requestedAt: new Date(),
-        }));
+        const apiCommunities = await api.getCommunities();
+        const transformedCommunities = apiCommunities.map(
+          (c: ApiCommunity) => ({
+            id: c.slug,
+            name: c.name,
+            description: c.description,
+            memberCount: c.memberCount,
+            postCount: c.postCount,
+            category: c.category,
+            createdAt: new Date(),
+            status: (c.status || "active") as
+              | "active"
+              | "suspended"
+              | "pending",
+            moderators: c.moderators || [],
+            tags: c.tags,
+            createdBy: c.createdBy || "",
+            requestedAt: new Date(),
+          })
+        );
         setCommunities(transformedCommunities);
       } catch (error) {
         console.error("Failed to load communities:", error);
@@ -102,21 +107,26 @@ const AdminCommunitiesPage = () => {
 
     const loadPendingCommunities = async () => {
       try {
-        const apiPendingCommunities = await api.getPendingCommunities();
-        const transformedPendingCommunities = apiPendingCommunities.map((c: ApiCommunity) => ({
-          id: c.slug,
-          name: c.name,
-          description: c.description,
-          memberCount: c.memberCount,
-          postCount: c.postCount,
-          category: c.category,
-          createdAt: new Date(),
-          status: "pending" as const,
-          moderators: c.moderators || [],
-          tags: c.tags,
-          createdBy: c.createdBy || "",
-          requestedAt: new Date(),
-        }));
+        const apiCommunities = await api.getCommunities();
+        const apiPendingCommunities = apiCommunities.filter(
+          (c: ApiCommunity) => c.status === "pending"
+        );
+        const transformedPendingCommunities = apiPendingCommunities.map(
+          (c: ApiCommunity) => ({
+            id: c.slug,
+            name: c.name,
+            description: c.description,
+            memberCount: c.memberCount,
+            postCount: c.postCount,
+            category: c.category,
+            createdAt: new Date(),
+            status: "pending" as const,
+            moderators: c.moderators || [],
+            tags: c.tags,
+            createdBy: c.createdBy || "",
+            requestedAt: new Date(),
+          })
+        );
         setPendingCommunities(transformedPendingCommunities);
       } catch (error) {
         console.error("Failed to load pending communities:", error);
@@ -432,12 +442,24 @@ const AdminCommunitiesPage = () => {
   ];
 
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold text-social-primary mb-2">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="admin-communities-page"
+    >
+      <div
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+        data-testid="admin-communities-header"
+      >
+        <h1
+          className="text-3xl font-bold text-social-primary mb-2"
+          data-testid="admin-communities-title"
+        >
           Manage Communities
         </h1>
-        <div className="relative w-full sm:w-64">
+        <div
+          className="relative w-full sm:w-64"
+          data-testid="admin-communities-search-container"
+        >
           <div
             className="absolute inset-0 pointer-events-none rounded-lg border border-purple-200 bg-gradient-to-r from-purple-100/40 to-blue-100/20"
             style={{ zIndex: 0 }}
@@ -452,6 +474,7 @@ const AdminCommunitiesPage = () => {
               style={{ boxShadow: "none" }}
               type="text"
               autoComplete="off"
+              data-testid="admin-communities-search-input"
             />
           </div>
         </div>
@@ -459,35 +482,52 @@ const AdminCommunitiesPage = () => {
 
       {/* Pending Approvals */}
       {pendingCommunities.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-social-primary">
+        <div
+          className="space-y-4"
+          data-testid="admin-communities-pending-section"
+        >
+          <h3
+            className="text-lg font-semibold text-social-primary"
+            data-testid="admin-communities-pending-title"
+          >
             Pending Community Approvals
           </h3>
           <AdminTable
             columns={pendingColumns}
             data={pendingCommunities}
             emptyMessage={
-              <div className="text-center p-8 text-social-muted">
+              <div
+                className="text-center p-8 text-social-muted"
+                data-testid="admin-communities-pending-empty"
+              >
                 No pending communities.
               </div>
             }
+            data-testid="admin-communities-pending-table"
           />
         </div>
       )}
 
       {/* All Communities */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-social-primary">
+      <div className="space-y-4" data-testid="admin-communities-all-section">
+        <h3
+          className="text-lg font-semibold text-social-primary"
+          data-testid="admin-communities-all-title"
+        >
           All Communities
         </h3>
         <AdminTable
           columns={allColumns}
           data={paginatedCommunities}
           emptyMessage={
-            <div className="text-center p-8 text-social-muted">
+            <div
+              className="text-center p-8 text-social-muted"
+              data-testid="admin-communities-all-empty"
+            >
               No communities found matching your search.
             </div>
           }
+          data-testid="admin-communities-all-table"
         />
       </div>
       {filteredCommunities.length > 0 && (
@@ -501,6 +541,7 @@ const AdminCommunitiesPage = () => {
             setPageSize(size);
             setCurrentPage(1);
           }}
+          data-testid="admin-communities-pagination"
         />
       )}
 
@@ -508,6 +549,7 @@ const AdminCommunitiesPage = () => {
         isOpen={detailsDialogOpen}
         onClose={() => setDetailsDialogOpen(false)}
         community={selectedCommunity}
+        data-testid="admin-communities-details-dialog"
       />
 
       <CommunityApprovalDialog
@@ -515,6 +557,7 @@ const AdminCommunitiesPage = () => {
         onClose={() => setApprovalDialogOpen(false)}
         community={approvalCommunity}
         onApprove={handleApproveCommunity}
+        data-testid="admin-communities-approval-dialog"
       />
 
       <CommunityRejectionDialog
@@ -522,6 +565,7 @@ const AdminCommunitiesPage = () => {
         onClose={() => setRejectionDialogOpen(false)}
         community={rejectionCommunity}
         onReject={handleRejectCommunity}
+        data-testid="admin-communities-rejection-dialog"
       />
 
       <CommunitySuspendDialog
@@ -529,6 +573,7 @@ const AdminCommunitiesPage = () => {
         onClose={() => setSuspendDialogOpen(false)}
         community={suspendCommunity}
         onSuspend={handleSuspendCommunity}
+        data-testid="admin-communities-suspend-dialog"
       />
 
       <CommunityActivateDialog
@@ -536,6 +581,7 @@ const AdminCommunitiesPage = () => {
         onClose={() => setActivateDialogOpen(false)}
         community={activateCommunity}
         onActivate={handleActivateCommunity}
+        data-testid="admin-communities-activate-dialog"
       />
     </div>
   );

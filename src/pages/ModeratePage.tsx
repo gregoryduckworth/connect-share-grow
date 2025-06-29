@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -37,8 +36,8 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
-import { api, getMockFlaggedReports } from "@/lib/api";
-import type { Report } from "@/lib/types";
+import { getMockFlaggedReports } from "@/lib/api";
+import { Report } from "@/lib/types";
 import UserProfileLink from "@/components/user/UserProfileLink";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -138,7 +137,8 @@ const ModeratePage = () => {
     const loadFlaggedReports = async () => {
       try {
         const reports = await getMockFlaggedReports();
-        setFlaggedReports(reports);
+        // Patch: add 'type' property for compatibility with Report type
+        setFlaggedReports(reports.map((r) => ({ ...r, type: r.contentType })));
       } catch (error) {
         console.error("Failed to load flagged reports:", error);
       }
@@ -216,9 +216,12 @@ const ModeratePage = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="moderate-page"
+    >
       {/* Breadcrumbs */}
-      <div className="mb-6">
+      <div className="mb-6" data-testid="moderate-breadcrumbs">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
@@ -248,14 +251,28 @@ const ModeratePage = () => {
       </div>
 
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div
+          className="flex items-center justify-between"
+          data-testid="moderate-header"
+        >
           <div>
-            <h1 className="text-3xl font-bold text-social-primary">
+            <h1
+              className="text-3xl font-bold text-social-primary"
+              data-testid="moderate-title"
+            >
               Moderate Community
             </h1>
-            <p className="text-social-muted">{community.name}</p>
+            <p
+              className="text-social-muted"
+              data-testid="moderate-community-name"
+            >
+              {community.name}
+            </p>
           </div>
-          <Badge className="bg-social-primary">
+          <Badge
+            className="bg-social-primary"
+            data-testid="moderator-panel-badge"
+          >
             <Settings className="h-4 w-4 mr-1" />
             Moderator Panel
           </Badge>
@@ -279,11 +296,15 @@ const ModeratePage = () => {
           onApprove={handleApproveRemoval}
           onReject={handleRejectRemoval}
           alertTitle={"Moderator Removal Approval Required"}
+          data-testid="moderator-removal-alert"
         />
 
         {/* Analytics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <Card>
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4"
+          data-testid="moderate-analytics-cards"
+        >
+          <Card data-testid="analytics-total-members">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -299,7 +320,7 @@ const ModeratePage = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card data-testid="analytics-total-posts">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -313,7 +334,7 @@ const ModeratePage = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card data-testid="analytics-posts-this-week">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -329,7 +350,7 @@ const ModeratePage = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card data-testid="analytics-active-members">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -345,7 +366,7 @@ const ModeratePage = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card data-testid="analytics-reports-this-week">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -364,7 +385,7 @@ const ModeratePage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Moderators */}
-          <Card>
+          <Card data-testid="moderators-card">
             <CardHeader>
               <CardTitle>Moderators</CardTitle>
             </CardHeader>
@@ -374,6 +395,7 @@ const ModeratePage = () => {
                   <div
                     key={moderator.id}
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    data-testid={`moderator-row-${moderator.id}`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-social-primary rounded-full flex items-center justify-center text-white">
@@ -401,6 +423,7 @@ const ModeratePage = () => {
                         size="sm"
                         onClick={() => handleRemoveModerator(moderator)}
                         className="border-red-400 text-red-500 hover:bg-red-50"
+                        data-testid={`remove-moderator-btn-${moderator.id}`}
                       >
                         <UserMinus className="h-4 w-4 mr-1" />
                         Remove
@@ -413,7 +436,7 @@ const ModeratePage = () => {
           </Card>
 
           {/* Community Rules */}
-          <Card>
+          <Card data-testid="community-rules-card">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Community Rules</CardTitle>
@@ -428,6 +451,9 @@ const ModeratePage = () => {
                       setEditedRules([...rules]);
                     }
                   }}
+                  data-testid={
+                    editingRules ? "save-rules-btn" : "edit-rules-btn"
+                  }
                 >
                   {editingRules ? (
                     <Save className="h-4 w-4 mr-1" />
@@ -442,7 +468,11 @@ const ModeratePage = () => {
               {editingRules ? (
                 <div className="space-y-3">
                   {editedRules.map((rule, index) => (
-                    <div key={index} className="flex items-center gap-2">
+                    <div
+                      key={index}
+                      className="flex items-center gap-2"
+                      data-testid={`edit-rule-row-${index}`}
+                    >
                       <span className="font-medium text-social-primary text-sm">
                         {index + 1}.
                       </span>
@@ -454,18 +484,23 @@ const ModeratePage = () => {
                           setEditedRules(newRules);
                         }}
                         className="flex-1"
+                        data-testid={`edit-rule-input-${index}`}
                       />
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => removeRule(index)}
                         className="border-red-400 text-red-500 hover:bg-red-50"
+                        data-testid={`remove-rule-btn-${index}`}
                       >
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
                   ))}
-                  <div className="flex items-center gap-2">
+                  <div
+                    className="flex items-center gap-2"
+                    data-testid="add-rule-row"
+                  >
                     <span className="font-medium text-social-primary text-sm">
                       {editedRules.length + 1}.
                     </span>
@@ -474,12 +509,14 @@ const ModeratePage = () => {
                       value={newRule}
                       onChange={(e) => setNewRule(e.target.value)}
                       className="flex-1"
+                      data-testid="add-rule-input"
                     />
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={addRule}
                       disabled={!newRule.trim()}
+                      data-testid="add-rule-btn"
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -488,7 +525,11 @@ const ModeratePage = () => {
               ) : (
                 <ol className="space-y-2 text-sm">
                   {rules.map((rule, index) => (
-                    <li key={index} className="flex">
+                    <li
+                      key={index}
+                      className="flex"
+                      data-testid={`rule-row-${index}`}
+                    >
                       <span className="font-medium text-social-primary mr-2">
                         {index + 1}.
                       </span>
@@ -503,7 +544,7 @@ const ModeratePage = () => {
 
         {/* Flagged Posts/Replies/Users Section */}
         {flaggedReports.length > 0 && (
-          <Card className="mb-6">
+          <Card className="mb-6" data-testid="flagged-reports-card">
             <CardHeader>
               <CardTitle>
                 <AlertTriangle className="inline-block mr-2 text-orange-500" />
@@ -516,6 +557,7 @@ const ModeratePage = () => {
                   <div
                     key={report.id}
                     className="p-3 border rounded-lg bg-orange-50 flex flex-col gap-2"
+                    data-testid={`flagged-report-${report.id}`}
                   >
                     <div className="flex items-center gap-2">
                       <Badge variant="destructive" className="text-xs">
@@ -545,6 +587,7 @@ const ModeratePage = () => {
                           size="sm"
                           variant="outline"
                           className="border-red-400 text-red-500 hover:bg-red-50"
+                          data-testid={`lock-post-btn-${report.id}`}
                         >
                           Lock Post
                         </Button>
@@ -552,6 +595,7 @@ const ModeratePage = () => {
                           size="sm"
                           variant="outline"
                           className="border-orange-400 text-orange-500 hover:bg-orange-50"
+                          data-testid={`lock-comments-btn-${report.id}`}
                         >
                           Lock Comments
                         </Button>
@@ -563,6 +607,7 @@ const ModeratePage = () => {
                           size="sm"
                           variant="outline"
                           className="border-red-400 text-red-500 hover:bg-red-50"
+                          data-testid={`lock-reply-btn-${report.id}`}
                         >
                           Lock Reply
                         </Button>
@@ -574,6 +619,7 @@ const ModeratePage = () => {
                           size="sm"
                           variant="outline"
                           className="border-red-400 text-red-500 hover:bg-red-50"
+                          data-testid={`suspend-user-btn-${report.id}`}
                         >
                           Suspend User
                         </Button>
@@ -588,7 +634,11 @@ const ModeratePage = () => {
       </div>
 
       {/* Remove Moderator Dialog */}
-      <Dialog open={showRemoveDialog} onOpenChange={setShowRemoveDialog}>
+      <Dialog
+        open={showRemoveDialog}
+        onOpenChange={setShowRemoveDialog}
+        data-testid="remove-moderator-dialog"
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Remove Moderator</DialogTitle>
@@ -606,6 +656,7 @@ const ModeratePage = () => {
                 value={removalReason}
                 onChange={(e) => setRemovalReason(e.target.value)}
                 rows={3}
+                data-testid="removal-reason-textarea"
               />
             </div>
           </div>
@@ -613,6 +664,7 @@ const ModeratePage = () => {
             <Button
               variant="outline"
               onClick={() => setShowRemoveDialog(false)}
+              data-testid="cancel-remove-moderator-btn"
             >
               Cancel
             </Button>
@@ -620,6 +672,7 @@ const ModeratePage = () => {
               variant="destructive"
               onClick={confirmRemoveModerator}
               disabled={!removalReason.trim()}
+              data-testid="submit-remove-moderator-btn"
             >
               Submit Request
             </Button>

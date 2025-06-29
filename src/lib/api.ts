@@ -4,11 +4,17 @@ import type {
   User,
   Reply,
   Notification,
-  Report,
+  ReportBase as Report,
   PostDetailData,
   PostDetailReply,
   CommunityDetail,
   CommunityPost,
+  AdminRole,
+  AdminRoleUser,
+  AnalyticsCommunity,
+  ActivityDataPoint,
+  AnalyticsDataPoint,
+  PlatformStats,
 } from "./types";
 
 // Mock Database Tables - separated by type for easier management
@@ -516,6 +522,7 @@ export const api = {
     return POSTS_TABLE.filter((post) => post.communityId === communitySlug).map(
       (post) => ({
         id: post.id,
+        name: post.communityName,
         title: post.title,
         content: post.content,
         author: getUserNameById(post.author),
@@ -615,18 +622,26 @@ export const api = {
   },
 
   // Report methods
-  submitReport: async (reportData: any): Promise<Report> => {
+  submitReport: async (
+    reportData: Omit<Report, "id" | "createdAt" | "status">
+  ): Promise<Report> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
     const newReport: Report = {
       id: `rep${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      type: reportData.type,
+      contentType: reportData.contentType,
+      contentId: reportData.contentId,
+      contentPreview: reportData.contentPreview,
       reportedBy: reportData.reportedBy,
-      reportedAt: new Date(),
+      createdAt: new Date(),
       reason: reportData.reason,
       status: "pending",
       content: reportData.content,
       postId: reportData.postId,
+      replyId: reportData.replyId,
+      userId: reportData.userId,
       communityId: reportData.communityId,
+      originalContent: reportData.originalContent,
+      originalLink: reportData.originalLink,
     };
 
     REPORTS_TABLE.push(newReport);
@@ -634,8 +649,15 @@ export const api = {
   },
 
   // Admin methods
-  getAdminRoles: async (): Promise<any[]> => {
+  getAdminRoles: async (): Promise<AdminRole[]> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
+    const mapUser = (u: User): AdminRoleUser => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      joinDate: u.createdAt,
+      communities: undefined, // Add if you have this info
+    });
     return [
       {
         name: "Admin",
@@ -646,8 +668,8 @@ export const api = {
           "Access analytics",
           "System settings",
         ],
-        userCount: 1,
-        users: USERS_TABLE.filter((u) => u.role === "admin"),
+        userCount: USERS_TABLE.filter((u) => u.role === "admin").length,
+        users: USERS_TABLE.filter((u) => u.role === "admin").map(mapUser),
         icon: "admin",
         color: "bg-red-500",
       },
@@ -659,8 +681,8 @@ export const api = {
           "Manage community posts",
           "Handle reports",
         ],
-        userCount: 1,
-        users: USERS_TABLE.filter((u) => u.role === "moderator"),
+        userCount: USERS_TABLE.filter((u) => u.role === "moderator").length,
+        users: USERS_TABLE.filter((u) => u.role === "moderator").map(mapUser),
         icon: "moderator",
         color: "bg-blue-500",
       },
@@ -669,50 +691,33 @@ export const api = {
         description: "Standard user access",
         permissions: ["Create posts", "Join communities", "Comment and like"],
         userCount: USERS_TABLE.filter((u) => u.role === "user").length,
-        users: USERS_TABLE.filter((u) => u.role === "user").slice(0, 5),
+        users: USERS_TABLE.filter((u) => u.role === "user")
+          .slice(0, 5)
+          .map(mapUser),
         icon: "user",
         color: "bg-green-500",
       },
     ];
   },
 
-  getAdminUsers: async (): Promise<User[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    return USERS_TABLE;
-  },
-
-  getPendingAdminRoleChanges: async (): Promise<any[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    return [];
-  },
-
-  getAdminReports: async (): Promise<Report[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    return REPORTS_TABLE;
-  },
-
-  getAdminCommunities: async (): Promise<Community[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    return COMMUNITIES_TABLE;
-  },
-
-  getPendingCommunities: async (): Promise<Community[]> => {
+  getPendingAdminRoleChanges: async (): Promise<AdminRole[]> => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     return [];
   },
 
   // Analytics methods
-  getAnalyticsCommunities: async (): Promise<any[]> => {
+  getAnalyticsCommunities: async (): Promise<AnalyticsCommunity[]> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
     return COMMUNITIES_TABLE.map((c) => ({
       name: c.name,
       members: c.memberCount,
       posts: c.postCount,
+      comments: c.postCount * 2, // Example
       activity: Math.floor(Math.random() * 100),
     }));
   },
 
-  getPlatformStats: async (): Promise<any> => {
+  getPlatformStats: async (): Promise<PlatformStats> => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     return {
       totalUsers: USERS_TABLE.length,
@@ -722,7 +727,7 @@ export const api = {
     };
   },
 
-  getActivityData: async (): Promise<any[]> => {
+  getActivityData: async (): Promise<ActivityDataPoint[]> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
     return [
       { name: "Mon", posts: 12, users: 24 },
@@ -735,13 +740,13 @@ export const api = {
     ];
   },
 
-  getSizeDistribution: async (): Promise<any[]> => {
+  getSizeDistribution: async (): Promise<AnalyticsDataPoint[]> => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     return [
-      { name: "Small (1-100)", value: 45 },
-      { name: "Medium (101-500)", value: 30 },
-      { name: "Large (501-1000)", value: 20 },
-      { name: "Very Large (1000+)", value: 5 },
+      { name: "Small (1-100)", value: 45, color: "#8884d8" },
+      { name: "Medium (101-500)", value: 30, color: "#82ca9d" },
+      { name: "Large (501-1000)", value: 20, color: "#ffc658" },
+      { name: "Very Large (1000+)", value: 5, color: "#ff8042" },
     ];
   },
 };

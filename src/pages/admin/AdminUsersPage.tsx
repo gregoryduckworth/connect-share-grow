@@ -45,14 +45,18 @@ const AdminUsersPage = () => {
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        const apiUsers = await api.getAdminUsers();
+        const apiUsers = await api.getUsers();
         const transformedUsers: AppUser[] = apiUsers.map((u: User) => ({
           id: u.id,
           name: u.name,
           email: u.email,
           joinDate: u.createdAt,
           role: u.role,
-          status: u.isSuspended ? "suspended" : u.isActive ? "active" : "banned",
+          status: u.isSuspended
+            ? "suspended"
+            : u.isActive
+            ? "active"
+            : "banned",
           communities: [],
           suspensionReason: u.suspensionReason,
         }));
@@ -197,12 +201,24 @@ const AdminUsersPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold text-social-primary mb-2">
+    <div
+      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
+      data-testid="admin-users-page"
+    >
+      <div
+        className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+        data-testid="admin-users-header"
+      >
+        <h1
+          className="text-3xl font-bold text-social-primary mb-2"
+          data-testid="admin-users-title"
+        >
           Manage Users
         </h1>
-        <div className="relative w-full sm:w-64">
+        <div
+          className="relative w-full sm:w-64"
+          data-testid="admin-users-search-container"
+        >
           <div
             className="absolute inset-0 pointer-events-none rounded-lg border border-purple-200 bg-gradient-to-r from-purple-100/40 to-blue-100/20"
             style={{ zIndex: 0 }}
@@ -217,6 +233,7 @@ const AdminUsersPage = () => {
               style={{ boxShadow: "none" }}
               type="text"
               autoComplete="off"
+              data-testid="admin-users-search-input"
             />
           </div>
         </div>
@@ -261,6 +278,7 @@ const AdminUsersPage = () => {
         icon={<AlertTriangle className="h-5 w-5 text-orange-800" />}
         colorClass="border-orange-200 bg-orange-50/50"
         badgeClass="bg-red-100 text-red-800"
+        data-testid="admin-role-change-alert"
       />
 
       <AdminTable
@@ -268,7 +286,10 @@ const AdminUsersPage = () => {
           {
             header: "User",
             accessor: (user: AppUser) => (
-              <div className="flex items-center gap-3">
+              <div
+                className="flex items-center gap-3"
+                data-testid={`user-row-${user.id}`}
+              >
                 <div className="w-8 h-8 rounded-full bg-social-primary flex items-center justify-center text-white flex-shrink-0">
                   <UserIcon className="h-4 w-4" />
                 </div>
@@ -298,6 +319,7 @@ const AdminUsersPage = () => {
                     ? "bg-social-secondary"
                     : "bg-slate-400"
                 }
+                data-testid={`user-role-badge-${user.id}`}
               >
                 {user.role === "admin" && <Shield className="h-3 w-3 mr-1" />}
                 {user.role}
@@ -316,6 +338,7 @@ const AdminUsersPage = () => {
                     ? "bg-orange-500"
                     : "bg-red-500"
                 }
+                data-testid={`user-status-badge-${user.id}`}
               >
                 {user.status}
               </Badge>
@@ -324,12 +347,16 @@ const AdminUsersPage = () => {
           {
             header: "Actions",
             accessor: (user: AppUser) => (
-              <div className="flex justify-end gap-2">
+              <div
+                className="flex justify-end gap-2"
+                data-testid={`user-actions-${user.id}`}
+              >
                 <Button
                   variant="secondary"
                   size="sm"
                   className="text-xs"
                   onClick={() => setSelectedUser(user)}
+                  data-testid={`view-profile-btn-${user.id}`}
                 >
                   View Profile
                 </Button>
@@ -338,6 +365,7 @@ const AdminUsersPage = () => {
                     size="sm"
                     onClick={() => handleChangeRole(user)}
                     className="text-xs"
+                    data-testid={`change-role-btn-${user.id}`}
                   >
                     Change Role
                   </Button>
@@ -351,6 +379,7 @@ const AdminUsersPage = () => {
                       setUserToSuspend(user);
                       setSuspendDialogOpen(true);
                     }}
+                    data-testid={`suspend-btn-${user.id}`}
                   >
                     Suspend
                   </Button>
@@ -364,6 +393,7 @@ const AdminUsersPage = () => {
                       setUserToActivate(user);
                       setActivateDialogOpen(true);
                     }}
+                    data-testid={`activate-btn-${user.id}`}
                   >
                     Activate
                   </Button>
@@ -375,10 +405,14 @@ const AdminUsersPage = () => {
         ]}
         data={paginatedUsers}
         emptyMessage={
-          <p className="text-social-muted">
+          <p
+            className="text-social-muted"
+            data-testid="admin-users-empty-message"
+          >
             No users found matching your search.
           </p>
         }
+        data-testid="admin-users-table"
       />
 
       {filteredUsers.length > 0 && (
@@ -392,6 +426,7 @@ const AdminUsersPage = () => {
             setPageSize(size);
             setCurrentPage(1);
           }}
+          data-testid="admin-users-pagination"
         />
       )}
 
