@@ -19,6 +19,36 @@ import type {
 
 // Mock Database Tables - separated by type for easier management
 const USERS_TABLE: User[] = [
+  // Demo Admin User
+  {
+    id: "demo-admin-0001",
+    name: "Demo Admin",
+    email: "admin@example.com",
+    role: "admin",
+    createdAt: new Date("2024-01-01T00:00:00Z"),
+    isActive: true,
+    isEmailVerified: true,
+    isSuspended: false,
+    language: "en",
+    avatar: "",
+    bio: "Demo admin account for testing.",
+    location: "Demo City",
+  },
+  // Demo Regular User
+  {
+    id: "demo-user-0001",
+    name: "Demo User",
+    email: "user@example.com",
+    role: "user",
+    createdAt: new Date("2024-01-01T00:00:00Z"),
+    isActive: true,
+    isEmailVerified: true,
+    isSuspended: false,
+    language: "en",
+    avatar: "",
+    bio: "Demo user account for testing.",
+    location: "Demo Town",
+  },
   {
     id: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
     name: "Alex Johnson",

@@ -130,7 +130,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       description: "You have been successfully logged out.",
     });
 
-    navigate("/login");
+    navigate("/"); // Go to landing page after logout
   };
 
   const isAdmin = () => user?.role === "admin";

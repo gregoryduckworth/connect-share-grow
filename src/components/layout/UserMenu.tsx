@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { User, LogOut, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface UserMenuProps {
   user: {
@@ -24,11 +24,11 @@ interface UserMenuProps {
 
 const UserMenu = ({ user, unreadCount = 0 }: UserMenuProps) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl);
 
   const handleLogout = () => {
-    console.log("Logging out...");
-    navigate("/login");
+    logout();
   };
 
   const handleProfileClick = () => {
@@ -38,11 +38,18 @@ const UserMenu = ({ user, unreadCount = 0 }: UserMenuProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-auto p-2 justify-start gap-3 w-full relative">
+        <Button
+          variant="ghost"
+          className="h-auto p-2 justify-start gap-3 w-full relative"
+        >
           <div className="relative">
             <Avatar className="h-8 w-8 bg-social-primary text-white">
               {avatarUrl ? (
-                <img src={avatarUrl} alt={user.name} className="h-full w-full object-cover rounded-full" />
+                <img
+                  src={avatarUrl}
+                  alt={user.name}
+                  className="h-full w-full object-cover rounded-full"
+                />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
                   {user.name.charAt(0)}
@@ -67,7 +74,11 @@ const UserMenu = ({ user, unreadCount = 0 }: UserMenuProps) => {
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10 bg-social-primary text-white">
               {avatarUrl ? (
-                <img src={avatarUrl} alt={user.name} className="h-full w-full object-cover rounded-full" />
+                <img
+                  src={avatarUrl}
+                  alt={user.name}
+                  className="h-full w-full object-cover rounded-full"
+                />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
                   {user.name.charAt(0)}
@@ -80,7 +91,7 @@ const UserMenu = ({ user, unreadCount = 0 }: UserMenuProps) => {
             </div>
           </div>
         </div>
-        
+
         <DropdownMenuSeparator />
 
         {/* Menu Items */}

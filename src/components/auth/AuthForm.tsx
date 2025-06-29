@@ -1,9 +1,15 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Eye, EyeOff, Mail, Lock, User, Calendar } from "lucide-react";
@@ -30,14 +36,14 @@ const AuthForm = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loginForm, setLoginForm] = useState<LoginFormData>({
     email: "",
-    password: ""
+    password: "",
   });
   const [registerForm, setRegisterForm] = useState<RegisterFormData>({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    dateOfBirth: ""
+    dateOfBirth: "",
   });
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -51,13 +57,19 @@ const AuthForm = () => {
     }
 
     // Mock authentication - in a real app, this would be an API call
-    if (loginForm.email === "admin@example.com" && loginForm.password === "password123") {
+    if (
+      loginForm.email === "admin@example.com" &&
+      loginForm.password === "password123"
+    ) {
       toast({
         title: "Welcome back!",
         description: "You have successfully logged in as an admin.",
       });
-      navigate("/admin");
-    } else if (loginForm.email === "user@example.com" && loginForm.password === "password123") {
+      navigate("/");
+    } else if (
+      loginForm.email === "user@example.com" &&
+      loginForm.password === "password123"
+    ) {
       toast({
         title: "Welcome back!",
         description: "You have successfully logged in.",
@@ -74,7 +86,13 @@ const AuthForm = () => {
 
     const newErrors: string[] = [];
 
-    if (!registerForm.name || !registerForm.email || !registerForm.password || !registerForm.confirmPassword || !registerForm.dateOfBirth) {
+    if (
+      !registerForm.name ||
+      !registerForm.email ||
+      !registerForm.password ||
+      !registerForm.confirmPassword ||
+      !registerForm.dateOfBirth
+    ) {
       newErrors.push("Please fill in all fields");
     }
 
@@ -92,9 +110,12 @@ const AuthForm = () => {
       const today = new Date();
       const age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
-      
+
       let actualAge = age;
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+      ) {
         actualAge--;
       }
 
@@ -111,7 +132,8 @@ const AuthForm = () => {
     // Mock registration success
     toast({
       title: "Account created!",
-      description: "Welcome to ConnectSphere! You can now start exploring communities.",
+      description:
+        "Welcome to ConnectSphere! You can now start exploring communities.",
     });
     navigate("/");
   };
@@ -120,17 +142,21 @@ const AuthForm = () => {
     <div className="min-h-screen flex items-center justify-center bg-social-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-social-primary">ConnectSphere</CardTitle>
-          <CardDescription>Join communities and connect with like-minded people</CardDescription>
+          <CardTitle className="text-2xl font-bold text-social-primary">
+            ConnectSphere
+          </CardTitle>
+          <CardDescription>
+            Join communities and connect with like-minded people
+          </CardDescription>
         </CardHeader>
-        
+
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="register">Register</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="login">
               <form onSubmit={handleLoginSubmit} className="space-y-4">
                 {errors.length > 0 && (
@@ -144,7 +170,7 @@ const AuthForm = () => {
                     </AlertDescription>
                   </Alert>
                 )}
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="login-email">Email</Label>
                   <div className="relative">
@@ -155,11 +181,13 @@ const AuthForm = () => {
                       placeholder="Enter your email"
                       className="pl-10"
                       value={loginForm.email}
-                      onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
+                      onChange={(e) =>
+                        setLoginForm({ ...loginForm, email: e.target.value })
+                      }
                     />
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="login-password">Password</Label>
                   <div className="relative">
@@ -170,24 +198,33 @@ const AuthForm = () => {
                       placeholder="Enter your password"
                       className="pl-10 pr-10"
                       value={loginForm.password}
-                      onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                      onChange={(e) =>
+                        setLoginForm({ ...loginForm, password: e.target.value })
+                      }
                     />
                     <button
                       type="button"
                       className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                 </div>
-                
-                <Button type="submit" className="w-full bg-social-primary hover:bg-social-secondary">
+
+                <Button
+                  type="submit"
+                  className="w-full bg-social-primary hover:bg-social-secondary"
+                >
                   Sign In
                 </Button>
               </form>
             </TabsContent>
-            
+
             <TabsContent value="register">
               <form onSubmit={handleRegisterSubmit} className="space-y-4">
                 {errors.length > 0 && (
@@ -201,7 +238,7 @@ const AuthForm = () => {
                     </AlertDescription>
                   </Alert>
                 )}
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="register-name">Full Name</Label>
                   <div className="relative">
@@ -212,7 +249,12 @@ const AuthForm = () => {
                       placeholder="Enter your full name"
                       className="pl-10"
                       value={registerForm.name}
-                      onChange={(e) => setRegisterForm({...registerForm, name: e.target.value})}
+                      onChange={(e) =>
+                        setRegisterForm({
+                          ...registerForm,
+                          name: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </div>
@@ -226,11 +268,16 @@ const AuthForm = () => {
                       type="date"
                       className="pl-10"
                       value={registerForm.dateOfBirth}
-                      onChange={(e) => setRegisterForm({...registerForm, dateOfBirth: e.target.value})}
+                      onChange={(e) =>
+                        setRegisterForm({
+                          ...registerForm,
+                          dateOfBirth: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="register-email">Email</Label>
                   <div className="relative">
@@ -241,11 +288,16 @@ const AuthForm = () => {
                       placeholder="Enter your email"
                       className="pl-10"
                       value={registerForm.email}
-                      onChange={(e) => setRegisterForm({...registerForm, email: e.target.value})}
+                      onChange={(e) =>
+                        setRegisterForm({
+                          ...registerForm,
+                          email: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="register-password">Password</Label>
                   <div className="relative">
@@ -256,20 +308,31 @@ const AuthForm = () => {
                       placeholder="Create a password"
                       className="pl-10 pr-10"
                       value={registerForm.password}
-                      onChange={(e) => setRegisterForm({...registerForm, password: e.target.value})}
+                      onChange={(e) =>
+                        setRegisterForm({
+                          ...registerForm,
+                          password: e.target.value,
+                        })
+                      }
                     />
                     <button
                       type="button"
                       className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <Label htmlFor="register-confirm-password">Confirm Password</Label>
+                  <Label htmlFor="register-confirm-password">
+                    Confirm Password
+                  </Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
@@ -278,31 +341,49 @@ const AuthForm = () => {
                       placeholder="Confirm your password"
                       className="pl-10 pr-10"
                       value={registerForm.confirmPassword}
-                      onChange={(e) => setRegisterForm({...registerForm, confirmPassword: e.target.value})}
+                      onChange={(e) =>
+                        setRegisterForm({
+                          ...registerForm,
+                          confirmPassword: e.target.value,
+                        })
+                      }
                     />
                     <button
                       type="button"
                       className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                     >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                 </div>
-                
-                <Button type="submit" className="w-full bg-social-primary hover:bg-social-secondary">
+
+                <Button
+                  type="submit"
+                  className="w-full bg-social-primary hover:bg-social-secondary"
+                >
                   Create Account
                 </Button>
               </form>
             </TabsContent>
           </Tabs>
         </CardContent>
-        
+
         <CardFooter className="text-center">
           <div className="w-full">
             <p className="text-sm text-social-muted mb-2">Demo Credentials:</p>
-            <p className="text-xs text-social-muted">Admin: admin@example.com / password123</p>
-            <p className="text-xs text-social-muted">User: user@example.com / password123</p>
+            <p className="text-xs text-social-muted">
+              Admin: admin@example.com / password123
+            </p>
+            <p className="text-xs text-social-muted">
+              User: user@example.com / password123
+            </p>
           </div>
         </CardFooter>
       </Card>
