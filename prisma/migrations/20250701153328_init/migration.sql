@@ -27,7 +27,7 @@ CREATE TABLE "communities" (
     "memberCount" INTEGER NOT NULL DEFAULT 0,
     "postCount" INTEGER NOT NULL DEFAULT 0,
     "category" TEXT NOT NULL,
-    "tags" TEXT[],
+    "tags" TEXT[] NOT NULL DEFAULT '{}',
     "isJoined" BOOLEAN NOT NULL DEFAULT false,
     "lastActivity" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "status" TEXT NOT NULL DEFAULT 'active',
