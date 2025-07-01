@@ -369,7 +369,7 @@ const REPORTS_TABLE: Report[] = [
     replyId: "r1a2b3c4-d5e6-f789-0123-456789abcdef",
     communityId: "photography-enthusiasts",
     originalContent: {
-      parentPost: "Best Camera Settings for Golden Hour Photography",
+      title: "Best Camera Settings for Golden Hour Photography",
       author: "David Kim",
       fullText:
         "Great tips! I've been struggling with golden hour shots. The wide aperture suggestion really helped my portraits pop.",
@@ -390,10 +390,8 @@ const REPORTS_TABLE: Report[] = [
     userId: "e5f6g7h8-i9j0-1234-5678-901234efghij",
     communityId: "photography-enthusiasts",
     originalContent: {
-      name: "David Kim",
-      email: "david.kim@example.com",
-      role: "user",
-      bio: "Travel blogger and photographer",
+      title: "David Kim",
+      author: "david.kim@example.com",
       fullText: "Direct message content here.",
     },
   },
@@ -413,7 +411,7 @@ const REPORTS_TABLE: Report[] = [
     replyId: "r1a2b3c4-d5e6-f789-0123-456789abcdef",
     communityId: "photography-enthusiasts",
     originalContent: {
-      parentPost: "Best Camera Settings for Golden Hour Photography",
+      title: "Best Camera Settings for Golden Hour Photography",
       author: "David Kim",
       fullText: "You're clueless if you think that's the best setting.",
     },
@@ -432,10 +430,8 @@ const REPORTS_TABLE: Report[] = [
     userId: "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
     communityId: "tech-discussions",
     originalContent: {
-      name: "Sarah Chen",
-      email: "sarah.chen@example.com",
-      role: "moderator",
-      bio: "Tech enthusiast and community moderator",
+      title: "Sarah Chen",
+      author: "sarah.chen@example.com",
       fullText: "Impersonation details here.",
     },
   },

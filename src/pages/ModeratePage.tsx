@@ -561,12 +561,12 @@ const ModeratePage = () => {
                   >
                     <div className="flex items-center gap-2">
                       <Badge variant="destructive" className="text-xs">
-                        {report.type.toUpperCase()}
+                        {report.contentType.toUpperCase()}
                       </Badge>
                       <span className="text-sm font-medium">
-                        {report.type === "post" && `Post: ${report.content}`}
-                        {report.type === "reply" && `Reply: ${report.content}`}
-                        {report.type === "user" && `User: ${report.content}`}
+                        {report.contentType === "post" && `Post: ${report.content}`}
+                        {report.contentType === "reply" && `Reply: ${report.content}`}
+                        {report.contentType === "user" && `User: ${report.content}`}
                       </span>
                     </div>
                     <div className="text-xs text-social-muted">
@@ -581,7 +581,7 @@ const ModeratePage = () => {
                       • Reason: {report.reason}
                     </div>
                     {/* Moderation actions: lock post/comments, etc. */}
-                    {report.type === "post" && (
+                    {report.contentType === "post" && (
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -601,7 +601,7 @@ const ModeratePage = () => {
                         </Button>
                       </div>
                     )}
-                    {report.type === "reply" && (
+                    {report.contentType === "reply" && (
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -613,7 +613,7 @@ const ModeratePage = () => {
                         </Button>
                       </div>
                     )}
-                    {report.type === "user" && (
+                    {report.contentType === "user" && (
                       <div className="flex gap-2">
                         <Button
                           size="sm"
