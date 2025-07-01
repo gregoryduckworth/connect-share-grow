@@ -1,0 +1,14 @@
+services:
+  app:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ./:/app
+    command: sh -c "npm install && npm run build && npm run dev -- --host 0.0.0.0"
+    ports:
+      - 5173:5173
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+    security_opt:
+      - apparmor=unconfined

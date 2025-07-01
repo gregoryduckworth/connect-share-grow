@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 const LandingPage = () => {
   return (
     <div
-      className="min-h-screen bg-gradient-to-b from-social-accent/20 to-white"
+      className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-social-background to-white p-4"
       data-testid="landing-page"
     >
       {/* Header */}
@@ -34,7 +34,7 @@ const LandingPage = () => {
               </Button>
             </Link>
             <Link to="/register">
-              <Button data-testid="get-started-btn">Get Started</Button>
+              <Button data-testid="get-started-btn">Register</Button>
             </Link>
           </div>
         </div>
