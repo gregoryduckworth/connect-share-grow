@@ -26,12 +26,12 @@ jobs:
         run: docker-compose up -d --build
 
       - name: Wait for app to be ready
-        run: npx wait-on http://localhost:5173
+        run: npx wait-on http://localhost:8080
 
       - name: Run Playwright tests
         run: npx playwright test
         env:
-          BASE_URL: http://localhost:5173
+          BASE_URL: http://localhost:8080
 
       - name: Stop Docker Compose
         if: always()

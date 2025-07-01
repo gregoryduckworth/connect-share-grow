@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [[process.env.CI ? "dot" : "html"]],
   use: {
-    baseURL: process.env.BASE_URL || "http://localhost:5173",
+    baseURL: process.env.BASE_URL || "http://localhost:8080",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
     trace: "retain-on-failure",
