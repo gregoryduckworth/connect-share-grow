@@ -1,0 +1,150 @@
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(uuid())
+  name             String
+  email            String    @unique
+  role             UserRole  @default(USER)
+  createdAt        DateTime  @default(now())
+  isActive         Boolean   @default(true)
+  isEmailVerified  Boolean   @default(false)
+  isSuspended      Boolean   @default(false)
+  language         String    @default("en")
+  avatar           String    @default("")
+  bio              String    @default("")
+  location         String    @default("")
+
+  // Relationships
+  posts            Post[]
+  replies          Reply[]
+  notifications    Notification[]
+  reports          Report[]
+  moderatedCommunities Community[] @relation("CommunityModerators")
+  createdCommunities   Community[] @relation("CommunityCreator")
+
+  @@map("users")
+}
+
+model Community {
+  slug         String   @id
+  name         String
+  description  String
+  memberCount  Int      @default(0)
+  postCount    Int      @default(0)
+  category     String
+  tags         String[]
+  isJoined     Boolean  @default(false)
+  lastActivity DateTime @default(now())
+  status       String   @default("active")
+  createdAt    DateTime @default(now())
+
+  // Relationships
+  createdBy    String
+  creator      User     @relation("CommunityCreator", fields: [createdBy], references: [id])
+  moderators   User[]   @relation("CommunityModerators")
+  posts        Post[]
+  reports      Report[]
+
+  @@map("communities")
+}
+
+model Post {
+  id            String   @id @default(uuid())
+  title         String
+  content       String
+  createdAt     DateTime @default(now())
+  likes         Int      @default(0)
+  replies       Int      @default(0)
+  isLiked       Boolean  @default(false)
+  isHot         Boolean  @default(false)
+
+  // Relationships
+  authorId      String
+  author        User     @relation(fields: [authorId], references: [id])
+  communityId   String
+  community     Community @relation(fields: [communityId], references: [slug])
+  postReplies   Reply[]
+  notifications Notification[]
+  reports       Report[]
+
+  @@map("posts")
+}
+
+model Reply {
+  id             String   @id @default(uuid())
+  content        String
+  createdAt      DateTime @default(now())
+  likes          Int      @default(0)
+  parentReplyId  String?
+
+  // Relationships
+  authorId       String
+  author         User     @relation(fields: [authorId], references: [id])
+  postId         String
+  post           Post     @relation(fields: [postId], references: [id])
+  parentReply    Reply?   @relation("ReplyReplies", fields: [parentReplyId], references: [id])
+  childReplies   Reply[]  @relation("ReplyReplies")
+  reports        Report[]
+
+  @@map("replies")
+}
+
+model Notification {
+  id          String      @id @default(uuid())
+  type        String
+  title       String
+  message     String
+  timestamp   DateTime    @default(now())
+  isRead      Boolean     @default(false)
+  postId      String?
+  communityId String?
+
+  // Relationships
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  post        Post?       @relation(fields: [postId], references: [id])
+
+  @@map("notifications")
+}
+
+model Report {
+  id              String    @id @default(uuid())
+  contentType     String
+  contentId       String
+  contentPreview  String
+  createdAt       DateTime  @default(now())
+  reason          String
+  status          String    @default("pending")
+  content         String
+  postId          String?
+  replyId         String?
+  userId          String?
+  communityId     String?
+  originalLink    String?
+
+  // Relationships
+  reportedBy      String
+  reporter        User      @relation(fields: [reportedBy], references: [id])
+  post            Post?     @relation(fields: [postId], references: [id])
+  reply           Reply?    @relation(fields: [replyId], references: [id])
+  community       Community? @relation(fields: [communityId], references: [slug])
+
+  @@map("reports")
+}
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+}
