@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
-import { Report } from "@/lib/types";
+import { ReportBase } from "@/lib/types";
 
 const REPORT_REASONS = [
   "Spam",
@@ -23,7 +24,7 @@ const REPORT_REASONS = [
 interface ReportModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmitted?: (report: Report) => void;
+  onSubmitted?: (report: ReportBase) => void;
   context: {
     type: "post" | "reply";
     postId: string;
@@ -53,18 +54,25 @@ export default function ReportModal({
     }
     setSubmitting(true);
     setError("");
+    
+    const finalReason = reason === "Other" ? otherReason : reason;
+    const contentId = context.type === "post" ? context.postId : context.replyId || "";
+    const contentPreview = context.originalContent?.substring(0, 100) || "";
+    
     const reportData = {
-      type: context.type,
+      contentType: context.type,
+      contentId,
+      contentPreview,
       reportedBy,
-      reason: reason === "Other" ? otherReason : reason,
-      content: context.type === "post" ? "Post report" : "Reply report",
-      postId: context.postId,
-      replyId: context.replyId,
+      reason: finalReason,
+      content: context.originalContent || "",
+      postId: context.type === "post" ? context.postId : undefined,
+      replyId: context.type === "reply" ? context.replyId : undefined,
       communityId: context.communityId,
-      originalContent: context.originalContent,
     };
+    
     try {
-      const report = (await api.submitReport(reportData)) as Report;
+      const report = await api.submitReport(reportData);
       setSubmitting(false);
       onSubmitted?.(report);
       onClose();

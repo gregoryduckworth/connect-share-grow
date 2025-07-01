@@ -107,7 +107,7 @@ export interface ActivityDataPoint extends Named {
   users: number;
 }
 
-// Report types
+// Report types - unified interface
 export interface ReportBase extends Identifiable {
   contentType: "post" | "reply" | "user";
   contentId: string;
@@ -121,17 +121,17 @@ export interface ReportBase extends Identifiable {
   replyId?: string;
   userId?: string;
   communityId?: string;
-  originalContent?: string | Record<string, unknown>;
+  originalContent?: {
+    title?: string;
+    community?: string;
+    author?: string;
+    fullText?: string;
+  };
   originalLink?: string;
 }
 
-export type Report = {
-  id: string;
-  type: "post" | "reply" | "user";
-  content: string;
-  reportedBy: string;
-  reason: string;
-};
+// Keep Report as alias for backward compatibility
+export type Report = ReportBase;
 
 export interface Post {
   isLiked: boolean;
