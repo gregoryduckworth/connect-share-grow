@@ -1,36 +1,30 @@
-import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Bell, Shield, Palette } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { t, getSupportedLanguages } from "@/lib/i18n";
-import { useTheme } from "@/contexts/ThemeContext";
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { User, Bell, Shield, Palette } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { t, getSupportedLanguages } from '@/lib/i18n';
+import { useTheme } from '@/contexts/useTheme';
 
 const SettingsPage = () => {
   const { toast } = useToast();
   const { theme, language, setTheme, updateLanguage } = useTheme();
   const [profile, setProfile] = useState({
-    displayName: "John Doe",
-    bio: "Photography enthusiast and community moderator",
-    location: "San Francisco, CA",
+    displayName: 'John Doe',
+    bio: 'Photography enthusiast and community moderator',
+    location: 'San Francisco, CA',
   });
 
   const [notifications, setNotifications] = useState({
@@ -51,44 +45,43 @@ const SettingsPage = () => {
       forceUpdate({});
     };
 
-    window.addEventListener("languageChange", handleLanguageChange);
-    return () =>
-      window.removeEventListener("languageChange", handleLanguageChange);
+    window.addEventListener('languageChange', handleLanguageChange);
+    return () => window.removeEventListener('languageChange', handleLanguageChange);
   }, []);
 
   const handleSaveProfile = () => {
     toast({
-      title: t("settings.profile") + " updated",
-      description: "Your profile changes have been saved successfully.",
+      title: t('settings.profile') + ' updated',
+      description: 'Your profile changes have been saved successfully.',
     });
   };
 
   const handleSaveNotifications = () => {
     toast({
-      title: "Notification preferences updated",
-      description: "Your notification settings have been saved.",
+      title: 'Notification preferences updated',
+      description: 'Your notification settings have been saved.',
     });
   };
 
   const handleSavePrivacy = () => {
     toast({
-      title: "Privacy settings updated",
-      description: "Your privacy preferences have been saved.",
+      title: 'Privacy settings updated',
+      description: 'Your privacy preferences have been saved.',
     });
   };
 
   const handleSaveAppearance = () => {
     toast({
-      title: "Appearance settings updated",
-      description: "Your appearance preferences have been saved.",
+      title: 'Appearance settings updated',
+      description: 'Your appearance preferences have been saved.',
     });
   };
 
   const handleLanguageChange = (newLanguage: string) => {
     updateLanguage(newLanguage);
     toast({
-      title: t("settings.language") + " updated",
-      description: "Language has been changed successfully.",
+      title: t('settings.language') + ' updated',
+      description: 'Language has been changed successfully.',
     });
   };
 
@@ -102,32 +95,22 @@ const SettingsPage = () => {
           className="text-2xl sm:text-3xl font-bold text-foreground mb-2"
           data-testid="settings-title"
         >
-          {t("settings.title")}
+          {t('settings.title')}
         </h1>
-        <p
-          className="text-sm sm:text-base text-muted-foreground"
-          data-testid="settings-subtitle"
-        >
+        <p className="text-sm sm:text-base text-muted-foreground" data-testid="settings-subtitle">
           Manage your account preferences and privacy settings
         </p>
       </div>
 
-      <Tabs
-        defaultValue="profile"
-        className="w-full"
-        data-testid="settings-tabs"
-      >
-        <TabsList
-          className="grid w-full grid-cols-4 mb-6"
-          data-testid="settings-tabs-list"
-        >
+      <Tabs defaultValue="profile" className="w-full" data-testid="settings-tabs">
+        <TabsList className="grid w-full grid-cols-4 mb-6" data-testid="settings-tabs-list">
           <TabsTrigger
             value="profile"
             className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
             data-testid="settings-tab-profile"
           >
             <User className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">{t("settings.profile")}</span>
+            <span className="hidden sm:inline">{t('settings.profile')}</span>
             <span className="sm:hidden">Profile</span>
           </TabsTrigger>
           <TabsTrigger
@@ -136,9 +119,7 @@ const SettingsPage = () => {
             data-testid="settings-tab-notifications"
           >
             <Bell className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">
-              {t("settings.notifications")}
-            </span>
+            <span className="hidden sm:inline">{t('settings.notifications')}</span>
             <span className="sm:hidden">Notifs</span>
           </TabsTrigger>
           <TabsTrigger
@@ -147,7 +128,7 @@ const SettingsPage = () => {
             data-testid="settings-tab-privacy"
           >
             <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">{t("settings.privacy")}</span>
+            <span className="hidden sm:inline">{t('settings.privacy')}</span>
             <span className="sm:hidden">Privacy</span>
           </TabsTrigger>
           <TabsTrigger
@@ -156,22 +137,16 @@ const SettingsPage = () => {
             data-testid="settings-tab-appearance"
           >
             <Palette className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">{t("settings.appearance")}</span>
+            <span className="hidden sm:inline">{t('settings.appearance')}</span>
             <span className="sm:hidden">Theme</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent
-          value="profile"
-          className="mt-6"
-          data-testid="settings-tab-content-profile"
-        >
+        <TabsContent value="profile" className="mt-6" data-testid="settings-tab-content-profile">
           <Card>
             <CardHeader className="text-left">
               <CardTitle>Profile Information</CardTitle>
-              <CardDescription>
-                Update your personal information and bio
-              </CardDescription>
+              <CardDescription>Update your personal information and bio</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 text-left">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -211,19 +186,14 @@ const SettingsPage = () => {
                   id="bio"
                   placeholder="Tell others about yourself..."
                   value={profile.bio}
-                  onChange={(e) =>
-                    setProfile((prev) => ({ ...prev, bio: e.target.value }))
-                  }
+                  onChange={(e) => setProfile((prev) => ({ ...prev, bio: e.target.value }))}
                   rows={3}
                   data-testid="settings-profile-bio-textarea"
                 />
               </div>
 
-              <Button
-                onClick={handleSaveProfile}
-                data-testid="settings-profile-save-btn"
-              >
-                {t("settings.save")} Profile
+              <Button onClick={handleSaveProfile} data-testid="settings-profile-save-btn">
+                {t('settings.save')} Profile
               </Button>
             </CardContent>
           </Card>
@@ -237,9 +207,7 @@ const SettingsPage = () => {
           <Card>
             <CardHeader className="text-left">
               <CardTitle>Notification Preferences</CardTitle>
-              <CardDescription>
-                Choose how you want to be notified about activity
-              </CardDescription>
+              <CardDescription>Choose how you want to be notified about activity</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 text-left">
               <div
@@ -247,10 +215,7 @@ const SettingsPage = () => {
                 data-testid="settings-notifications-community-updates-row"
               >
                 <div>
-                  <Label
-                    htmlFor="communityUpdates"
-                    className="text-base font-medium"
-                  >
+                  <Label htmlFor="communityUpdates" className="text-base font-medium">
                     Community Updates
                   </Label>
                   <p className="text-sm text-muted-foreground">
@@ -260,7 +225,7 @@ const SettingsPage = () => {
                 <Switch
                   id="communityUpdates"
                   checked={notifications.communityUpdates}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={(checked: boolean) =>
                     setNotifications((prev) => ({
                       ...prev,
                       communityUpdates: checked,
@@ -275,20 +240,15 @@ const SettingsPage = () => {
                 data-testid="settings-notifications-direct-messages-row"
               >
                 <div>
-                  <Label
-                    htmlFor="directMessages"
-                    className="text-base font-medium"
-                  >
+                  <Label htmlFor="directMessages" className="text-base font-medium">
                     Direct Messages
                   </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Notifications for new messages
-                  </p>
+                  <p className="text-sm text-muted-foreground">Notifications for new messages</p>
                 </div>
                 <Switch
                   id="directMessages"
                   checked={notifications.directMessages}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={(checked: boolean) =>
                     setNotifications((prev) => ({
                       ...prev,
                       directMessages: checked,
@@ -303,10 +263,7 @@ const SettingsPage = () => {
                 data-testid="settings-notifications-connection-requests-row"
               >
                 <div>
-                  <Label
-                    htmlFor="connectionRequests"
-                    className="text-base font-medium"
-                  >
+                  <Label htmlFor="connectionRequests" className="text-base font-medium">
                     Connection Requests
                   </Label>
                   <p className="text-sm text-muted-foreground">
@@ -316,7 +273,7 @@ const SettingsPage = () => {
                 <Switch
                   id="connectionRequests"
                   checked={notifications.connectionRequests}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={(checked: boolean) =>
                     setNotifications((prev) => ({
                       ...prev,
                       connectionRequests: checked,
@@ -336,11 +293,7 @@ const SettingsPage = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent
-          value="privacy"
-          className="mt-6"
-          data-testid="settings-tab-content-privacy"
-        >
+        <TabsContent value="privacy" className="mt-6" data-testid="settings-tab-content-privacy">
           <Card>
             <CardHeader className="text-left">
               <CardTitle>Privacy Settings</CardTitle>
@@ -354,10 +307,7 @@ const SettingsPage = () => {
                 data-testid="settings-privacy-show-location-row"
               >
                 <div>
-                  <Label
-                    htmlFor="showLocation"
-                    className="text-base font-medium"
-                  >
+                  <Label htmlFor="showLocation" className="text-base font-medium">
                     Show Location
                   </Label>
                   <p className="text-sm text-muted-foreground">
@@ -367,7 +317,7 @@ const SettingsPage = () => {
                 <Switch
                   id="showLocation"
                   checked={privacy.showLocation}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={(checked: boolean) =>
                     setPrivacy((prev) => ({ ...prev, showLocation: checked }))
                   }
                   data-testid="settings-privacy-show-location-switch"
@@ -379,10 +329,7 @@ const SettingsPage = () => {
                 data-testid="settings-privacy-allow-dms-row"
               >
                 <div>
-                  <Label
-                    htmlFor="allowDirectMessages"
-                    className="text-base font-medium"
-                  >
+                  <Label htmlFor="allowDirectMessages" className="text-base font-medium">
                     Allow Direct Messages
                   </Label>
                   <p className="text-sm text-muted-foreground">
@@ -392,7 +339,7 @@ const SettingsPage = () => {
                 <Switch
                   id="allowDirectMessages"
                   checked={privacy.allowDirectMessages}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={(checked: boolean) =>
                     setPrivacy((prev) => ({
                       ...prev,
                       allowDirectMessages: checked,
@@ -402,10 +349,7 @@ const SettingsPage = () => {
                 />
               </div>
 
-              <Button
-                onClick={handleSavePrivacy}
-                data-testid="settings-privacy-save-btn"
-              >
+              <Button onClick={handleSavePrivacy} data-testid="settings-privacy-save-btn">
                 Save Privacy Settings
               </Button>
             </CardContent>
@@ -420,9 +364,7 @@ const SettingsPage = () => {
           <Card>
             <CardHeader className="text-left">
               <CardTitle>Appearance Settings</CardTitle>
-              <CardDescription>
-                Customize how the application looks and feels
-              </CardDescription>
+              <CardDescription>Customize how the application looks and feels</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 text-left">
               <div className="space-y-2">
@@ -436,22 +378,13 @@ const SettingsPage = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem
-                      value="light"
-                      data-testid="settings-appearance-theme-light"
-                    >
+                    <SelectItem value="light" data-testid="settings-appearance-theme-light">
                       Light
                     </SelectItem>
-                    <SelectItem
-                      value="dark"
-                      data-testid="settings-appearance-theme-dark"
-                    >
+                    <SelectItem value="dark" data-testid="settings-appearance-theme-dark">
                       Dark
                     </SelectItem>
-                    <SelectItem
-                      value="system"
-                      data-testid="settings-appearance-theme-system"
-                    >
+                    <SelectItem value="system" data-testid="settings-appearance-theme-system">
                       System
                     </SelectItem>
                   </SelectContent>
@@ -459,7 +392,7 @@ const SettingsPage = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="language">{t("settings.language")}</Label>
+                <Label htmlFor="language">{t('settings.language')}</Label>
                 <Select
                   value={language}
                   onValueChange={handleLanguageChange}
@@ -482,11 +415,8 @@ const SettingsPage = () => {
                 </Select>
               </div>
 
-              <Button
-                onClick={handleSaveAppearance}
-                data-testid="settings-appearance-save-btn"
-              >
-                {t("settings.save")} Appearance Settings
+              <Button onClick={handleSaveAppearance} data-testid="settings-appearance-save-btn">
+                {t('settings.save')} Appearance Settings
               </Button>
             </CardContent>
           </Card>

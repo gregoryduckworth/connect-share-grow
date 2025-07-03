@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { AlertTriangle } from 'lucide-react';
@@ -18,8 +18,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showSuspensionDialog, setShowSuspensionDialog] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Session expiry handler
+  const handleSessionExpiry = useCallback(() => {
+    setUser(null);
+    localStorage.removeItem('auth_user');
+    localStorage.removeItem('auth_expiry');
+    toast({
+      title: 'Session expired',
+      description: 'Your session has expired. Please log in again.',
+    });
+    navigate('/login');
+  }, [navigate, toast]);
 
   useEffect(() => {
     // Check for existing session
@@ -32,16 +45,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(JSON.parse(storedUser));
       } else {
         // Session expired
-        localStorage.removeItem('auth_user');
-        localStorage.removeItem('auth_expiry');
+        handleSessionExpiry();
       }
     }
     setIsLoading(false);
-  }, []);
+  }, [handleSessionExpiry]);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const clearAuthError = useCallback(() => setAuthError(null), []);
+
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    setAuthError(null);
     try {
-      // Use mockUsers from central api file (now an array)
       const userData = mockUsers.find((u) => u.email === email);
       if (userData && password === 'password123') {
         const user: User = userData;
@@ -58,73 +73,102 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (user.isSuspended) {
           setShowSuspensionDialog(true);
         }
-
+        setIsLoading(false);
         return true;
       }
+      setAuthError('Invalid email or password.');
+      setIsLoading(false);
       return false;
     } catch (error) {
+      setAuthError('An error occurred during login.');
+      setIsLoading(false);
       console.error('Login error:', error);
       return false;
     }
-  };
+  }, []);
 
-  const register = async (
-    email: string,
-    _password: string, // renamed to _password to indicate unused
-    name: string,
-    language: string,
-  ): Promise<boolean> => {
-    try {
-      // Mock registration - in real app, this would call Supabase
+  const register = useCallback(
+    async (
+      email: string,
+      _password: string, // renamed to _password to indicate unused
+      name: string,
+      language: string,
+    ): Promise<boolean> => {
+      setIsLoading(true);
+      setAuthError(null);
+      try {
+        // Mock registration - in real app, this would call Supabase
+        // Simulate email verification requirement
+        toast({
+          title: t('auth.verificationSent'),
+          description: 'Please check your email and click the verification link before logging in.',
+        });
+        setIsLoading(false);
+        console.log('User registered:', { email, name, language });
+        console.log('Verification email would be sent to:', email);
+        return true;
+      } catch (error) {
+        setAuthError('An error occurred during registration.');
+        setIsLoading(false);
+        console.error('Registration error:', error);
+        return false;
+      }
+    },
+    [toast],
+  );
 
-      // Simulate email verification requirement
-      toast({
-        title: t('auth.verificationSent'),
-        description: 'Please check your email and click the verification link before logging in.',
-      });
-
-      console.log('User registered:', { email, name, language });
-      console.log('Verification email would be sent to:', email);
-
-      return true;
-    } catch (error) {
-      console.error('Registration error:', error);
-      return false;
-    }
-  };
-
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem('auth_user');
     localStorage.removeItem('auth_expiry');
-
     toast({
       title: 'Logged out',
       description: 'You have been successfully logged out.',
     });
-
     navigate('/'); // Go to landing page after logout
-  };
+  }, [navigate, toast]);
 
-  const isAdmin = () => user?.role === 'admin';
-  const isModerator = () => user?.role === 'moderator' || user?.role === 'admin';
-  const canPost = () => Boolean(user && user.isEmailVerified && !user.isSuspended);
+  const isAdmin = useCallback(() => user?.role === 'admin', [user]);
+  const isModerator = useCallback(
+    () => user?.role === 'moderator' || user?.role === 'admin',
+    [user],
+  );
+  const canPost = useCallback(
+    () => Boolean(user && user.isEmailVerified && !user.isSuspended),
+    [user],
+  );
+
+  // Memoize context value
+  const contextValue = useMemo(
+    () => ({
+      user,
+      isLoading,
+      authError,
+      clearAuthError,
+      login,
+      register,
+      logout,
+      isAdmin,
+      isModerator,
+      canPost,
+    }),
+    [
+      user,
+      isLoading,
+      authError,
+      clearAuthError,
+      login,
+      register,
+      logout,
+      isAdmin,
+      isModerator,
+      canPost,
+    ],
+  );
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        login,
-        register,
-        logout,
-        isAdmin,
-        isModerator,
-        canPost,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
-
       {/* Suspension Dialog */}
       <Dialog open={showSuspensionDialog} onOpenChange={setShowSuspensionDialog}>
         <DialogContent className="max-w-md">
