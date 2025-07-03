@@ -1,4 +1,3 @@
-
 import { REPORTS_DATA } from "../data/reports";
 import type { ReportBase as Report } from "@/lib/types";
 
@@ -8,7 +7,7 @@ export const reportService = {
     return REPORTS_DATA;
   },
 
-  getMockFlaggedReports: async (): Promise<Report[]> => {
+  getFlaggedReports: async (): Promise<Report[]> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
     return REPORTS_DATA.filter((report) => report.status === "pending");
   },
@@ -27,9 +26,6 @@ export const reportService = {
       reason: reportData.reason,
       status: "pending",
       content: reportData.content,
-      postId: reportData.postId,
-      replyId: reportData.replyId,
-      userId: reportData.userId,
       communityId: reportData.communityId,
       originalContent: reportData.originalContent,
       originalLink: reportData.originalLink,

@@ -36,6 +36,7 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { USERS_DATA } from "@/lib/backend/data/users";
 
 const CommunityDetailPage = () => {
   const { communitySlug } = useParams<{ communitySlug: string }>();
@@ -55,7 +56,13 @@ const CommunityDetailPage = () => {
           api.getCommunityPosts(communitySlug),
         ]);
         setCommunity(communityData);
-        setPosts(communityPosts);
+        // Map userName into each post
+        setPosts(
+          communityPosts.map((post) => {
+            const user = USERS_DATA.find((u) => u.id === post.author);
+            return { ...post, userName: user?.name || undefined };
+          })
+        );
       } catch (error) {
         console.error("Error fetching community data:", error);
         toast({
@@ -300,6 +307,7 @@ const CommunityDetailPage = () => {
                     showPreview={true}
                     communitySlug={communitySlug}
                     data-testid={`community-post-${post.id}`}
+                    // Pass userName to CommunityPost
                   />
                 ))}
               </div>
@@ -324,24 +332,26 @@ const CommunityDetailPage = () => {
                 </p>
               ) : (
                 <ul className="space-y-2">
-                  {community.moderators.map((mod) => (
-                    <li
-                      key={mod.id}
-                      className="flex items-center gap-2 text-sm"
-                      data-testid={`community-detail-moderator-${mod.id}`}
-                    >
-                      <User className="h-4 w-4 text-social-primary" />
-                      <UserProfileLink
-                        userId={mod.id}
-                        userName={mod.name}
-                        currentUserId={"current-user-id"}
-                        className="font-medium hover:underline hover:text-social-primary transition-colors"
-                      />
-                      <span className="text-muted-foreground">
-                        ({mod.role})
-                      </span>
-                    </li>
-                  ))}
+                  {community.moderators.map((mod) => {
+                    const user = USERS_DATA.find((u) => u.id === mod.id);
+                    return (
+                      <li
+                        key={mod.id}
+                        className="flex items-center gap-2 text-sm"
+                        data-testid={`community-detail-moderator-${mod.id}`}
+                      >
+                        <User className="h-4 w-4 text-social-primary" />
+                        <UserProfileLink
+                          userId={mod.id}
+                          userName={user?.name}
+                          className="font-medium hover:underline hover:text-social-primary transition-colors"
+                        />
+                        <span className="text-muted-foreground">
+                          ({mod.role})
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </CardContent>

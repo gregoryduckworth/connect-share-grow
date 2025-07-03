@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Dialog,
   DialogContent,
@@ -10,16 +11,16 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Calendar, Globe, UserPlus } from "lucide-react";
+import { MapPin, Calendar, UserPlus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { userService } from "@/lib/backend/services/userService";
+import type { User } from "@/lib/types";
 
 export interface UserProfileDialogProps {
   userId: string;
   isOpen: boolean;
   onClose: () => void;
-  currentUserId: string;
   showConnectionButton?: boolean;
 }
 
@@ -27,37 +28,25 @@ const UserProfileDialog = ({
   userId,
   isOpen,
   onClose,
-  currentUserId,
   showConnectionButton = true,
 }: UserProfileDialogProps) => {
+  const { user: currentUser } = useAuth();
   const { toast } = useToast();
   const [isConnected, setIsConnected] = useState(false);
   const [connectionPending, setConnectionPending] = useState(false);
   const [showRequestDialog, setShowRequestDialog] = useState(false);
   const [requestMessage, setRequestMessage] = useState("");
   const [requestError, setRequestError] = useState("");
+  const [user, setUser] = useState<User | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
 
-  // Mock user data - in a real app, this would come from an API based on userId
-  const user = {
-    id: userId,
-    name: "Sarah Johnson",
-    email: "sarah.johnson@example.com",
-    bio: "Professional photographer and community moderator. Passionate about capturing life's beautiful moments.",
-    location: "San Francisco, CA",
-    website: "https://sarahjohnson.photography",
-    joinDate: new Date(2023, 0, 15),
-    postCount: 147,
-    connectionCount: 89,
-    communityCount: 12,
-    interests: ["Photography", "Travel", "Art", "Nature", "Community Building"],
-    recentActivity: [
-      "Posted in Photography Enthusiasts",
-      "Joined Travel Stories community",
-      "Connected with Mike Chen",
-    ],
-  };
-
-  const isOwnProfile = userId === currentUserId;
+  useEffect(() => {
+    setLoading(true);
+    userService.getUserById(userId).then((u) => {
+      setUser(u);
+      setLoading(false);
+    });
+  }, [userId]);
 
   const handleSendConnectionRequest = () => {
     setShowRequestDialog(true);
@@ -88,6 +77,54 @@ const UserProfileDialog = ({
       description: `Connection request sent to ${user.name}`,
     });
   };
+
+  if (loading) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Loading...</DialogTitle>
+          </DialogHeader>
+          <div className="text-social-muted">Loading user profile...</div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>User not found</DialogTitle>
+          </DialogHeader>
+          <div className="text-social-muted">This user does not exist.</div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  const isOwnProfile = userId === currentUser?.id;
+
+  // Fallbacks for missing fields (use type assertion to unknown, then index signature)
+  const userUnknown = user as unknown as Record<string, unknown>;
+  const joinDate = user.createdAt;
+  const postCount =
+    typeof userUnknown.postCount === "number" ? userUnknown.postCount : 0;
+  const connectionCount =
+    typeof userUnknown.connectionCount === "number"
+      ? userUnknown.connectionCount
+      : 0;
+  const communityCount =
+    typeof userUnknown.communityCount === "number"
+      ? userUnknown.communityCount
+      : 0;
+  const interests = Array.isArray(userUnknown.interests)
+    ? (userUnknown.interests as string[])
+    : [];
+  const recentActivity = Array.isArray(userUnknown.recentActivity)
+    ? (userUnknown.recentActivity as string[])
+    : [];
 
   return (
     <>
@@ -122,23 +159,9 @@ const UserProfileDialog = ({
                   )}
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    <span>Joined {user.joinDate.toLocaleDateString()}</span>
+                    <span>Joined {joinDate.toLocaleDateString()}</span>
                   </div>
                 </div>
-
-                {user.website && (
-                  <div className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 mb-4">
-                    <Globe className="h-4 w-4" />
-                    <a
-                      href={user.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:underline"
-                    >
-                      {user.website}
-                    </a>
-                  </div>
-                )}
 
                 {!isOwnProfile && (
                   <div className="flex gap-2">
@@ -178,19 +201,19 @@ const UserProfileDialog = ({
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <div className="text-2xl font-bold text-social-primary">
-                      {user.postCount}
+                      {postCount}
                     </div>
                     <div className="text-sm text-gray-500">Posts</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-social-primary">
-                      {user.connectionCount}
+                      {connectionCount}
                     </div>
                     <div className="text-sm text-gray-500">Connections</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-social-primary">
-                      {user.communityCount}
+                      {communityCount}
                     </div>
                     <div className="text-sm text-gray-500">Communities</div>
                   </div>
@@ -202,7 +225,7 @@ const UserProfileDialog = ({
             <div>
               <h3 className="font-semibold mb-3">Interests</h3>
               <div className="flex flex-wrap gap-2">
-                {user.interests.map((interest, index) => (
+                {interests.map((interest, index) => (
                   <Badge key={index} variant="secondary">
                     {interest}
                   </Badge>
@@ -216,7 +239,7 @@ const UserProfileDialog = ({
             <div>
               <h3 className="font-semibold mb-3">Recent Activity</h3>
               <div className="space-y-2">
-                {user.recentActivity.map((activity, index) => (
+                {recentActivity.map((activity, index) => (
                   <div
                     key={index}
                     className="text-sm text-gray-600 py-2 border-l-2 border-gray-200 pl-3"

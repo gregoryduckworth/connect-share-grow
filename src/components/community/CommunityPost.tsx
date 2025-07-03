@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +7,6 @@ import { Avatar } from "@/components/ui/avatar";
 import { Heart, MessageSquare, Pin, Lock, Unlock, User } from "lucide-react";
 import LockPostDialog from "./LockPostDialog";
 import UserProfileLink from "@/components/user/UserProfileLink";
-import { Link } from "react-router-dom";
 
 interface PostData {
   id: string;
@@ -23,6 +23,7 @@ interface PostData {
   tags: string[];
   lockReason?: string;
   commentsLockReason?: string;
+  userName?: string; // Added for flicker-free UserProfileLink
 }
 
 interface CommunityPostProps {
@@ -103,7 +104,12 @@ const CommunityPost = ({
                   className="font-semibold text-lg"
                   data-testid="community-post-title"
                 >
-                  {post.title}
+                  <Link
+                    to={postLink}
+                    className="transition-colors hover:text-purple-600 focus:text-purple-600"
+                  >
+                    {post.title}
+                  </Link>
                 </h3>
                 {post.isPinned && (
                   <Pin
@@ -124,11 +130,8 @@ const CommunityPost = ({
               >
                 by{" "}
                 <UserProfileLink
-                  userId={`user-${post.author
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")}`}
-                  userName={post.author}
-                  currentUserId={"current-user-id"}
+                  userId={post.author}
+                  userName={post.userName}
                 />{" "}
                 • {post.timestamp.toLocaleDateString()}
               </p>
@@ -315,13 +318,7 @@ const CommunityPost = ({
 
   return (
     <>
-      {showPreview ? (
-        <Link to={postLink} style={{ textDecoration: "none" }}>
-          {cardContent}
-        </Link>
-      ) : (
-        cardContent
-      )}
+      {showPreview ? cardContent : cardContent}
       <LockPostDialog
         isOpen={showLockDialog}
         onClose={() => setShowLockDialog(false)}

@@ -1,9 +1,13 @@
-
 import { POSTS_DATA } from "../data/posts";
 import { REPLIES_DATA } from "../data/replies";
 import { USERS_DATA } from "../data/users";
 import { COMMUNITIES_DATA } from "../data/communities";
-import type { Post, PostDetailData, PostDetailReply, CommunityPost } from "@/lib/types";
+import type {
+  Post,
+  PostDetailData,
+  PostDetailReply,
+  CommunityPost,
+} from "@/lib/types";
 
 const getUserNameById = (userId: string): string => {
   const user = USERS_DATA.find((u) => u.id === userId);
@@ -24,7 +28,9 @@ export const postService = {
     }));
   },
 
-  getPostDetail: async (postId: string): Promise<PostDetailData | undefined> => {
+  getPostDetail: async (
+    postId: string
+  ): Promise<PostDetailData | undefined> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
     const post = POSTS_DATA.find((post) => post.id === postId);
     if (!post) return undefined;
@@ -33,7 +39,7 @@ export const postService = {
       (reply) => reply.postId === postId
     ).map((reply) => ({
       id: reply.id,
-      author: getUserNameById(reply.author),
+      author: reply.author,
       content: reply.content,
       timestamp: reply.createdAt,
       likes: reply.likes,
@@ -45,7 +51,7 @@ export const postService = {
       id: post.id,
       title: post.title,
       content: post.content,
-      author: getUserNameById(post.author),
+      author: post.author,
       timestamp: post.createdAt,
       likes: post.likes,
       comments: replies.length,
@@ -56,7 +62,7 @@ export const postService = {
       tags: [],
       replies: replies,
       communityId: post.communityId,
-      communityName: post.communityName,
+      communityName: getCommunityNameBySlug(post.communityId),
     };
   },
 
@@ -64,20 +70,22 @@ export const postService = {
     await new Promise((resolve) => setTimeout(resolve, 300));
     return POSTS_DATA.filter((post) => post.isHot).map((post) => ({
       ...post,
-      author: getUserNameById(post.author),
+      author: post.author,
       communityName: getCommunityNameBySlug(post.communityId),
     }));
   },
 
-  getCommunityPosts: async (communitySlug: string): Promise<CommunityPost[]> => {
+  getCommunityPosts: async (
+    communitySlug: string
+  ): Promise<CommunityPost[]> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
     return POSTS_DATA.filter((post) => post.communityId === communitySlug).map(
       (post) => ({
         id: post.id,
-        name: post.communityName,
+        name: getCommunityNameBySlug(post.communityId),
         title: post.title,
         content: post.content,
-        author: getUserNameById(post.author),
+        author: post.author,
         timestamp: post.createdAt,
         likes: post.likes,
         comments: post.replies,
@@ -106,7 +114,6 @@ export const postService = {
       content: postData.content,
       author: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
       communityId: communitySlug,
-      communityName: getCommunityNameBySlug(communitySlug),
       createdAt: new Date(),
       likes: 0,
       replies: 0,

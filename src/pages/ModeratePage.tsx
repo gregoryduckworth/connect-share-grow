@@ -40,6 +40,7 @@ import { getMockFlaggedReports } from "@/lib/api";
 import { Report } from "@/lib/types";
 import UserProfileLink from "@/components/user/UserProfileLink";
 import { useAuth } from "@/contexts/AuthContext";
+import { USERS_DATA } from "@/lib/backend/data/users";
 
 interface Moderator {
   id: string;
@@ -55,6 +56,11 @@ interface CommunityAnalytics {
   postsThisWeek: number;
   activeMembers: number;
   reportsThisWeek: number;
+}
+
+// Extend Report type locally to include reportedByName for UI
+interface FlaggedReport extends Report {
+  reportedByName: string;
 }
 
 const ModeratePage = () => {
@@ -131,14 +137,25 @@ const ModeratePage = () => {
   ]);
 
   // Flagged reports state
-  const [flaggedReports, setFlaggedReports] = useState<Report[]>([]);
+  const [flaggedReports, setFlaggedReports] = useState<FlaggedReport[]>([]);
 
+  // Map user names into flaggedReports for instant rendering
   useEffect(() => {
     const loadFlaggedReports = async () => {
       try {
         const reports = await getMockFlaggedReports();
         // Patch: add 'type' property for compatibility with Report type
-        setFlaggedReports(reports.map((r) => ({ ...r, type: r.contentType })));
+        // Map reportedByName for instant rendering
+        setFlaggedReports(
+          reports.map((r) => {
+            const userObj = USERS_DATA.find((u) => u.id === r.reportedBy);
+            return {
+              ...r,
+              type: r.contentType,
+              reportedByName: userObj?.name || "Unknown",
+            };
+          })
+        );
       } catch (error) {
         console.error("Failed to load flagged reports:", error);
       }
@@ -406,7 +423,6 @@ const ModeratePage = () => {
                           <UserProfileLink
                             userId={moderator.id}
                             userName={moderator.name}
-                            currentUserId={moderator.id}
                           />
                         </p>
                         <p className="text-sm text-social-muted">
@@ -564,19 +580,19 @@ const ModeratePage = () => {
                         {report.contentType.toUpperCase()}
                       </Badge>
                       <span className="text-sm font-medium">
-                        {report.contentType === "post" && `Post: ${report.content}`}
-                        {report.contentType === "reply" && `Reply: ${report.content}`}
-                        {report.contentType === "user" && `User: ${report.content}`}
+                        {report.contentType === "post" &&
+                          `Post: ${report.content}`}
+                        {report.contentType === "reply" &&
+                          `Reply: ${report.content}`}
+                        {report.contentType === "user" &&
+                          `User: ${report.content}`}
                       </span>
                     </div>
                     <div className="text-xs text-social-muted">
                       Reported by:{" "}
                       <UserProfileLink
-                        userId={`user-${report.reportedBy
-                          .toLowerCase()
-                          .replace(/\s+/g, "-")}`}
-                        userName={report.reportedBy}
-                        currentUserId={"current-user-id"}
+                        userId={report.reportedBy}
+                        userName={report.reportedByName}
                       />{" "}
                       • Reason: {report.reason}
                     </div>

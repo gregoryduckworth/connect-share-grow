@@ -35,7 +35,6 @@ interface Community {
 
 const CommunitiesPage = () => {
   const { toast } = useToast();
-  const { user, isModerator: checkIsModerator } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const perPageOptions = [12, 24, 36, 48];

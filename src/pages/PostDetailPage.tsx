@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { api } from "@/lib/api";
-import { PostDetailData } from "@/lib/types";
+import { PostDetailData, PostDetailReply } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -32,6 +32,8 @@ import ReportModal from "@/components/ui/ReportModal";
 import UserProfileLink from "@/components/user/UserProfileLink";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { REPLIES_DATA } from "@/lib/backend/data/replies";
+import { USERS_DATA } from "@/lib/backend/data/users";
 
 interface Reply {
   id: string;
@@ -44,6 +46,47 @@ interface Reply {
   lockReason?: string;
   parentId?: string;
   replies: Reply[];
+  userName?: string; // Added for flicker-free UserProfileLink
+}
+
+// Utility to build nested reply tree from flat REPLIES_DATA
+function buildReplyTree(postId: string): PostDetailReply[] {
+  const flatReplies = REPLIES_DATA.filter((r) => r.postId === postId);
+  const idToReply: { [id: string]: PostDetailReply } = {};
+  flatReplies.forEach((r) => {
+    idToReply[r.id] = {
+      id: r.id,
+      author: r.author,
+      content: r.content,
+      timestamp: r.createdAt,
+      likes: r.likes,
+      isLiked: false,
+      isLocked: false,
+      parentId: r.parentReplyId || undefined,
+      replies: [],
+    };
+  });
+  const rootReplies: PostDetailReply[] = [];
+  Object.values(idToReply).forEach((reply) => {
+    if (reply.parentId) {
+      idToReply[reply.parentId]?.replies.push(reply);
+    } else {
+      rootReplies.push(reply);
+    }
+  });
+  return rootReplies;
+}
+
+// Utility to recursively map userName into replies
+function mapUserNamesToReplies(replies) {
+  return replies.map((reply) => {
+    const user = USERS_DATA.find((u) => u.id === reply.author);
+    return {
+      ...reply,
+      userName: user?.name || undefined,
+      replies: mapUserNamesToReplies(reply.replies || []),
+    };
+  });
 }
 
 const PostDetailPage = () => {
@@ -70,41 +113,23 @@ const PostDetailPage = () => {
 
   useEffect(() => {
     if (postId) {
-      api.getPostDetail(postId).then(setPost);
-    }
-  }, [postId]);
-
-  // Add a 3rd level reply to the mock data for demonstration
-  useEffect(() => {
-    if (
-      post &&
-      post.replies.length > 0 &&
-      post.replies[0].replies[0] &&
-      (!post.replies[0].replies[0].replies ||
-        post.replies[0].replies[0].replies.length === 0)
-    ) {
-      setPost((prev) => {
-        if (!prev) return prev;
-        const updated = { ...prev };
-        if (updated.replies[0] && updated.replies[0].replies[0]) {
-          updated.replies[0].replies[0].replies = [
-            {
-              id: "reply-3",
-              author: "Third Level User",
-              content: "This is a 3rd level reply for visual testing.",
-              timestamp: new Date(),
-              likes: 1,
-              isLiked: false,
-              parentId: updated.replies[0].replies[0].id,
-              replies: [],
-            },
-          ];
-        }
-        return updated;
+      api.getPostDetail(postId).then((postData) => {
+        // Attach nested replies for this post
+        const replies = buildReplyTree(postId);
+        // Map userName into post and replies
+        const user = USERS_DATA.find((u) => u.id === postData?.author);
+        setPost(
+          postData
+            ? {
+                ...postData,
+                userName: user?.name || undefined,
+                replies: mapUserNamesToReplies(replies),
+              }
+            : null
+        );
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [post && post.replies.length > 0 && post.replies[0].replies[0]]);
+  }, [postId]);
 
   const handleLikePost = () => {
     setPost((prev) => ({
@@ -146,7 +171,7 @@ const PostDetailPage = () => {
 
     const newReplyObj: Reply = {
       id: `reply-${Date.now()}`,
-      author: "Current User",
+      author: user.id,
       content: content,
       timestamp: new Date(),
       likes: 0,
@@ -197,8 +222,6 @@ const PostDetailPage = () => {
     });
   };
 
-  const currentUserId = user?.id || "";
-
   const openReportModal = (context: typeof reportContext) => {
     setReportContext(context);
     setReportModalOpen(true);
@@ -232,11 +255,8 @@ const PostDetailPage = () => {
             <div className="flex items-center gap-2 mb-2 justify-between">
               <div className="flex items-center gap-2">
                 <UserProfileLink
-                  userId={`user-${reply.author
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")}`}
-                  userName={reply.author}
-                  currentUserId={"current-user-id"}
+                  userId={reply.author}
+                  userName={reply.userName}
                 />
                 <span className="text-sm text-gray-400 font-normal">
                   {reply.timestamp.toLocaleDateString()}
@@ -525,11 +545,8 @@ const PostDetailPage = () => {
                   >
                     by{" "}
                     <UserProfileLink
-                      userId={`user-${post.author
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}`}
-                      userName={post.author}
-                      currentUserId={"current-user-id"}
+                      userId={post.author}
+                      userName={post.userName}
                     />{" "}
                     • {post.timestamp.toLocaleDateString()}
                   </p>
@@ -736,7 +753,6 @@ const PostDetailPage = () => {
           userId={selectedUserId}
           isOpen={!!selectedUserId}
           onClose={() => setSelectedUserId(null)}
-          currentUserId="current-user-id"
           data-testid="user-profile-dialog"
         />
       )}
@@ -747,7 +763,7 @@ const PostDetailPage = () => {
           open={reportModalOpen}
           onClose={closeReportModal}
           context={reportContext}
-          reportedBy={currentUserId}
+          reportedBy={user.id}
           onSubmitted={() =>
             toast({
               title: "Report submitted",

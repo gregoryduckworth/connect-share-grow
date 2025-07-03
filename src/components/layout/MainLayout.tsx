@@ -5,12 +5,10 @@ import UserMenu from "./UserMenu";
 import NotificationBell from "./NotificationBell";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useEffect, useRef } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const MainLayout = () => {
-  const user = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-  };
+  const { user } = useAuth();
 
   const location = useLocation();
   const mainRef = useRef<HTMLDivElement>(null);

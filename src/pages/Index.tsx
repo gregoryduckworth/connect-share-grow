@@ -50,20 +50,25 @@ const CommunitiesPage = () => {
     });
   }, []);
 
+  // Extend Community type locally to include isModerator
+  type CommunityWithModerator = Community & { isModerator: boolean };
+
   // Add isModerator property dynamically based on user id and community.moderators
-  const communitiesWithModerator = allCommunities.map((community) => ({
-    ...community,
-    isModerator: user
-      ? community.moderators?.includes(user.id) ?? false
-      : false,
-  }));
+  const communitiesWithModerator: CommunityWithModerator[] = allCommunities.map(
+    (community) => ({
+      ...community,
+      isModerator: user
+        ? community.moderators?.includes(user.id) ?? false
+        : false,
+    })
+  );
 
   // Only show communities the user is a member of
   const myCommunities = communitiesWithModerator.filter(
-    (community) => community.isJoined
+    (community: CommunityWithModerator) => community.isJoined
   );
   const filteredCommunities = myCommunities.filter(
-    (community) =>
+    (community: CommunityWithModerator) =>
       community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       community.tags.some((tag) =>
@@ -71,7 +76,7 @@ const CommunitiesPage = () => {
       )
   );
 
-  const getCurrentPageCommunities = (communities: Community[]) => {
+  const getCurrentPageCommunities = (communities: CommunityWithModerator[]) => {
     const startIndex = (currentPage - 1) * communitiesPerPage;
     const endIndex = startIndex + communitiesPerPage;
     return communities.slice(startIndex, endIndex);
@@ -225,7 +230,7 @@ const CommunitiesPage = () => {
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6"
         data-testid="communities-list"
       >
-        {myCommunities.map((community) => (
+        {getCurrentPageCommunities(filteredCommunities).map((community) => (
           <CommunityCard
             key={community.slug}
             id={community.slug}

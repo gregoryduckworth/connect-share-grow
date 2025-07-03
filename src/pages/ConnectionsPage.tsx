@@ -2,19 +2,15 @@ import { useState, useEffect } from "react";
 import { Search, Users, MessageCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
 import InfoCard from "@/components/ui/InfoCard";
 import UserProfileLink from "@/components/user/UserProfileLink";
+import { connectionService } from "@/lib/backend/services/connectionService";
+import { USERS_DATA } from "@/lib/backend/data/users";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Connection {
   id: string;
@@ -34,46 +30,35 @@ interface ConnectionRequest {
 
 const ConnectionsPage = () => {
   const { toast } = useToast();
+  const { user, isLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-  const [connections, setConnections] = useState<Connection[]>([
-    {
-      id: "1",
-      name: "Sarah Johnson",
-      mutualConnections: 12,
-      status: "connected",
-      lastActive: new Date(2024, 5, 20),
-      bio: "Photography enthusiast and travel blogger",
-    },
-    {
-      id: "2",
-      name: "Mike Chen",
-      mutualConnections: 8,
-      status: "connected",
-      lastActive: new Date(2024, 5, 19),
-      bio: "Software developer and tech enthusiast",
-    },
-    {
-      id: "3",
-      name: "Emily Rodriguez",
-      mutualConnections: 5,
-      status: "pending",
-      lastActive: new Date(2024, 5, 18),
-      bio: "Digital marketing specialist",
-    },
-    {
-      id: "4",
-      name: "David Kim",
-      mutualConnections: 3,
-      status: "received",
-      lastActive: new Date(2024, 5, 17),
-      bio: "Graphic designer and artist",
-    },
-  ]);
+  const [connections, setConnections] = useState<Connection[]>([]);
   const [connectionRequests, setConnectionRequests] = useState<
     ConnectionRequest[]
   >([]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    // Load connections for the current user from backend service
+    connectionService.getConnectionsForUser(user.id).then((conns) => {
+      // Map backend connection data to Connection type for UI
+      setConnections(
+        conns.map((c) => {
+          const userObj = USERS_DATA.find((u) => u.id === c.id);
+          return {
+            id: c.id,
+            name: userObj?.name || "Unknown",
+            mutualConnections: c.mutualConnections,
+            status: c.status,
+            lastActive: c.lastActive,
+            bio: userObj?.bio,
+          };
+        })
+      );
+    });
+  }, [user?.id]);
 
   useEffect(() => {
     // Load connection requests from localStorage
@@ -146,6 +131,10 @@ const ConnectionsPage = () => {
     setSelectedUserId(connection.id);
     setProfileDialogOpen(true);
   };
+
+  if (isLoading) {
+    return <div className="p-8 text-center">Loading...</div>;
+  }
 
   return (
     <div
@@ -231,7 +220,6 @@ const ConnectionsPage = () => {
                   <UserProfileLink
                     userId={connection.id}
                     userName={connection.name}
-                    currentUserId={"current-user-id"}
                   />
                 }
                 description={connection.bio}
@@ -285,7 +273,6 @@ const ConnectionsPage = () => {
                   <UserProfileLink
                     userId={connection.id}
                     userName={connection.name}
-                    currentUserId={"current-user-id"}
                   />
                 }
                 description={connection.bio}
@@ -339,7 +326,6 @@ const ConnectionsPage = () => {
                   <UserProfileLink
                     userId={request.id}
                     userName={request.name}
-                    currentUserId={"current-user-id"}
                   />
                 }
                 description={request.message}
@@ -382,7 +368,6 @@ const ConnectionsPage = () => {
             setProfileDialogOpen(false);
             setSelectedUserId(null);
           }}
-          currentUserId="current-user-id"
           showConnectionButton={false}
           data-testid="profile-dialog"
         />

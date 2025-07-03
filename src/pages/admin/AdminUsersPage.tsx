@@ -14,6 +14,7 @@ import UserSuspendDialog from "@/components/admin/UserSuspendDialog";
 import UserActivateDialog from "@/components/admin/UserActivateDialog";
 import { api } from "@/lib/api";
 import type { User } from "@/lib/types";
+import UserProfileLink from "@/components/user/UserProfileLink";
 
 interface AppUser {
   id: string;
@@ -293,7 +294,7 @@ const AdminUsersPage = () => {
                 <div className="w-8 h-8 rounded-full bg-social-primary flex items-center justify-center text-white flex-shrink-0">
                   <UserIcon className="h-4 w-4" />
                 </div>
-                <span className="font-medium truncate">{user.name}</span>
+                <UserProfileLink userId={user.id} userName={user.name} />
               </div>
             ),
             className: "w-64",

@@ -8,6 +8,8 @@ import { Check, Eye, AlertTriangle, Lock } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import ReportDetailsDialog from "@/components/admin/ReportDetailsDialog";
 import { api } from "@/lib/api";
+import AdminTable from "@/components/admin/AdminTable";
+import AdminTablePagination from "@/components/admin/AdminTablePagination";
 
 const AdminReportsPage = () => {
   const { toast } = useToast();
@@ -64,6 +66,7 @@ const AdminReportsPage = () => {
   };
 
   const pendingReports = reports.filter((r) => r.status === "pending");
+  const reviewedReports = reports.filter((r) => r.status === "reviewed");
   const postReports = pendingReports.filter((r) => r.contentType === "post");
   const replyReports = pendingReports.filter((r) => r.contentType === "reply");
   const userReports = pendingReports.filter((r) => r.contentType === "user");
@@ -112,8 +115,7 @@ const AdminReportsPage = () => {
               {report.contentType === "reply" && (
                 <>
                   <div className="text-sm text-gray-600">
-                    <strong>Reply to:</strong>{" "}
-                    {report.originalContent.parentPost}
+                    <strong>Reply to:</strong> {report.originalContent.title}
                   </div>
                   <div className="text-sm text-gray-600">
                     <strong>Author:</strong> {report.originalContent.author}
@@ -150,6 +152,15 @@ const AdminReportsPage = () => {
         </div>
       </CardContent>
     </Card>
+  );
+
+  // Pagination state for archive
+  const [archivePage, setArchivePage] = useState(1);
+  const [archivePageSize, setArchivePageSize] = useState(10);
+  const archiveTotalPages = Math.ceil(reviewedReports.length / archivePageSize);
+  const paginatedArchive = reviewedReports.slice(
+    (archivePage - 1) * archivePageSize,
+    archivePage * archivePageSize
   );
 
   return (
@@ -193,24 +204,48 @@ const AdminReportsPage = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="all" className="space-y-4">
-              {pendingReports.map((report) => (
-                <ReportCard key={report.id} report={report} />
-              ))}
+              {pendingReports.length === 0 ? (
+                <div className="text-center p-8 text-social-muted">
+                  No pending reports.
+                </div>
+              ) : (
+                pendingReports.map((report) => (
+                  <ReportCard key={report.id} report={report} />
+                ))
+              )}
             </TabsContent>
             <TabsContent value="posts" className="space-y-4">
-              {postReports.map((report) => (
-                <ReportCard key={report.id} report={report} />
-              ))}
+              {postReports.length === 0 ? (
+                <div className="text-center p-8 text-social-muted">
+                  No post reports.
+                </div>
+              ) : (
+                postReports.map((report) => (
+                  <ReportCard key={report.id} report={report} />
+                ))
+              )}
             </TabsContent>
             <TabsContent value="replies" className="space-y-4">
-              {replyReports.map((report) => (
-                <ReportCard key={report.id} report={report} />
-              ))}
+              {replyReports.length === 0 ? (
+                <div className="text-center p-8 text-social-muted">
+                  No reply reports.
+                </div>
+              ) : (
+                replyReports.map((report) => (
+                  <ReportCard key={report.id} report={report} />
+                ))
+              )}
             </TabsContent>
             <TabsContent value="users" className="space-y-4">
-              {userReports.map((report) => (
-                <ReportCard key={report.id} report={report} />
-              ))}
+              {userReports.length === 0 ? (
+                <div className="text-center p-8 text-social-muted">
+                  No user reports.
+                </div>
+              ) : (
+                userReports.map((report) => (
+                  <ReportCard key={report.id} report={report} />
+                ))
+              )}
             </TabsContent>
           </Tabs>
         )}
@@ -223,6 +258,95 @@ const AdminReportsPage = () => {
         onLockContent={handleLockContent}
         data-testid="admin-report-details-dialog"
       />
+      <hr />
+      {/* Archive Section as AdminTable */}
+      <div
+        className="mt-10 space-y-4"
+        data-testid="admin-reports-archive-section"
+      >
+        <h2 className="text-lg font-semibold text-social-primary">Archive</h2>
+        <AdminTable
+          columns={[
+            {
+              header: "Type",
+              accessor: (row) => (
+                <Badge
+                  variant="outline"
+                  className={
+                    row.contentType === "post"
+                      ? "bg-blue-100 text-blue-700 border-blue-200"
+                      : row.contentType === "reply"
+                      ? "bg-purple-100 text-purple-700 border-purple-200"
+                      : "bg-orange-100 text-orange-700 border-orange-200"
+                  }
+                >
+                  {row.contentType.charAt(0).toUpperCase() +
+                    row.contentType.slice(1)}
+                </Badge>
+              ),
+            },
+            {
+              header: "User",
+              accessor: (row) => (
+                <span className="font-medium text-foreground">
+                  {row.reportedBy || row.user || "-"}
+                </span>
+              ),
+            },
+            {
+              header: "Outcome",
+              accessor: (row) => (
+                <Badge
+                  className={
+                    row.status === "reviewed"
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-300 text-gray-700"
+                  }
+                >
+                  Reviewed
+                </Badge>
+              ),
+            },
+            {
+              header: "Actions",
+              accessor: (row) => (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleViewContent(row)}
+                >
+                  <Eye className="h-4 w-4 mr-1 inline" /> Details
+                </Button>
+              ),
+              className: "text-right",
+            },
+          ]}
+          data={paginatedArchive}
+          emptyMessage={
+            <div
+              className="text-center p-8 text-social-muted"
+              data-testid="admin-reports-archive-empty"
+            >
+              No archived reports found.
+            </div>
+          }
+          data-testid="admin-reports-archive-table"
+        />
+        {reviewedReports.length > 0 && (
+          <AdminTablePagination
+            currentPage={archivePage}
+            totalPages={archiveTotalPages}
+            pageSize={archivePageSize}
+            totalItems={reviewedReports.length}
+            onPageChange={setArchivePage}
+            onPageSizeChange={(size) => {
+              setArchivePageSize(size);
+              setArchivePage(1);
+            }}
+            data-testid="admin-reports-archive-pagination"
+          />
+        )}
+      </div>
     </div>
   );
 };

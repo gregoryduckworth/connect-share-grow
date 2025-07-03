@@ -8,13 +8,15 @@ import CommunityCard from "@/components/community/CommunityCard";
 import InfoCard from "@/components/ui/InfoCard";
 import UserProfileLink from "@/components/user/UserProfileLink";
 import { api } from "@/lib/api";
+import { USERS_DATA } from "@/lib/backend/data/users";
 
 interface TrendingPostUI {
   id: string;
   title: string;
   author: string;
-  community: string;
+  userName?: string;
   communitySlug: string;
+  communityName: string;
   likes: number;
   replies: number;
   createdAt: Date;
@@ -54,18 +56,26 @@ const HotTopicsPage = () => {
         setTrendingPosts(
           posts
             .filter((p) => validCommunitySlugSet.has(p.communityId))
-            .map((p) => ({
-              id: p.id,
-              title: p.title,
-              author: p.author,
-              community: p.communityName,
-              communitySlug: p.communityId,
-              likes: p.likes,
-              replies: p.replies,
-              createdAt: p.createdAt,
-              excerpt:
-                p.content.slice(0, 120) + (p.content.length > 120 ? "..." : ""),
-            }))
+            .map((p) => {
+              const community = communities.find(
+                (c) => c.slug === p.communityId
+              );
+              const user = USERS_DATA.find((u) => u.id === p.author);
+              return {
+                id: p.id,
+                title: p.title,
+                author: p.author,
+                userName: user?.name || undefined,
+                communitySlug: p.communityId,
+                communityName: community ? community.name : p.communityId,
+                likes: p.likes,
+                replies: p.replies,
+                createdAt: p.createdAt,
+                excerpt:
+                  p.content.slice(0, 120) +
+                  (p.content.length > 120 ? "..." : ""),
+              };
+            })
         );
       }
     );
@@ -74,7 +84,7 @@ const HotTopicsPage = () => {
   const filteredPosts = trendingPosts.filter(
     (post) =>
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.community.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.communitySlug.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.author.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -179,14 +189,11 @@ const HotTopicsPage = () => {
                     <span className="break-words">
                       by{" "}
                       <UserProfileLink
-                        userId={`user-${post.author
-                          .toLowerCase()
-                          .replace(/\s+/g, "-")}`}
-                        userName={post.author}
-                        currentUserId={"current-user-id"}
+                        userId={post.author}
+                        userName={post.userName}
                         data-testid={`post-author-link-${post.id}`}
                       />{" "}
-                      • in {post.community} •{" "}
+                      • in {post.communityName} •{" "}
                       {post.createdAt.toLocaleDateString()}
                     </span>
                   </div>

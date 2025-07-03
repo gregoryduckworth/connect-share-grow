@@ -1,10 +1,12 @@
-
 import { userService } from "./services/userService";
 import { postService } from "./services/postService";
 import { communityService } from "./services/communityService";
 import { reportService } from "./services/reportService";
 import { notificationService } from "./services/notificationService";
-import { adminService, mockPendingModeratorRoleChanges } from "./services/adminService";
+import {
+  adminService,
+  mockPendingModeratorRoleChanges,
+} from "./services/adminService";
 
 // Re-export mock data for backward compatibility
 export { USERS_DATA as mockUsers } from "./data/users";
@@ -47,5 +49,5 @@ export const api = {
 };
 
 // Export specific functions for backward compatibility
-export const getMockFlaggedReports = reportService.getMockFlaggedReports;
+export const getMockFlaggedReports = reportService.getFlaggedReports;
 export { mockPendingModeratorRoleChanges };

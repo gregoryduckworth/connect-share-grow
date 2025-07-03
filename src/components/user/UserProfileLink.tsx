@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
+import { userService } from "@/lib/backend/services/userService";
+import type { User } from "@/lib/types";
 
 interface UserProfileLinkProps {
   userId: string;
-  userName: string;
-  currentUserId: string;
+  userName?: string;
   className?: string;
   showConnectionButton?: boolean;
   children?: React.ReactNode;
@@ -13,12 +14,24 @@ interface UserProfileLinkProps {
 const UserProfileLink = ({
   userId,
   userName,
-  currentUserId,
   className = "",
   showConnectionButton = true,
   children,
 }: UserProfileLinkProps) => {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    if (userName) return; // No need to fetch if name is provided
+    let mounted = true;
+    userService.getUserById(userId).then((u) => {
+      if (mounted) setUser(u || null);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [userId, userName]);
+
   return (
     <>
       <button
@@ -30,13 +43,12 @@ const UserProfileLink = ({
           setOpen(true);
         }}
       >
-        {children || userName}
+        {children || userName || user?.name || userId}
       </button>
       <UserProfileDialog
         userId={userId}
         isOpen={open}
         onClose={() => setOpen(false)}
-        currentUserId={currentUserId}
         showConnectionButton={showConnectionButton}
       />
     </>

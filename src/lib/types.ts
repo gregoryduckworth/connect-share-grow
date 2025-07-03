@@ -117,10 +117,7 @@ export interface ReportBase extends Identifiable {
   reason: string;
   status: "pending" | "reviewed" | "resolved";
   content: string;
-  postId?: string;
-  replyId?: string;
-  userId?: string;
-  communityId?: string;
+  communityId: string;
   originalContent?: {
     title?: string;
     community?: string;
@@ -140,7 +137,6 @@ export interface Post {
   content: string;
   author: string;
   communityId: string;
-  communityName: string;
   createdAt: Date;
   likes: number;
   replies: number;
@@ -211,6 +207,7 @@ export interface PostDetailReply {
   lockReason?: string;
   parentId?: string;
   replies: PostDetailReply[];
+  userName?: string; // Added for flicker-free UserProfileLink
 }
 
 export interface PostDetailData {
@@ -231,6 +228,7 @@ export interface PostDetailData {
   replies: PostDetailReply[];
   communityId: string;
   communityName: string;
+  userName?: string; // Added for flicker-free UserProfileLink
 }
 
 export type PlatformStats = {

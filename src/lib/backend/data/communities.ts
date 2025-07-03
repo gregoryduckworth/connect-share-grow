@@ -1,5 +1,5 @@
-
 import { Community } from "@/lib/types";
+import { USERS_DATA } from "./users";
 
 export const COMMUNITIES_DATA: Community[] = [
   {
@@ -13,9 +13,9 @@ export const COMMUNITIES_DATA: Community[] = [
     tags: ["photography", "art", "creative", "digital"],
     isJoined: true,
     lastActivity: new Date("2024-01-25T14:30:00Z"),
-    createdBy: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+    createdBy: USERS_DATA[0].id,
     status: "active",
-    moderators: ["b2c3d4e5-f6g7-8901-2345-678901bcdefg"],
+    moderators: [USERS_DATA[1].id],
   },
   {
     slug: "tech-discussions",
@@ -28,12 +28,9 @@ export const COMMUNITIES_DATA: Community[] = [
     tags: ["tech", "programming", "software", "development"],
     isJoined: true,
     lastActivity: new Date("2024-01-24T16:20:00Z"),
-    createdBy: "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
+    createdBy: USERS_DATA[1].id,
     status: "active",
-    moderators: [
-      "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
-      "d4e5f6g7-h8i9-0123-4567-890123defghi",
-    ],
+    moderators: [USERS_DATA[1].id, USERS_DATA[2].id],
   },
   {
     slug: "fitness-wellness",
@@ -46,9 +43,9 @@ export const COMMUNITIES_DATA: Community[] = [
     tags: ["fitness", "health", "wellness", "nutrition"],
     isJoined: false,
     lastActivity: new Date("2024-01-23T12:45:00Z"),
-    createdBy: "c3d4e5f6-g7h8-9012-3456-789012cdefgh",
+    createdBy: USERS_DATA[2].id,
     status: "active",
-    moderators: ["c3d4e5f6-g7h8-9012-3456-789012cdefgh"],
+    moderators: [USERS_DATA[2].id],
   },
   {
     slug: "entrepreneurs-united",
@@ -61,8 +58,8 @@ export const COMMUNITIES_DATA: Community[] = [
     tags: ["entrepreneurship", "business", "startups", "networking"],
     isJoined: false,
     lastActivity: new Date("2024-01-21T09:30:00Z"),
-    createdBy: "e5f6g7h8-i9j0-1234-5678-901234efghij",
+    createdBy: USERS_DATA[3].id,
     status: "active",
-    moderators: ["e5f6g7h8-i9j0-1234-5678-901234efghij"],
+    moderators: [USERS_DATA[3].id],
   },
 ];
