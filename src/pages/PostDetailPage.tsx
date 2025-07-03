@@ -3,9 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { PostDetailData, PostDetailReply } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import AppAvatar from "@/components/common/AppAvatar";
 import {
   Heart,
@@ -13,10 +11,8 @@ import {
   Pin,
   Lock,
   User,
-  Send,
   Home,
   ChevronRight,
-  Reply,
   Unlock,
 } from "lucide-react";
 import {
@@ -31,7 +27,7 @@ import { useToast } from "@/components/ui/use-toast";
 import ReportModal from "@/components/ui/ReportModal";
 import UserProfileLink from "@/components/user/UserProfileLink";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 import { REPLIES_DATA } from "@/lib/backend/data/replies";
 import { USERS_DATA } from "@/lib/backend/data/users";
 import PostReply from "@/components/post/PostReply";
@@ -47,7 +43,7 @@ import { useReportModal } from "@/hooks/useReportModal";
 import { InfoBadge } from "@/components/common/InfoBadge";
 
 const PostDetailPage = () => {
-  const { communityId, postId } = useParams();
+  const { postId } = useParams();
   const { toast } = useToast();
   const { user, isModerator: checkIsModerator } = useAuth();
   const [newReply, setNewReply] = useState("");
@@ -67,7 +63,6 @@ const PostDetailPage = () => {
       api.getPostDetail(postId).then((postData) => {
         // Attach nested replies for this post
         const replies = buildReplyTree(
-          postId,
           REPLIES_DATA.filter((r) => r.postId === postId)
         );
         // Map userName into post and replies
@@ -86,11 +81,14 @@ const PostDetailPage = () => {
   }, [postId]);
 
   const handleLikePost = () => {
-    setPost((prev) => ({
-      ...prev,
-      isLiked: !prev.isLiked,
-      likes: prev.isLiked ? prev.likes - 1 : prev.likes + 1,
-    }));
+    setPost((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        isLiked: !prev.isLiked,
+        likes: prev.isLiked ? prev.likes - 1 : prev.likes + 1,
+      };
+    });
   };
 
   const handleLikeReply = (replyId: string) => {
@@ -127,7 +125,7 @@ const PostDetailPage = () => {
     if (!content.trim()) return;
     const newReplyObj: PostDetailReply = {
       id: `reply-${Date.now()}`,
-      author: user.id,
+      author: user?.id ?? "",
       content: content,
       timestamp: new Date(),
       likes: 0,
@@ -523,7 +521,7 @@ const PostDetailPage = () => {
           open={reportModalOpen}
           onClose={closeReportModal}
           context={reportContext}
-          reportedBy={user.id}
+          reportedBy={user?.id ?? ""}
           onSubmitted={() =>
             toast({
               title: "Report submitted",

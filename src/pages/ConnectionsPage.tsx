@@ -3,20 +3,18 @@ import { Search, Users, MessageCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/components/ui/use-toast";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
 import InfoCard from "@/components/ui/InfoCard";
 import UserProfileLink from "@/components/user/UserProfileLink";
 import { connectionService } from "@/lib/backend/services/connectionService";
 import { USERS_DATA } from "@/lib/backend/data/users";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 import { Connection, ConnectionRequest } from "@/lib/types";
 import { useDialog } from "@/hooks/useDialog";
 import { formatDate } from "@/lib/utils";
 import { InfoBadge } from "@/components/common/InfoBadge";
 
 const ConnectionsPage = () => {
-  const { toast } = useToast();
   const { user, isLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -85,34 +83,6 @@ const ConnectionsPage = () => {
   const filteredConnections = connectedUsers.filter((connection) =>
     connection.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const handleAcceptRequest = (connectionId: string) => {
-    setConnections(
-      connections.map((connection) =>
-        connection.id === connectionId
-          ? { ...connection, status: "connected" as const }
-          : connection
-      )
-    );
-
-    const connection = connections.find((c) => c.id === connectionId);
-    toast({
-      title: "Connection accepted",
-      description: `You are now connected with ${connection?.name}`,
-    });
-  };
-
-  const handleRejectRequest = (connectionId: string) => {
-    setConnections(
-      connections.filter((connection) => connection.id !== connectionId)
-    );
-
-    const connection = connections.find((c) => c.id === connectionId);
-    toast({
-      title: "Connection rejected",
-      description: `Request from ${connection?.name} has been declined`,
-    });
-  };
 
   const handleViewProfile = (connection: Connection) => {
     setSelectedUserId(connection.id);

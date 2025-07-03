@@ -23,14 +23,14 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: "user" | "moderator" | "admin";
 }
 
 interface RoleChangeDialogProps {
   isOpen: boolean;
   onClose: () => void;
   user: User | null;
-  onConfirm: (userId: string, newRole: string) => void;
+  onConfirm: (userId: string, newRole: User["role"]) => void;
 }
 
 const RoleChangeDialog = ({
@@ -67,7 +67,7 @@ const RoleChangeDialog = ({
 
   const handleFinalConfirm = () => {
     if (user && selectedRole && selectedRole !== user.role) {
-      onConfirm(user.id, selectedRole);
+      onConfirm(user.id, selectedRole as User["role"]);
       toast({
         title: "Role Updated",
         description: `${user.name}'s role has been changed to ${

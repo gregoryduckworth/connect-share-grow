@@ -39,7 +39,7 @@ import RoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
 import { getMockFlaggedReports } from "@/lib/api";
 import { Moderator, CommunityAnalytics, FlaggedReport } from "@/lib/types";
 import UserProfileLink from "@/components/user/UserProfileLink";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 import { USERS_DATA } from "@/lib/backend/data/users";
 import { useDialog } from "@/hooks/useDialog";
 import { formatNumber } from "@/lib/utils";
@@ -48,7 +48,7 @@ import { InfoBadge } from "@/components/common/InfoBadge";
 const ModeratePage = () => {
   const { communityId } = useParams();
   const { toast } = useToast();
-  const { user, isModerator: checkIsModerator } = useAuth();
+  const { user } = useAuth();
   const removeDialog = useDialog(false);
   const [moderatorToRemove, setModeratorToRemove] = useState<Moderator | null>(
     null
@@ -150,7 +150,6 @@ const ModeratePage = () => {
 
   // Replace hardcoded currentUser and moderator logic with user context
   const currentUser = user?.name || "";
-  const isModerator = checkIsModerator();
 
   const handleRemoveModerator = (moderator: Moderator) => {
     setModeratorToRemove(moderator);

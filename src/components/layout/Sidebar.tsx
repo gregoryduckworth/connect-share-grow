@@ -12,11 +12,9 @@ import {
   SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 import { t } from "@/lib/i18n";
-import { useTheme } from "@/contexts/ThemeContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 
 const SidebarComponent = () => {
-  const { language } = useTheme();
   const { user } = useAuth();
 
   const mainNavItems = [

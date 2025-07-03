@@ -101,7 +101,7 @@ export const adminService = {
             email: user.email,
             role: user.role,
           },
-          requestedBy: admin.name,
+          requestedBy: admin?.name ?? "Unknown Admin",
           requestedAt: new Date("2024-01-20T14:15:00Z"),
           newRole: "moderator",
         };
@@ -173,7 +173,7 @@ export const mockPendingModeratorRoleChanges = USERS_DATA.filter(
         status: user.isActive ? "active" : "inactive",
         communities: user.communities || [],
       },
-      requestedBy: admin.name,
+      requestedBy: admin?.name ?? "Unknown Admin",
       requestedAt: new Date("2024-01-20T14:15:00Z"),
       newRole: "moderator",
       communityName: community.name,

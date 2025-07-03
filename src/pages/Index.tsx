@@ -16,7 +16,7 @@ import CommunityCard from "@/components/community/CommunityCard";
 import { mockPendingModeratorRoleChanges } from "@/lib/api";
 import type { Community, ReportBase as Report } from "@/lib/types";
 import { api } from "@/lib/api";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 
 type PendingModeratorRoleChange = {
   status: string;
@@ -94,15 +94,6 @@ const CommunitiesPage = () => {
       description: community?.isJoined
         ? `You have left ${community.name}`
         : `Welcome to ${community?.name}!`,
-    });
-  };
-
-  const handleCreateCommunity = (communityData: Community) => {
-    // In a real app, this would make an API call
-    console.log("Creating community:", communityData);
-    toast({
-      title: "Community created!",
-      description: "Your new community has been created successfully.",
     });
   };
 

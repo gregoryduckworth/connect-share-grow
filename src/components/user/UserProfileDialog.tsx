@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Calendar, UserPlus } from "lucide-react";
@@ -36,7 +35,6 @@ const UserProfileDialog = ({
 }: UserProfileDialogProps) => {
   const { user: currentUser } = useAuth();
   const { toast } = useToast();
-  const [isConnected, setIsConnected] = useState(false);
   const [connectionPending, setConnectionPending] = useState(false);
   const requestDialog = useDialog(false);
   const [requestMessage, setRequestMessage] = useState("");
@@ -66,8 +64,8 @@ const UserProfileDialog = ({
       localStorage.getItem("connectionRequests") || "[]"
     );
     requests.push({
-      id: user.id,
-      name: user.name,
+      id: user?.id,
+      name: user?.name,
       message: requestMessage,
       date: new Date().toISOString(),
     });
@@ -78,7 +76,7 @@ const UserProfileDialog = ({
     setRequestError("");
     toast({
       title: "Connection request sent",
-      description: `Connection request sent to ${user.name}`,
+      description: `Connection request sent to ${user?.name}`,
     });
   };
 
@@ -170,7 +168,7 @@ const UserProfileDialog = ({
                   <div className="flex gap-2">
                     {showConnectionButton && (
                       <>
-                        {!isConnected && !connectionPending && (
+                        {!connectionPending && (
                           <Button
                             onClick={handleSendConnectionRequest}
                             size="sm"
@@ -186,11 +184,12 @@ const UserProfileDialog = ({
                           </Button>
                         )}
 
-                        {isConnected && (
+                        {/* Only show 'Connected' button if you have a way to check connection, otherwise remove this block */}
+                        {/* {isConnected && (
                           <Button variant="outline" size="sm" disabled>
                             Connected
                           </Button>
-                        )}
+                        )} */}
                       </>
                     )}
                   </div>

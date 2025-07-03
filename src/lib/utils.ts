@@ -29,10 +29,7 @@ export function formatNumber(value: number): string {
   return value.toLocaleString();
 }
 
-export function buildReplyTree(
-  postId: string,
-  flatReplies: Reply[]
-): PostDetailReply[] {
+export function buildReplyTree(flatReplies: Reply[]): PostDetailReply[] {
   const idToReply: { [id: string]: PostDetailReply } = {};
   flatReplies.forEach((r) => {
     idToReply[r.id] = {

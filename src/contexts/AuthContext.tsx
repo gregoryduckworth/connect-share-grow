@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { AlertTriangle } from "lucide-react";
@@ -29,15 +29,7 @@ interface AuthContextType {
   canPost: () => boolean;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -95,13 +87,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const register = async (
     email: string,
-    password: string,
+    _password: string, // renamed to _password to indicate unused
     name: string,
     language: string
   ): Promise<boolean> => {
     try {
       // Mock registration - in real app, this would call Supabase
-      const userId = `user-${Date.now()}`;
 
       // Simulate email verification requirement
       toast({
@@ -136,7 +127,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const isAdmin = () => user?.role === "admin";
   const isModerator = () =>
     user?.role === "moderator" || user?.role === "admin";
-  const canPost = () => user && user.isEmailVerified && !user.isSuspended;
+  const canPost = () =>
+    Boolean(user && user.isEmailVerified && !user.isSuspended);
 
   return (
     <AuthContext.Provider

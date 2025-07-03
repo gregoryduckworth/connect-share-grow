@@ -5,7 +5,7 @@ import UserMenu from "./UserMenu";
 import NotificationBell from "./NotificationBell";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useEffect, useRef } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 
 const MainLayout = () => {
   const { user } = useAuth();
@@ -24,7 +24,7 @@ const MainLayout = () => {
       </div>
       <div className="flex items-center gap-2">
         <NotificationBell />
-        <UserMenu user={user} />
+        {user && <UserMenu user={user} />}
       </div>
     </header>
   );

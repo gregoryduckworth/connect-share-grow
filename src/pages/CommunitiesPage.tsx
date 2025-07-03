@@ -20,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 
 interface Community {
@@ -43,10 +42,8 @@ const CommunitiesPage = () => {
   );
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [allCommunities, setAllCommunities] = useState<Community[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
     api.getCommunities().then((data) => {
       setAllCommunities(
         data.map((community) => ({
@@ -54,7 +51,6 @@ const CommunitiesPage = () => {
           isModerator: false,
         }))
       );
-      setLoading(false);
     });
   }, []);
 
@@ -107,15 +103,6 @@ const CommunitiesPage = () => {
       description: community?.isJoined
         ? `You have left ${community.name}`
         : `Welcome to ${community?.name}!`,
-    });
-  };
-
-  const handleCreateCommunity = (communityData: Community) => {
-    // In a real app, this would make an API call
-    setAllCommunities((prev) => [communityData, ...prev]);
-    toast({
-      title: "Community created!",
-      description: "Your new community has been created successfully.",
     });
   };
 
@@ -179,7 +166,7 @@ const CommunitiesPage = () => {
               </label>
               <Select
                 value={sortOrder}
-                onValueChange={(val) => setSortOrder(val as "desc" | "asc")}
+                onValueChange={(val: "desc" | "asc") => setSortOrder(val)}
               >
                 <SelectTrigger
                   id="sortOrder"
@@ -301,7 +288,7 @@ const CommunitiesPage = () => {
             </label>
             <Select
               value={String(communitiesPerPage)}
-              onValueChange={(val) => {
+              onValueChange={(val: string) => {
                 setCommunitiesPerPage(Number(val));
                 setCurrentPage(1);
               }}
@@ -327,7 +314,7 @@ const CommunitiesPage = () => {
             </label>
             <Select
               value={String(communitiesPerPage)}
-              onValueChange={(val) => {
+              onValueChange={(val: string) => {
                 setCommunitiesPerPage(Number(val));
                 setCurrentPage(1);
               }}

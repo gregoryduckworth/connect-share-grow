@@ -11,7 +11,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -307,7 +306,7 @@ const CommunityDetailPage = () => {
                     onComment={handleComment}
                     isModerator={community.isModerator}
                     showPreview={true}
-                    communitySlug={communitySlug}
+                    communitySlug={communitySlug!}
                     data-testid={`community-post-${post.id}`}
                     // Pass userName to CommunityPost
                   />

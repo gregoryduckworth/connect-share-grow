@@ -1,7 +1,6 @@
-
-import { useAuth } from '@/contexts/AuthContext';
-import { Navigate, useLocation } from 'react-router-dom';
-import { AlertCircle } from 'lucide-react';
+import { useAuth } from "@/contexts/useAuth";
+import { Navigate, useLocation } from "react-router-dom";
+import { AlertCircle } from "lucide-react";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -9,7 +8,11 @@ interface ProtectedRouteProps {
   requireModerator?: boolean;
 }
 
-const ProtectedRoute = ({ children, requireAdmin = false, requireModerator = false }: ProtectedRouteProps) => {
+const ProtectedRoute = ({
+  children,
+  requireAdmin = false,
+  requireModerator = false,
+}: ProtectedRouteProps) => {
   const { user, isLoading, isAdmin, isModerator } = useAuth();
   const location = useLocation();
 
@@ -33,7 +36,9 @@ const ProtectedRoute = ({ children, requireAdmin = false, requireModerator = fal
       <div className="min-h-screen flex items-center justify-center bg-social-background">
         <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md">
           <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Access Denied
+          </h2>
           <p className="text-gray-600 mb-4">
             You need administrator privileges to access this page.
           </p>
@@ -53,7 +58,9 @@ const ProtectedRoute = ({ children, requireAdmin = false, requireModerator = fal
       <div className="min-h-screen flex items-center justify-center bg-social-background">
         <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md">
           <AlertCircle className="h-16 w-16 text-orange-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Access Denied
+          </h2>
           <p className="text-gray-600 mb-4">
             You need moderator privileges to access this page.
           </p>

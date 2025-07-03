@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { User, LogOut, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/useAuth";
 
 interface UserMenuProps {
   user: {
@@ -25,7 +25,7 @@ interface UserMenuProps {
 const UserMenu = ({ user, unreadCount = 0 }: UserMenuProps) => {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl);
+  const [avatarUrl] = useState(user.avatarUrl);
 
   const handleLogout = () => {
     logout();
