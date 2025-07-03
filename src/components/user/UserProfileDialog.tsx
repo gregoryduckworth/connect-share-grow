@@ -108,7 +108,6 @@ const UserProfileDialog = ({
 
   // Fallbacks for missing fields (use type assertion to unknown, then index signature)
   const userUnknown = user as unknown as Record<string, unknown>;
-  const joinDate = user.createdAt;
   const postCount =
     typeof userUnknown.postCount === "number" ? userUnknown.postCount : 0;
   const connectionCount =
@@ -159,7 +158,7 @@ const UserProfileDialog = ({
                   )}
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    <span>Joined {joinDate.toLocaleDateString()}</span>
+                    <span>Joined {user.createdAt.toLocaleDateString()}</span>
                   </div>
                 </div>
 

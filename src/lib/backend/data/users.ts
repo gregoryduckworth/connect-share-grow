@@ -15,6 +15,7 @@ export const USERS_DATA: User[] = [
     avatar: "",
     bio: "Demo admin account for testing.",
     location: "Demo City",
+    communities: [],
   },
   // Demo Regular User
   {
@@ -30,6 +31,7 @@ export const USERS_DATA: User[] = [
     avatar: "",
     bio: "Demo user account for testing.",
     location: "Demo Town",
+    communities: [],
   },
   {
     id: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
@@ -44,6 +46,7 @@ export const USERS_DATA: User[] = [
     avatar: "",
     bio: "Photography enthusiast and nature lover",
     location: "San Francisco, CA",
+    communities: [],
   },
   {
     id: "b2c3d4e5-f6g7-8901-2345-678901bcdefg",
@@ -58,6 +61,7 @@ export const USERS_DATA: User[] = [
     avatar: "",
     bio: "Tech enthusiast and community moderator",
     location: "New York, NY",
+    communities: [],
   },
   {
     id: "c3d4e5f6-g7h8-9012-3456-789012cdefgh",
@@ -72,6 +76,7 @@ export const USERS_DATA: User[] = [
     avatar: "",
     bio: "Fitness trainer and wellness coach",
     location: "Austin, TX",
+    communities: [],
   },
   {
     id: "d4e5f6g7-h8i9-0123-4567-890123defghi",
@@ -86,6 +91,7 @@ export const USERS_DATA: User[] = [
     avatar: "",
     bio: "Community administrator and developer",
     location: "Seattle, WA",
+    communities: [],
   },
   {
     id: "e5f6g7h8-i9j0-1234-5678-901234efghij",
@@ -100,6 +106,7 @@ export const USERS_DATA: User[] = [
     avatar: "",
     bio: "Travel blogger and photographer",
     location: "Los Angeles, CA",
+    communities: [],
   },
   {
     id: "f7g8h9i0-j1k2-3456-7890-abcdef123456",
@@ -114,6 +121,7 @@ export const USERS_DATA: User[] = [
     avatar: "",
     bio: "Foodie and aspiring chef",
     location: "Chicago, IL",
+    communities: [],
   },
   {
     id: "g8h9i0j1-k2l3-4567-8901-bcdef1234567",
@@ -128,6 +136,7 @@ export const USERS_DATA: User[] = [
     avatar: "",
     bio: "Cyclist and outdoor adventurer",
     location: "Denver, CO",
+    communities: [],
   },
   {
     id: "h9i0j1k2-l3m4-5678-9012-cdef12345678",
@@ -142,6 +151,7 @@ export const USERS_DATA: User[] = [
     avatar: "",
     bio: "Artist and designer",
     location: "Rome, Italy",
+    communities: [],
   },
   {
     id: "i0j1k2l3-m4n5-6789-0123-def123456789",
@@ -156,5 +166,6 @@ export const USERS_DATA: User[] = [
     avatar: "",
     bio: "Musician and composer",
     location: "Berlin, Germany",
+    communities: [],
   },
 ];

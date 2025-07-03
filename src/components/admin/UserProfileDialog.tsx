@@ -7,29 +7,38 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  User,
-  MessageSquare,
-  Users,
-  Shield,
-  AlertTriangle,
-} from "lucide-react";
+import { MessageSquare, Users, Shield, AlertTriangle } from "lucide-react";
+import type { User } from "@/lib/types";
 
 interface UserProfileDialogProps {
   user: {
     id: string;
     name: string;
     email: string;
-    joinDate: Date;
     role: "user" | "moderator" | "admin";
-    status: "active" | "suspended" | "banned";
+    isActive: boolean;
+    isEmailVerified: boolean;
+    isSuspended: boolean;
+    createdAt: Date;
     communities?: string[];
     suspensionReason?: string;
+    language?: string;
+    avatar?: string;
+    bio?: string;
+    location?: string;
+    dateOfBirth?: Date;
     suspendedAt?: Date;
     suspendedBy?: string;
   };
   isOpen: boolean;
   onClose: () => void;
+}
+
+// Helper to infer user status from isSuspended/isActive
+function getUserStatus(user: User): "active" | "suspended" | "banned" {
+  if (user.isSuspended) return "suspended";
+  if (user.isActive) return "active";
+  return "banned";
 }
 
 const UserProfileDialog = ({
@@ -43,7 +52,7 @@ const UserProfileDialog = ({
     totalComments: 348,
     communitiesJoined: user.communities?.length || 0,
     lastActive: new Date(2024, 5, 18),
-    accountCreated: user.joinDate,
+    accountCreated: user.createdAt,
     reportsReceived: 2,
     reportsResolved: 0,
   };
@@ -53,7 +62,8 @@ const UserProfileDialog = ({
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
+            {/* Replace <User ... /> with a generic icon or remove if not needed */}
+            <Shield className="h-5 w-5" />
             {user.name || user.email}'s Profile
           </DialogTitle>
           <DialogDescription>
@@ -95,19 +105,19 @@ const UserProfileDialog = ({
                 <span className="font-medium">Status:</span>
                 <Badge
                   className={
-                    user.status === "active"
+                    getUserStatus(user) === "active"
                       ? "bg-green-500"
-                      : user.status === "suspended"
+                      : getUserStatus(user) === "suspended"
                       ? "bg-orange-500"
                       : "bg-red-500"
                   }
                 >
-                  {user.status}
+                  {getUserStatus(user)}
                 </Badge>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Joined:</span>
-                <span>{user.joinDate.toLocaleDateString()}</span>
+                <span>{user.createdAt.toLocaleDateString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Last Active:</span>
@@ -117,7 +127,7 @@ const UserProfileDialog = ({
           </Card>
 
           {/* Suspension Details */}
-          {user.status === "suspended" && user.suspensionReason && (
+          {user.isSuspended && user.suspensionReason && (
             <Card className="border-orange-200">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2 text-orange-700">
