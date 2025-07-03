@@ -37,31 +37,10 @@ import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
 import { getMockFlaggedReports } from "@/lib/api";
-import { Report } from "@/lib/types";
+import { Moderator, CommunityAnalytics, FlaggedReport } from "@/lib/types";
 import UserProfileLink from "@/components/user/UserProfileLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { USERS_DATA } from "@/lib/backend/data/users";
-
-interface Moderator {
-  id: string;
-  name: string;
-  role: string;
-  joinedAsModAt: Date;
-  actionsThisMonth: number;
-}
-
-interface CommunityAnalytics {
-  totalMembers: number;
-  totalPosts: number;
-  postsThisWeek: number;
-  activeMembers: number;
-  reportsThisWeek: number;
-}
-
-// Extend Report type locally to include reportedByName for UI
-interface FlaggedReport extends Report {
-  reportedByName: string;
-}
 
 const ModeratePage = () => {
   const { communityId } = useParams();

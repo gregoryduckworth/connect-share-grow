@@ -28,9 +28,17 @@ const AdminUsersPage = () => {
   const [roleChangeTargetUser, setRoleChangeTargetUser] = useState<User | null>(
     null
   );
-  const [pendingAdminRoleChanges, setPendingAdminRoleChanges] = useState<any[]>(
-    []
-  );
+  // Type for pending admin role changes
+  interface PendingAdminRoleChange {
+    id: string;
+    user: Pick<User, "id" | "name" | "email" | "role">;
+    requestedBy: string;
+    requestedAt: Date;
+    newRole: User["role"];
+  }
+  const [pendingAdminRoleChanges, setPendingAdminRoleChanges] = useState<
+    PendingAdminRoleChange[]
+  >([]);
   const [users, setUsers] = useState<User[]>([]);
 
   // Load users and pending role changes from api.ts
@@ -46,7 +54,23 @@ const AdminUsersPage = () => {
     const loadPendingRoleChanges = async () => {
       try {
         const pendingChanges = await api.getPendingAdminRoleChanges();
-        setPendingAdminRoleChanges(pendingChanges);
+        setPendingAdminRoleChanges(
+          pendingChanges.map((change) => ({
+            id: change.id,
+            user: {
+              id: change.user.id,
+              name: change.user.name,
+              email: change.user.email,
+              role: change.user.role,
+            },
+            requestedBy: change.requestedBy,
+            requestedAt:
+              change.requestedAt instanceof Date
+                ? change.requestedAt
+                : new Date(change.requestedAt),
+            newRole: change.newRole,
+          }))
+        );
       } catch (error) {
         console.error("Failed to load pending role changes:", error);
       }

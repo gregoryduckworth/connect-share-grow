@@ -11,24 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Shield, Search, User } from "lucide-react";
+import { Shield, Search, User as UserIcon } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import UserProfileDialog from "@/components/admin/UserProfileDialog";
 import RoleChangeDialog from "@/components/admin/RoleChangeDialog";
 import AdminTablePagination from "@/components/admin/AdminTablePagination";
-
-interface AppUser {
-  id: string;
-  name: string;
-  email: string;
-  joinDate: Date;
-  role: "user" | "moderator" | "admin";
-  status: "active" | "suspended" | "banned";
-  communities?: string[];
-  suspensionReason?: string;
-  suspendedAt?: Date;
-  suspendedBy?: string;
-}
+import { USERS_DATA } from "@/lib/backend/data/users";
+import { User } from "@/lib/types";
 
 const AdminUsersPage = () => {
   console.log("AdminUsersPage rendering...");
@@ -41,60 +30,10 @@ const AdminUsersPage = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [roleChangeDialogOpen, setRoleChangeDialogOpen] = useState(false);
 
-  const [users, setUsers] = useState<AppUser[]>([
-    {
-      id: "user-1",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      joinDate: new Date(2023, 0, 15),
-      role: "admin",
-      status: "active",
-      communities: ["Photography", "Tech Talk"],
-    },
-    {
-      id: "user-2",
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      joinDate: new Date(2023, 1, 3),
-      role: "moderator",
-      status: "active",
-      communities: ["Cooking Club", "Travel Adventures"],
-    },
-    {
-      id: "user-3",
-      name: "Robert Johnson",
-      email: "robert.j@example.com",
-      joinDate: new Date(2023, 2, 20),
-      role: "user",
-      status: "active",
-      communities: ["Book Readers"],
-    },
-    {
-      id: "user-4",
-      name: "Lisa Brown",
-      email: "lisa.b@example.com",
-      joinDate: new Date(2023, 3, 5),
-      role: "user",
-      status: "suspended",
-      communities: [],
-      suspensionReason:
-        "Repeated violation of community guidelines and inappropriate behavior",
-      suspendedAt: new Date(2024, 5, 10),
-      suspendedBy: "admin@example.com",
-    },
-    {
-      id: "user-5",
-      name: "Michael Wilson",
-      email: "michael.w@example.com",
-      joinDate: new Date(2023, 4, 12),
-      role: "user",
-      status: "active",
-      communities: ["Gaming", "Tech Talk"],
-    },
-  ]);
+  const [users, setUsers] = useState<User[]>(USERS_DATA);
 
   const filteredUsers = users.filter(
     (user) =>
@@ -133,7 +72,7 @@ const AdminUsersPage = () => {
     }
   };
 
-  const handleChangeRole = (user: AppUser) => {
+  const handleChangeRole = (user: User) => {
     setSelectedUser(user);
     setRoleChangeDialogOpen(true);
   };
@@ -173,7 +112,7 @@ const AdminUsersPage = () => {
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-social-primary flex items-center justify-center text-white">
-                      <User className="h-4 w-4" />
+                      <UserIcon className="h-4 w-4" />
                     </div>
                     <span className="font-medium">{user.name}</span>
                   </div>
@@ -182,7 +121,7 @@ const AdminUsersPage = () => {
                   {user.email}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {user.joinDate.toLocaleDateString()}
+                  {user.createdAt.toLocaleDateString()}
                 </TableCell>
                 <TableCell>
                   <Badge
@@ -204,14 +143,18 @@ const AdminUsersPage = () => {
                 <TableCell>
                   <Badge
                     className={
-                      user.status === "active"
+                      user.isActive
                         ? "bg-green-500"
-                        : user.status === "suspended"
+                        : user.isSuspended
                         ? "bg-orange-500"
                         : "bg-red-500"
                     }
                   >
-                    {user.status}
+                    {user.isActive
+                      ? "Active"
+                      : user.isSuspended
+                      ? "Suspended"
+                      : "Banned"}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
@@ -278,12 +221,7 @@ const AdminUsersPage = () => {
 
       {selectedUser && (
         <UserProfileDialog
-          user={{
-            ...selectedUser,
-            name: isCurrentUser(selectedUser.email)
-              ? currentUser.name
-              : selectedUser.name,
-          }}
+          user={selectedUser}
           isOpen={!!selectedUser}
           onClose={() => {
             console.log("Closing UserProfileDialog");

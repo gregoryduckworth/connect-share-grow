@@ -11,6 +11,7 @@ export const REPLIES_DATA: Reply[] = [
     postId: POSTS_DATA[0].id,
     createdAt: new Date("2024-01-25T15:45:00Z"),
     likes: 8,
+    isLocked: false,
     parentReplyId: null,
   },
   {
@@ -21,6 +22,7 @@ export const REPLIES_DATA: Reply[] = [
     postId: POSTS_DATA[1].id,
     createdAt: new Date("2024-01-24T17:30:00Z"),
     likes: 12,
+    isLocked: false,
     parentReplyId: null,
   },
   {
@@ -31,6 +33,7 @@ export const REPLIES_DATA: Reply[] = [
     postId: POSTS_DATA[2].id,
     createdAt: new Date("2024-01-23T14:20:00Z"),
     likes: 3,
+    isLocked: true,
     parentReplyId: null,
   },
   {
@@ -39,6 +42,7 @@ export const REPLIES_DATA: Reply[] = [
     content: "This is a 3rd level reply for visual testing.",
     createdAt: new Date(),
     likes: 1,
+    isLocked: false,
     parentReplyId: "r1a2b3c4-d5e6-f789-0123-456789abcdef",
     postId: POSTS_DATA[0].id,
   },

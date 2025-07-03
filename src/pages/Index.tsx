@@ -18,23 +18,10 @@ import type { Community, ReportBase as Report } from "@/lib/types";
 import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 
-interface PendingModeratorRoleChange {
-  id: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    joinDate: Date;
-    role: string;
-    status: string;
-    communities: string[];
-  };
-  requestedBy: string;
-  requestedAt: Date;
-  newRole: string;
-  communityName: string;
+type PendingModeratorRoleChange = {
   status: string;
-}
+  communityName?: string;
+};
 
 const CommunitiesPage = () => {
   const { toast } = useToast();

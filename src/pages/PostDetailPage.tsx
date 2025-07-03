@@ -34,20 +34,7 @@ import UserProfileDialog from "@/components/user/UserProfileDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { REPLIES_DATA } from "@/lib/backend/data/replies";
 import { USERS_DATA } from "@/lib/backend/data/users";
-
-interface Reply {
-  id: string;
-  author: string;
-  content: string;
-  timestamp: Date;
-  likes: number;
-  isLiked: boolean;
-  isLocked?: boolean;
-  lockReason?: string;
-  parentId?: string;
-  replies: Reply[];
-  userName?: string; // Added for flicker-free UserProfileLink
-}
+import PostReply from "@/components/post/PostReply";
 
 // Utility to build nested reply tree from flat REPLIES_DATA
 function buildReplyTree(postId: string): PostDetailReply[] {
@@ -78,7 +65,7 @@ function buildReplyTree(postId: string): PostDetailReply[] {
 }
 
 // Utility to recursively map userName into replies
-function mapUserNamesToReplies(replies) {
+function mapUserNamesToReplies(replies: PostDetailReply[]): PostDetailReply[] {
   return replies.map((reply) => {
     const user = USERS_DATA.find((u) => u.id === reply.author);
     return {
@@ -140,7 +127,7 @@ const PostDetailPage = () => {
   };
 
   const handleLikeReply = (replyId: string) => {
-    const updateReplies = (replies: Reply[]): Reply[] => {
+    const updateReplies = (replies: PostDetailReply[]): PostDetailReply[] => {
       return replies.map((reply) => {
         if (reply.id === replyId) {
           return {
@@ -158,18 +145,20 @@ const PostDetailPage = () => {
         return reply;
       });
     };
-
-    setPost((prev) => ({
-      ...prev,
-      replies: updateReplies(prev.replies),
-    }));
+    setPost((prev) =>
+      prev
+        ? {
+            ...prev,
+            replies: updateReplies(prev.replies),
+          }
+        : prev
+    );
   };
 
   const handleSubmitReply = (parentId?: string) => {
     const content = parentId ? replyContent[parentId] : newReply;
     if (!content.trim()) return;
-
-    const newReplyObj: Reply = {
+    const newReplyObj: PostDetailReply = {
       id: `reply-${Date.now()}`,
       author: user.id,
       content: content,
@@ -179,9 +168,10 @@ const PostDetailPage = () => {
       parentId: parentId,
       replies: [],
     };
-
     if (parentId) {
-      const addReplyToParent = (replies: Reply[]): Reply[] => {
+      const addReplyToParent = (
+        replies: PostDetailReply[]
+      ): PostDetailReply[] => {
         return replies.map((reply) => {
           if (reply.id === parentId) {
             return {
@@ -198,24 +188,29 @@ const PostDetailPage = () => {
           return reply;
         });
       };
-
-      setPost((prev) => ({
-        ...prev,
-        replies: addReplyToParent(prev.replies),
-        comments: prev.comments + 1,
-      }));
-
+      setPost((prev) =>
+        prev
+          ? {
+              ...prev,
+              replies: addReplyToParent(prev.replies),
+              comments: prev.comments + 1,
+            }
+          : prev
+      );
       setReplyContent((prev) => ({ ...prev, [parentId]: "" }));
       setReplyToId(null);
     } else {
-      setPost((prev) => ({
-        ...prev,
-        replies: [...prev.replies, newReplyObj],
-        comments: prev.comments + 1,
-      }));
+      setPost((prev) =>
+        prev
+          ? {
+              ...prev,
+              replies: [...prev.replies, newReplyObj],
+              comments: prev.comments + 1,
+            }
+          : prev
+      );
       setNewReply("");
     }
-
     toast({
       title: "Reply posted",
       description: "Your reply has been added to the discussion.",
@@ -228,223 +223,47 @@ const PostDetailPage = () => {
   };
   const closeReportModal = () => setReportModalOpen(false);
 
-  const ReplyComponent = ({
-    reply,
-    depth = 0,
-  }: {
-    reply: Reply;
-    depth?: number;
-  }) => (
-    <Card
-      className={`mb-4 rounded-xl shadow-sm w-full ${
-        depth % 2 === 0
-          ? "bg-white border border-gray-200"
-          : "bg-gray-200 border border-gray-300"
-      } ${depth > 0 ? "ml-8 max-w-[calc(100%-2rem)]" : "ml-4 max-w-full"} ${
-        depth > 2 ? "border-l-4 border-blue-200 pl-6" : ""
-      }`}
-    >
-      <CardContent className="pt-4 pb-4 px-6">
-        <div className="flex gap-3">
-          <Avatar className="h-10 w-10 bg-social-primary text-white">
-            <div className="flex h-full w-full items-center justify-center">
-              <User className="h-5 w-5" />
-            </div>
-          </Avatar>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2 justify-between">
-              <div className="flex items-center gap-2">
-                <UserProfileLink
-                  userId={reply.author}
-                  userName={reply.userName}
-                />
-                <span className="text-sm text-gray-400 font-normal">
-                  {reply.timestamp.toLocaleDateString()}
-                </span>
-              </div>
-              <div className="flex gap-2 items-center">
-                {isModerator &&
-                  (reply.isLocked ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        // Unlock reply
-                        setPost((prev) => {
-                          if (!prev) return prev;
-                          const unlockReply = (replies: Reply[]): Reply[] =>
-                            replies.map((r) =>
-                              r.id === reply.id
-                                ? {
-                                    ...r,
-                                    isLocked: false,
-                                    lockReason: undefined,
-                                  }
-                                : {
-                                    ...r,
-                                    replies: unlockReply(r.replies),
-                                  }
-                            );
-                          return {
-                            ...prev,
-                            replies: unlockReply(prev.replies),
-                          };
-                        });
-                      }}
-                      className="text-xs border-green-400 text-green-500 hover:bg-green-50"
-                    >
-                      <Unlock className="h-3 w-3 mr-1" />
-                      Unlock Reply
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        // Lock reply
-                        setPost((prev) => {
-                          if (!prev) return prev;
-                          const lockReply = (replies: Reply[]): Reply[] =>
-                            replies.map((r) =>
-                              r.id === reply.id
-                                ? {
-                                    ...r,
-                                    isLocked: true,
-                                    lockReason: "Locked by moderator",
-                                  }
-                                : {
-                                    ...r,
-                                    replies: lockReply(r.replies),
-                                  }
-                            );
-                          return {
-                            ...prev,
-                            replies: lockReply(prev.replies),
-                          };
-                        });
-                      }}
-                      className="text-xs border-red-400 text-red-500 hover:bg-red-50"
-                    >
-                      <Lock className="h-3 w-3 mr-1" />
-                      Lock Reply
-                    </Button>
-                  ))}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs text-gray-400 hover:text-red-500 px-2 py-0 h-auto"
-                  onClick={() =>
-                    openReportModal({
-                      type: "reply",
-                      postId: post.id,
-                      replyId: reply.id,
-                      communityId: post.communityId,
-                      originalContent: reply.content,
-                    })
-                  }
-                >
-                  Report
-                </Button>
-              </div>
-            </div>
-            <p className="text-gray-700 mb-4 text-[1.08rem] leading-relaxed">
-              {reply.isLocked ? (
-                <span className="italic text-gray-400">
-                  [This reply has been locked and its content is redacted]
-                </span>
-              ) : (
-                reply.content
-              )}
-            </p>
-            {reply.isLocked && reply.lockReason && (
-              <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-xs text-red-700">
-                  <Lock className="h-3 w-3 inline mr-1" />
-                  <strong>Reply Locked:</strong> {reply.lockReason}
-                </p>
-              </div>
-            )}
-            <div className="flex items-center gap-4 mb-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleLikeReply(reply.id)}
-                className={`flex items-center gap-1 text-sm ${
-                  reply.isLiked ? "text-red-500" : "text-gray-500"
-                }`}
-                disabled={post.commentsLocked}
-              >
-                <Heart
-                  className={`h-3 w-3 ${reply.isLiked ? "fill-current" : ""}`}
-                />
-                {reply.likes}
-              </Button>
-              {/* Only show Reply button if reply is not locked and post comments are not locked */}
-              {!reply.isLocked && !post.commentsLocked && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    setReplyToId(replyToId === reply.id ? null : reply.id)
-                  }
-                  className="flex items-center gap-1 text-sm text-gray-500"
-                >
-                  <Reply className="h-3 w-3" />
-                  Reply
-                </Button>
-              )}
-            </div>
-            {/* Reply form for this specific reply */}
-            {replyToId === reply.id &&
-              !post.commentsLocked &&
-              !reply.isLocked && (
-                <div className="mt-4 flex gap-3">
-                  <Avatar className="h-8 w-8 bg-social-primary text-white">
-                    <div className="flex h-full w-full items-center justify-center">
-                      <User className="h-4 w-4" />
-                    </div>
-                  </Avatar>
-                  <div className="flex-1 flex gap-3">
-                    <Textarea
-                      placeholder={`Reply to ${reply.author}...`}
-                      value={replyContent[reply.id] || ""}
-                      onChange={(e) =>
-                        setReplyContent((prev) => ({
-                          ...prev,
-                          [reply.id]: e.target.value,
-                        }))
-                      }
-                      className="flex-1"
-                      rows={2}
-                    />
-                    <Button
-                      onClick={() => handleSubmitReply(reply.id)}
-                      disabled={!replyContent[reply.id]?.trim()}
-                      size="sm"
-                      className="self-end"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-          </div>
-        </div>
-      </CardContent>
-      {/* Render nested replies */}
-      {reply.replies.length > 0 && (
-        <div className="space-y-2 mt-2">
-          {reply.replies.map((nestedReply) => (
-            <ReplyComponent
-              key={nestedReply.id}
-              reply={nestedReply}
-              depth={depth + 1}
-            />
-          ))}
-        </div>
-      )}
-    </Card>
-  );
+  // Helper functions for locking/unlocking replies
+  const handleLockReply = (replyId: string) => {
+    setPost((prev) =>
+      prev
+        ? {
+            ...prev,
+            replies: lockReplyRecursive(prev.replies, replyId),
+          }
+        : prev
+    );
+  };
+  const handleUnlockReply = (replyId: string) => {
+    setPost((prev) =>
+      prev
+        ? {
+            ...prev,
+            replies: unlockReplyRecursive(prev.replies, replyId),
+          }
+        : prev
+    );
+  };
+  function lockReplyRecursive(
+    replies: PostDetailReply[],
+    replyId: string
+  ): PostDetailReply[] {
+    return replies.map((r) =>
+      r.id === replyId
+        ? { ...r, isLocked: true, lockReason: "Locked by moderator" }
+        : { ...r, replies: lockReplyRecursive(r.replies, replyId) }
+    );
+  }
+  function unlockReplyRecursive(
+    replies: PostDetailReply[],
+    replyId: string
+  ): PostDetailReply[] {
+    return replies.map((r) =>
+      r.id === replyId
+        ? { ...r, isLocked: false, lockReason: undefined }
+        : { ...r, replies: unlockReplyRecursive(r.replies, replyId) }
+    );
+  }
 
   if (!post) {
     return (
@@ -697,7 +516,21 @@ const PostDetailPage = () => {
           </h2>
 
           {post.replies.map((reply) => (
-            <ReplyComponent key={reply.id} reply={reply} />
+            <PostReply
+              key={reply.id}
+              reply={reply}
+              depth={0}
+              isModerator={isModerator}
+              postLocked={post.commentsLocked}
+              replyToId={replyToId}
+              replyContent={replyContent}
+              setReplyToId={setReplyToId}
+              setReplyContent={setReplyContent}
+              handleLikeReply={handleLikeReply}
+              handleSubmitReply={handleSubmitReply}
+              handleLockReply={handleLockReply}
+              handleUnlockReply={handleUnlockReply}
+            />
           ))}
 
           {/* Main Reply Form */}

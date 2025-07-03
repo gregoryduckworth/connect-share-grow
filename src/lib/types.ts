@@ -154,6 +154,7 @@ export interface Reply {
   postId: string;
   createdAt: Date;
   likes: number;
+  isLocked: boolean;
   parentReplyId?: string | null;
 }
 
@@ -240,3 +241,116 @@ export type PlatformStats = {
   totalPosts: number;
   totalReports: number;
 };
+
+// --- Social App Types (moved from src/) ---
+
+// Connections
+export interface Connection {
+  id: string;
+  name: string;
+  mutualConnections: number;
+  status: "connected" | "pending" | "received";
+  lastActive: Date;
+  bio?: string;
+}
+
+export interface ConnectionRequest {
+  id: string;
+  name: string;
+  message: string;
+  date: string;
+}
+
+export interface ConnectionData {
+  userId: string;
+  connections: Array<{
+    id: string;
+    status: "connected" | "pending" | "received";
+    mutualConnections: number;
+    lastActive: Date;
+  }>;
+}
+
+// Admin/Moderation
+export interface PendingAdminRoleChange {
+  id: string;
+  user: Pick<User, "id" | "name" | "email" | "role">;
+  requestedBy: string;
+  requestedAt: Date;
+  newRole: User["role"];
+}
+
+export interface Moderator {
+  id: string;
+  name: string;
+  role: string;
+  joinedAsModAt: Date;
+  actionsThisMonth: number;
+}
+
+export interface CommunityAnalytics {
+  totalMembers: number;
+  totalPosts: number;
+  postsThisWeek: number;
+  activeMembers: number;
+  reportsThisWeek: number;
+}
+
+export interface FlaggedReport extends Report {
+  reportedByName: string;
+}
+
+// Trending/Hot Topics
+export interface TrendingPostUI {
+  id: string;
+  title: string;
+  author: string;
+  userName?: string;
+  communitySlug: string;
+  communityName: string;
+  likes: number;
+  replies: number;
+  createdAt: Date;
+  excerpt: string;
+}
+export interface TrendingCommunityUI {
+  id: string;
+  name: string;
+  description: string;
+  memberCount: number;
+  growthRate: number;
+  category: string;
+}
+
+// CommunityPost
+export interface PostData {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  timestamp: Date;
+  likes: number;
+  comments: number;
+  isLiked: boolean;
+  isPinned: boolean;
+  isLocked: boolean;
+  commentsLocked: boolean;
+  tags: string[];
+  lockReason?: string;
+  commentsLockReason?: string;
+  userName?: string;
+}
+export interface CommunityPostProps {
+  post: PostData;
+  onLike: (postId: string) => void;
+  onComment: (postId: string) => void;
+  onPin?: (postId: string) => void;
+  onLock?: (postId: string, reason: string) => void;
+  onUnlock?: (postId: string) => void;
+  onLockComments?: (postId: string, reason: string) => void;
+  onUnlockComments?: (postId: string) => void;
+  isModerator?: boolean;
+  showPreview?: boolean;
+  onShowUserProfile?: (userId: string) => void;
+  communitySlug: string;
+}

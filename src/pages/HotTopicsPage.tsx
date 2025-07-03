@@ -9,27 +9,7 @@ import InfoCard from "@/components/ui/InfoCard";
 import UserProfileLink from "@/components/user/UserProfileLink";
 import { api } from "@/lib/api";
 import { USERS_DATA } from "@/lib/backend/data/users";
-
-interface TrendingPostUI {
-  id: string;
-  title: string;
-  author: string;
-  userName?: string;
-  communitySlug: string;
-  communityName: string;
-  likes: number;
-  replies: number;
-  createdAt: Date;
-  excerpt: string;
-}
-interface TrendingCommunityUI {
-  id: string;
-  name: string;
-  description: string;
-  memberCount: number;
-  growthRate: number;
-  category: string;
-}
+import { TrendingPostUI, TrendingCommunityUI } from "@/lib/types";
 
 const HotTopicsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");

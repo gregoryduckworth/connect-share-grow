@@ -11,22 +11,7 @@ import UserProfileLink from "@/components/user/UserProfileLink";
 import { connectionService } from "@/lib/backend/services/connectionService";
 import { USERS_DATA } from "@/lib/backend/data/users";
 import { useAuth } from "@/contexts/AuthContext";
-
-interface Connection {
-  id: string;
-  name: string;
-  mutualConnections: number;
-  status: "connected" | "pending" | "received";
-  lastActive: Date;
-  bio?: string;
-}
-
-interface ConnectionRequest {
-  id: string;
-  name: string;
-  message: string;
-  date: string;
-}
+import { Connection, ConnectionRequest } from "@/lib/types";
 
 const ConnectionsPage = () => {
   const { toast } = useToast();

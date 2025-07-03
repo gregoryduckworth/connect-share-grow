@@ -7,39 +7,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Heart, MessageSquare, Pin, Lock, Unlock, User } from "lucide-react";
 import LockPostDialog from "./LockPostDialog";
 import UserProfileLink from "@/components/user/UserProfileLink";
-
-interface PostData {
-  id: string;
-  title: string;
-  content: string;
-  author: string;
-  timestamp: Date;
-  likes: number;
-  comments: number;
-  isLiked: boolean;
-  isPinned: boolean;
-  isLocked: boolean;
-  commentsLocked: boolean;
-  tags: string[];
-  lockReason?: string;
-  commentsLockReason?: string;
-  userName?: string; // Added for flicker-free UserProfileLink
-}
-
-interface CommunityPostProps {
-  post: PostData;
-  onLike: (postId: string) => void;
-  onComment: (postId: string) => void;
-  onPin?: (postId: string) => void;
-  onLock?: (postId: string, reason: string) => void;
-  onUnlock?: (postId: string) => void;
-  onLockComments?: (postId: string, reason: string) => void;
-  onUnlockComments?: (postId: string) => void;
-  isModerator?: boolean;
-  showPreview?: boolean;
-  onShowUserProfile?: (userId: string) => void;
-  communitySlug: string;
-}
+import { CommunityPostProps } from "@/lib/types";
 
 const CommunityPost = ({
   post,

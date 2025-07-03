@@ -1,14 +1,5 @@
 import { USERS_DATA } from "./users";
-
-export interface ConnectionData {
-  userId: string;
-  connections: Array<{
-    id: string;
-    status: "connected" | "pending" | "received";
-    mutualConnections: number;
-    lastActive: Date;
-  }>;
-}
+import { ConnectionData } from "@/lib/types";
 
 export const CONNECTIONS_DATA: ConnectionData[] = [
   // Alex Johnson

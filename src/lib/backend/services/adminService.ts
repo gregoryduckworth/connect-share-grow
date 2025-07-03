@@ -1,4 +1,3 @@
-
 import { USERS_DATA } from "../data/users";
 import { COMMUNITIES_DATA } from "../data/communities";
 import { POSTS_DATA } from "../data/posts";
@@ -12,10 +11,31 @@ import type {
   AnalyticsDataPoint,
 } from "@/lib/types";
 
+export interface PendingAdminRoleChange {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: "user" | "moderator" | "admin";
+  };
+  requestedBy: string;
+  requestedAt: Date;
+  newRole: "user" | "moderator" | "admin";
+}
+
 export const adminService = {
   getAdminRoles: async (): Promise<AdminRole[]> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
-    const mapUser = (u: any): AdminRoleUser => ({
+    type UserData = {
+      id: string;
+      name: string;
+      email: string;
+      createdAt: Date;
+      role: "user" | "moderator" | "admin";
+    };
+
+    const mapUser = (u: UserData): AdminRoleUser => ({
       id: u.id,
       name: u.name,
       email: u.email,
@@ -64,9 +84,29 @@ export const adminService = {
     ];
   },
 
-  getPendingAdminRoleChanges: async (): Promise<AdminRole[]> => {
+  getPendingAdminRoleChanges: async (): Promise<PendingAdminRoleChange[]> => {
     await new Promise((resolve) => setTimeout(resolve, 300));
-    return [];
+    const pendingChanges: PendingAdminRoleChange[] = USERS_DATA.filter(
+      (u) => u.role === "user"
+    )
+      .slice(0, 1)
+      .map((user) => {
+        // Pick an admin as the requester
+        const admin = USERS_DATA.find((u) => u.role === "admin");
+        return {
+          id: `pending-role-change-${user.id}`,
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          },
+          requestedBy: admin.name,
+          requestedAt: new Date("2024-01-20T14:15:00Z"),
+          newRole: "moderator",
+        };
+      });
+    return pendingChanges;
   },
 
   getAnalyticsCommunities: async (): Promise<AnalyticsCommunity[]> => {
@@ -114,23 +154,29 @@ export const adminService = {
   },
 };
 
-// Mock pending moderator role changes
-export const mockPendingModeratorRoleChanges = [
-  {
-    id: "mod1a2b3-c4d5-e6f7-g890-123456789abc",
-    user: {
-      id: "e5f6g7h8-i9j0-1234-5678-901234efghij",
-      name: "David Kim",
-      email: "david.kim@example.com",
-      joinDate: new Date("2024-01-12T11:30:00Z"),
-      role: "user",
-      status: "active",
-      communities: ["entrepreneurs-united"],
-    },
-    requestedBy: "d4e5f6g7-h8i9-0123-4567-890123defghi",
-    requestedAt: new Date("2024-01-20T14:15:00Z"),
-    newRole: "moderator",
-    communityName: "Entrepreneurs United",
-    status: "pending",
-  },
-];
+// Dynamically generate mock pending moderator role changes from USERS_DATA and COMMUNITIES_DATA
+export const mockPendingModeratorRoleChanges = USERS_DATA.filter(
+  (u) => u.role === "user"
+)
+  .slice(0, 2)
+  .map((user, idx) => {
+    const admin = USERS_DATA.find((u) => u.role === "admin");
+    const community = COMMUNITIES_DATA[idx % COMMUNITIES_DATA.length];
+    return {
+      id: `pending-mod-role-${user.id}`,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        joinDate: user.createdAt,
+        role: user.role,
+        status: user.isActive ? "active" : "inactive",
+        communities: user.communities || [],
+      },
+      requestedBy: admin.name,
+      requestedAt: new Date("2024-01-20T14:15:00Z"),
+      newRole: "moderator",
+      communityName: community.name,
+      status: "pending",
+    };
+  });
