@@ -2,6 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { TrendingUp, MessageSquare } from "lucide-react";
+import { formatDate } from "@/lib/utils";
 
 interface TrendingPostCardProps {
   id: string;
@@ -63,7 +64,7 @@ const TrendingPostCard = ({
       </div>
       <div className="flex items-center justify-between text-xs sm:text-sm mb-4">
         <span className="text-muted-foreground">Posted</span>
-        <span className="font-medium">{createdAt.toLocaleDateString()}</span>
+        <span className="font-medium">{formatDate(createdAt)}</span>
       </div>
       <div className="flex gap-2 mt-auto w-full">
         <Button className="w-full text-xs sm:text-sm" asChild>

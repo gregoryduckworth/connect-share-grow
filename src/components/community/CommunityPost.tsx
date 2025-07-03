@@ -8,6 +8,8 @@ import { Heart, MessageSquare, Pin, Lock, Unlock, User } from "lucide-react";
 import LockPostDialog from "./LockPostDialog";
 import UserProfileLink from "@/components/user/UserProfileLink";
 import { CommunityPostProps } from "@/lib/types";
+import { useDialog } from "@/hooks/useDialog";
+import { formatDate } from "@/lib/utils";
 
 const CommunityPost = ({
   post,
@@ -22,12 +24,12 @@ const CommunityPost = ({
   showPreview = false,
   communitySlug,
 }: CommunityPostProps) => {
-  const [showLockDialog, setShowLockDialog] = useState(false);
+  const lockDialog = useDialog(false);
   const [lockType, setLockType] = useState<"post" | "comments">("post");
 
   const handleLockClick = (type: "post" | "comments") => {
     setLockType(type);
-    setShowLockDialog(true);
+    lockDialog.open();
   };
 
   const handleLockConfirm = (reason: string) => {
@@ -36,7 +38,7 @@ const CommunityPost = ({
     } else if (lockType === "comments" && onLockComments) {
       onLockComments(post.id, reason);
     }
-    setShowLockDialog(false);
+    lockDialog.close();
   };
 
   const truncateContent = (content: string, maxLength: number = 150) => {
@@ -101,7 +103,7 @@ const CommunityPost = ({
                   userId={post.author}
                   userName={post.userName}
                 />{" "}
-                • {post.timestamp.toLocaleDateString()}
+                • {formatDate(post.timestamp)}
               </p>
             </div>
           </div>
@@ -288,11 +290,11 @@ const CommunityPost = ({
     <>
       {showPreview ? cardContent : cardContent}
       <LockPostDialog
-        isOpen={showLockDialog}
-        onClose={() => setShowLockDialog(false)}
-        onConfirm={handleLockConfirm}
+        isOpen={lockDialog.isOpen}
+        onClose={lockDialog.close}
         postTitle={post.title}
         contentType={lockType}
+        onConfirm={handleLockConfirm}
       />
     </>
   );

@@ -41,12 +41,14 @@ import { Moderator, CommunityAnalytics, FlaggedReport } from "@/lib/types";
 import UserProfileLink from "@/components/user/UserProfileLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { USERS_DATA } from "@/lib/backend/data/users";
+import { useDialog } from "@/hooks/useDialog";
+import { formatNumber } from "@/lib/utils";
 
 const ModeratePage = () => {
   const { communityId } = useParams();
   const { toast } = useToast();
   const { user, isModerator: checkIsModerator } = useAuth();
-  const [showRemoveDialog, setShowRemoveDialog] = useState(false);
+  const removeDialog = useDialog(false);
   const [moderatorToRemove, setModeratorToRemove] = useState<Moderator | null>(
     null
   );
@@ -151,7 +153,7 @@ const ModeratePage = () => {
 
   const handleRemoveModerator = (moderator: Moderator) => {
     setModeratorToRemove(moderator);
-    setShowRemoveDialog(true);
+    removeDialog.open();
   };
 
   const confirmRemoveModerator = () => {
@@ -161,7 +163,7 @@ const ModeratePage = () => {
         title: "Removal Request Submitted",
         description: `A request to remove ${moderatorToRemove.name} has been sent to other moderators for approval.`,
       });
-      setShowRemoveDialog(false);
+      removeDialog.close();
       setModeratorToRemove(null);
       setRemovalReason("");
     }
@@ -308,7 +310,7 @@ const ModeratePage = () => {
                     Total Members
                   </p>
                   <p className="text-2xl font-bold">
-                    {analytics.totalMembers.toLocaleString()}
+                    {formatNumber(analytics.totalMembers)}
                   </p>
                 </div>
                 <Users className="h-8 w-8 text-social-primary" />
@@ -630,8 +632,8 @@ const ModeratePage = () => {
 
       {/* Remove Moderator Dialog */}
       <Dialog
-        open={showRemoveDialog}
-        onOpenChange={setShowRemoveDialog}
+        open={removeDialog.isOpen}
+        onOpenChange={removeDialog.setOpen}
         data-testid="remove-moderator-dialog"
       >
         <DialogContent>
@@ -658,7 +660,7 @@ const ModeratePage = () => {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setShowRemoveDialog(false)}
+              onClick={() => removeDialog.close()}
               data-testid="cancel-remove-moderator-btn"
             >
               Cancel

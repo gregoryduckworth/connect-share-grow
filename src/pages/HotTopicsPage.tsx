@@ -10,6 +10,7 @@ import UserProfileLink from "@/components/user/UserProfileLink";
 import { api } from "@/lib/api";
 import { USERS_DATA } from "@/lib/backend/data/users";
 import { TrendingPostUI, TrendingCommunityUI } from "@/lib/types";
+import { formatDate } from "@/lib/utils";
 
 const HotTopicsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -173,8 +174,7 @@ const HotTopicsPage = () => {
                         userName={post.userName}
                         data-testid={`post-author-link-${post.id}`}
                       />{" "}
-                      • in {post.communityName} •{" "}
-                      {post.createdAt.toLocaleDateString()}
+                      • in {post.communityName} • {formatDate(post.createdAt)}
                     </span>
                   </div>
                 }

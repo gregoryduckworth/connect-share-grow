@@ -10,6 +10,7 @@ import ReportDetailsDialog from "@/components/admin/ReportDetailsDialog";
 import { api } from "@/lib/api";
 import AdminTable from "@/components/admin/AdminTable";
 import AdminTablePagination from "@/components/admin/AdminTablePagination";
+import { formatDate } from "@/lib/utils";
 
 const AdminReportsPage = () => {
   const { toast } = useToast();
@@ -83,7 +84,7 @@ const AdminReportsPage = () => {
           </CardTitle>
           <div className="flex flex-wrap gap-2">
             <Badge variant="outline" className="bg-social-background">
-              Reported {new Date(report.createdAt).toLocaleDateString()}
+              Reported {formatDate(new Date(report.createdAt))}
             </Badge>
             <Badge variant="destructive">{report.reason}</Badge>
           </div>

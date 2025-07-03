@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
 import { User, Camera, MapPin, Calendar, Users } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { formatDate } from "@/lib/utils";
 
 const ProfilePage = () => {
   const { toast } = useToast();
@@ -238,7 +239,7 @@ const ProfilePage = () => {
                   >
                     <User className="h-4 w-4" />
                     <span data-testid="profile-join-date">
-                      Member since {profileData.joinDate.toLocaleDateString()}
+                      Member since {formatDate(profileData.joinDate)}
                     </span>
                   </div>
                 </div>
@@ -314,7 +315,7 @@ const ProfilePage = () => {
                         className="text-sm text-gray-500"
                         data-testid={`profile-community-joined-${index}`}
                       >
-                        Joined {community.joinedAt.toLocaleDateString()}
+                        Joined {formatDate(community.joinedAt)}
                       </p>
                     </div>
                     <Badge

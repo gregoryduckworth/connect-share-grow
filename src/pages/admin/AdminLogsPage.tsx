@@ -13,6 +13,7 @@ import { Search, RotateCcw } from "lucide-react";
 import { adminLogs } from "@/lib/admin-logger";
 import AdminTablePagination from "@/components/admin/AdminTablePagination";
 import AdminTable from "@/components/admin/AdminTable";
+import { formatDate, formatTime } from "@/lib/utils";
 
 const AdminLogsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -96,12 +97,9 @@ const AdminLogsPage = () => {
       accessor: (log: (typeof adminLogs)[0]) => (
         <div>
           <div className="hidden md:block">
-            {log.timestamp.toLocaleDateString()}{" "}
-            {log.timestamp.toLocaleTimeString()}
+            {formatDate(log.timestamp)} {formatTime(log.timestamp)}
           </div>
-          <div className="md:hidden text-xs">
-            {log.timestamp.toLocaleDateString()}
-          </div>
+          <div className="md:hidden text-xs">{formatDate(log.timestamp)}</div>
         </div>
       ),
       className: "whitespace-nowrap text-sm",

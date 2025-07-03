@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, MessageCircle } from "lucide-react";
 import React from "react";
+import { formatDate } from "@/lib/utils";
 
 interface ConnectionCardProps {
   connection: {
@@ -51,7 +52,7 @@ const ConnectionCard: React.FC<ConnectionCardProps> = ({
     <CardContent className="flex flex-col flex-1 justify-end space-y-3">
       <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
         <span className="break-words">
-          Last active: {connection.lastActive.toLocaleDateString()}
+          Last active: {formatDate(connection.lastActive)}
         </span>
       </div>
       <div className="flex flex-col sm:flex-row gap-2 mt-auto w-full">

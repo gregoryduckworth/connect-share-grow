@@ -12,13 +12,15 @@ import { connectionService } from "@/lib/backend/services/connectionService";
 import { USERS_DATA } from "@/lib/backend/data/users";
 import { useAuth } from "@/contexts/AuthContext";
 import { Connection, ConnectionRequest } from "@/lib/types";
+import { useDialog } from "@/hooks/useDialog";
+import { formatDate } from "@/lib/utils";
 
 const ConnectionsPage = () => {
   const { toast } = useToast();
   const { user, isLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const profileDialog = useDialog(false);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [connectionRequests, setConnectionRequests] = useState<
     ConnectionRequest[]
@@ -114,7 +116,7 @@ const ConnectionsPage = () => {
 
   const handleViewProfile = (connection: Connection) => {
     setSelectedUserId(connection.id);
-    setProfileDialogOpen(true);
+    profileDialog.open();
   };
 
   if (isLoading) {
@@ -219,7 +221,7 @@ const ConnectionsPage = () => {
                 contentTop={
                   <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
                     <span className="break-words">
-                      Last active: {connection.lastActive.toLocaleDateString()}
+                      Last active: {formatDate(connection.lastActive)}
                     </span>
                   </div>
                 }
@@ -272,7 +274,7 @@ const ConnectionsPage = () => {
                 contentTop={
                   <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
                     <span className="break-words">
-                      Last active: {connection.lastActive.toLocaleDateString()}
+                      Last active: {formatDate(connection.lastActive)}
                     </span>
                   </div>
                 }
@@ -316,7 +318,7 @@ const ConnectionsPage = () => {
                 description={request.message}
                 headerRight={
                   <span className="text-xs text-muted-foreground">
-                    {new Date(request.date).toLocaleDateString()}
+                    {formatDate(new Date(request.date))}
                   </span>
                 }
                 actions={
@@ -347,14 +349,9 @@ const ConnectionsPage = () => {
 
       {selectedUserId && (
         <UserProfileDialog
-          userId={selectedUserId}
-          isOpen={profileDialogOpen}
-          onClose={() => {
-            setProfileDialogOpen(false);
-            setSelectedUserId(null);
-          }}
-          showConnectionButton={false}
-          data-testid="profile-dialog"
+          userId={selectedUserId!}
+          isOpen={profileDialog.isOpen}
+          onClose={profileDialog.close}
         />
       )}
     </div>

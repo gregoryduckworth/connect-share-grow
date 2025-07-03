@@ -48,6 +48,7 @@ import {
   ChevronsUpDown,
 } from "lucide-react";
 import AdminMetricsCard from "@/components/admin/AdminMetricsCard";
+import { formatNumber } from "@/lib/utils";
 
 const AdminAnalyticsPage = () => {
   const [selectedCommunity, setSelectedCommunity] = useState("all");
@@ -243,7 +244,11 @@ const AdminAnalyticsPage = () => {
           >
             <AdminMetricsCard
               title="Total Users"
-              value={platformStats?.totalUsers?.toLocaleString?.() ?? "-"}
+              value={
+                platformStats?.totalUsers != null
+                  ? formatNumber(platformStats.totalUsers)
+                  : "-"
+              }
               description="Registered platform users"
               icon={<Users className="h-4 w-4" />}
               trend={{ value: "+12% from last month", isPositive: true }}
@@ -251,7 +256,11 @@ const AdminAnalyticsPage = () => {
             />
             <AdminMetricsCard
               title="Total Communities"
-              value={platformStats?.totalCommunities?.toLocaleString?.() ?? "-"}
+              value={
+                platformStats?.totalCommunities != null
+                  ? formatNumber(platformStats.totalCommunities)
+                  : "-"
+              }
               description="Active communities"
               icon={<Users className="h-4 w-4" />}
               trend={{ value: "+2 this month", isPositive: true }}
@@ -259,7 +268,11 @@ const AdminAnalyticsPage = () => {
             />
             <AdminMetricsCard
               title="Total Posts"
-              value={platformStats?.totalPosts?.toLocaleString?.() ?? "-"}
+              value={
+                platformStats?.totalPosts != null
+                  ? formatNumber(platformStats.totalPosts)
+                  : "-"
+              }
               description="Posts across all communities"
               icon={<MessageSquare className="h-4 w-4" />}
               trend={{ value: "+18% from last month", isPositive: true }}
@@ -267,7 +280,11 @@ const AdminAnalyticsPage = () => {
             />
             <AdminMetricsCard
               title="Active Users"
-              value={platformStats?.activeUsers?.toLocaleString?.() ?? "-"}
+              value={
+                platformStats?.activeUsers != null
+                  ? formatNumber(platformStats.activeUsers)
+                  : "-"
+              }
               description="Users active in last 30 days"
               icon={<TrendingUp className="h-4 w-4" />}
               trend={{ value: "66% of total users", isPositive: true }}

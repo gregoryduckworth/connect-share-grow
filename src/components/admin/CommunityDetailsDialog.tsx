@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -9,6 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, MessageSquare, Calendar, User } from "lucide-react";
+import { formatDate } from "@/lib/utils";
 
 interface PendingCommunity {
   id: string;
@@ -25,7 +25,11 @@ interface CommunityDetailsDialogProps {
   community: PendingCommunity | null;
 }
 
-const CommunityDetailsDialog = ({ isOpen, onClose, community }: CommunityDetailsDialogProps) => {
+const CommunityDetailsDialog = ({
+  isOpen,
+  onClose,
+  community,
+}: CommunityDetailsDialogProps) => {
   if (!community) return null;
 
   return (
@@ -37,7 +41,7 @@ const CommunityDetailsDialog = ({ isOpen, onClose, community }: CommunityDetails
             Community approval details and information
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-6">
           {/* Basic Information */}
           <Card>
@@ -49,15 +53,23 @@ const CommunityDetailsDialog = ({ isOpen, onClose, community }: CommunityDetails
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-1">Description</h4>
+                <h4 className="font-semibold text-sm text-gray-700 mb-1">
+                  Description
+                </h4>
                 <p className="text-sm">{community.description}</p>
               </div>
-              
+
               <div>
-                <h4 className="font-semibold text-sm text-gray-700 mb-2">Tags</h4>
+                <h4 className="font-semibold text-sm text-gray-700 mb-2">
+                  Tags
+                </h4>
                 <div className="flex flex-wrap gap-2">
                   {(community.tags ?? []).map((tag) => (
-                    <Badge key={tag} variant="secondary" className="bg-social-accent/50">
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="bg-social-accent/50"
+                    >
                       {tag}
                     </Badge>
                   ))}
@@ -84,14 +96,20 @@ const CommunityDetailsDialog = ({ isOpen, onClose, community }: CommunityDetails
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-gray-400" />
                   <span className="font-medium">
-                    {community.requestedAt.toLocaleDateString()}
+                    {formatDate(community.requestedAt)}
                   </span>
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Time since request</span>
+                <span className="text-sm text-gray-600">
+                  Time since request
+                </span>
                 <span className="font-medium">
-                  {Math.floor((Date.now() - community.requestedAt.getTime()) / (1000 * 60 * 60))} hours ago
+                  {Math.floor(
+                    (Date.now() - community.requestedAt.getTime()) /
+                      (1000 * 60 * 60)
+                  )}{" "}
+                  hours ago
                 </span>
               </div>
             </CardContent>
@@ -113,7 +131,9 @@ const CommunityDetailsDialog = ({ isOpen, onClose, community }: CommunityDetails
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Expected initial members</span>
+                <span className="text-sm text-gray-600">
+                  Expected initial members
+                </span>
                 <span className="font-medium">1-5 members</span>
               </div>
               <div className="flex items-center justify-between">

@@ -37,6 +37,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { USERS_DATA } from "@/lib/backend/data/users";
+import { formatNumber } from "@/lib/utils";
 
 const CommunityDetailPage = () => {
   const { communitySlug } = useParams<{ communitySlug: string }>();
@@ -217,7 +218,7 @@ const CommunityDetailPage = () => {
                   data-testid="community-detail-members"
                 >
                   <Users className="h-4 w-4" />
-                  {community.memberCount.toLocaleString()} members
+                  {formatNumber(community.memberCount)} members
                 </div>
                 <div
                   className="flex items-center gap-1"

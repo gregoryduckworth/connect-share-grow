@@ -8,6 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { formatNumber } from "@/lib/utils";
 
 interface CommunityCardProps {
   id: string;
@@ -81,10 +82,9 @@ const CommunityCard = ({
     <CardContent className="flex flex-col flex-1 justify-end">
       <div className="flex items-center justify-between text-xs sm:text-sm mb-2">
         <span className="text-muted-foreground">Members</span>
-        <span
-          className="font-medium"
-          data-testid="community-card-members"
-        >{`${memberCount.toLocaleString()}`}</span>
+        <span className="font-medium" data-testid="community-card-members">
+          {formatNumber(memberCount)}
+        </span>
       </div>
       {category && (
         <div className="flex items-center justify-between text-xs sm:text-sm mb-2">

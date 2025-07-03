@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -16,6 +16,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { userService } from "@/lib/backend/services/userService";
 import type { User } from "@/lib/types";
+import AppAvatar from "@/components/common/AppAvatar";
+import { useDialog } from "@/hooks/useDialog";
+import { formatDate } from "@/lib/utils"; // Import formatDate
 
 export interface UserProfileDialogProps {
   userId: string;
@@ -34,7 +37,7 @@ const UserProfileDialog = ({
   const { toast } = useToast();
   const [isConnected, setIsConnected] = useState(false);
   const [connectionPending, setConnectionPending] = useState(false);
-  const [showRequestDialog, setShowRequestDialog] = useState(false);
+  const requestDialog = useDialog(false);
   const [requestMessage, setRequestMessage] = useState("");
   const [requestError, setRequestError] = useState("");
   const [user, setUser] = useState<User | undefined>(undefined);
@@ -49,7 +52,7 @@ const UserProfileDialog = ({
   }, [userId]);
 
   const handleSendConnectionRequest = () => {
-    setShowRequestDialog(true);
+    requestDialog.open();
   };
 
   const handleRequestSubmit = () => {
@@ -69,7 +72,7 @@ const UserProfileDialog = ({
     });
     localStorage.setItem("connectionRequests", JSON.stringify(requests));
     setConnectionPending(true);
-    setShowRequestDialog(false);
+    requestDialog.close();
     setRequestMessage("");
     setRequestError("");
     toast({
@@ -136,14 +139,14 @@ const UserProfileDialog = ({
           <div className="space-y-6">
             {/* Header */}
             <div className="flex items-start gap-4">
-              <Avatar className="h-20 w-20">
+              <AppAvatar size="h-20 w-20">
                 <AvatarFallback className="text-lg">
                   {user.name
                     .split(" ")
                     .map((n) => n[0])
                     .join("")}
                 </AvatarFallback>
-              </Avatar>
+              </AppAvatar>
 
               <div className="flex-1">
                 <h2 className="text-2xl font-bold">{user.name}</h2>
@@ -158,7 +161,7 @@ const UserProfileDialog = ({
                   )}
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    <span>Joined {user.createdAt.toLocaleDateString()}</span>
+                    <span>Joined {formatDate(user.createdAt)}</span>
                   </div>
                 </div>
 
@@ -253,7 +256,7 @@ const UserProfileDialog = ({
       </Dialog>
 
       {/* Connection Request Dialog */}
-      <Dialog open={showRequestDialog} onOpenChange={setShowRequestDialog}>
+      <Dialog open={requestDialog.isOpen} onOpenChange={requestDialog.setOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Send Connection Request</DialogTitle>
@@ -278,10 +281,7 @@ const UserProfileDialog = ({
               <div className="text-red-500 text-xs">{requestError}</div>
             )}
             <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowRequestDialog(false)}
-              >
+              <Button variant="outline" onClick={() => requestDialog.close()}>
                 Cancel
               </Button>
               <Button onClick={handleRequestSubmit}>Send Request</Button>

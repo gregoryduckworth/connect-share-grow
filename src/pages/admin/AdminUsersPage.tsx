@@ -13,6 +13,7 @@ import AdminRoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
 import UserSuspendDialog from "@/components/admin/UserSuspendDialog";
 import UserActivateDialog from "@/components/admin/UserActivateDialog";
 import { api } from "@/lib/api";
+import { formatDate } from "@/lib/utils";
 import type { User } from "@/lib/types";
 import UserProfileLink from "@/components/user/UserProfileLink";
 
@@ -286,8 +287,7 @@ const AdminUsersPage = () => {
           },
           {
             header: "Joined",
-            accessor: (user: User) =>
-              new Date(user.createdAt).toLocaleDateString(),
+            accessor: (user: User) => formatDate(new Date(user.createdAt)),
             className: "hidden md:table-cell",
           },
           {

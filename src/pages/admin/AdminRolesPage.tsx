@@ -1,6 +1,7 @@
 import { Shield, User, Crown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { formatDate } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -133,7 +134,7 @@ const AdminRolesPage = () => {
                           {user.email}
                         </p>
                         <p className="text-xs text-gray-400">
-                          Joined {user.joinDate.toLocaleDateString()}
+                          Joined {formatDate(user.joinDate)}
                         </p>
                       </div>
                     </div>

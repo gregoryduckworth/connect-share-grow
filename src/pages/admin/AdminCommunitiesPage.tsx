@@ -13,6 +13,7 @@ import CommunityRejectionDialog from "@/components/admin/CommunityRejectionDialo
 import CommunitySuspendDialog from "@/components/admin/CommunitySuspendDialog";
 import CommunityActivateDialog from "@/components/admin/CommunityActivateDialog";
 import { api } from "@/lib/api";
+import { formatDate, formatNumber } from "@/lib/utils";
 import type { Community as ApiCommunity } from "@/lib/types";
 
 interface Community {
@@ -292,7 +293,7 @@ const AdminCommunitiesPage = () => {
     {
       header: "Requested",
       accessor: (community: PendingCommunity) =>
-        community.requestedAt.toLocaleDateString(),
+        formatDate(community.requestedAt),
     },
     {
       header: "Actions",
@@ -366,7 +367,7 @@ const AdminCommunitiesPage = () => {
         <div className="flex items-center gap-1">
           <Users className="h-4 w-4 text-purple-400" />
           <span className="font-semibold">
-            {community.memberCount.toLocaleString()}
+            {formatNumber(community.memberCount)}
           </span>
         </div>
       ),

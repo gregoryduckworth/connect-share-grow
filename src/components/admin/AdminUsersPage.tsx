@@ -18,6 +18,7 @@ import RoleChangeDialog from "@/components/admin/RoleChangeDialog";
 import AdminTablePagination from "@/components/admin/AdminTablePagination";
 import { USERS_DATA } from "@/lib/backend/data/users";
 import { User } from "@/lib/types";
+import { formatDate } from "@/lib/utils";
 
 const AdminUsersPage = () => {
   console.log("AdminUsersPage rendering...");
@@ -121,7 +122,7 @@ const AdminUsersPage = () => {
                   {user.email}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {user.createdAt.toLocaleDateString()}
+                  {formatDate(user.createdAt)}
                 </TableCell>
                 <TableCell>
                   <Badge

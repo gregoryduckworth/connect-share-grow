@@ -1,9 +1,11 @@
 import { FC } from "react";
 import { PostDetailReply } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
+import AppAvatar from "@/components/common/AppAvatar";
 import { User, Heart, Reply, Lock, Unlock } from "lucide-react";
 import UserProfileLink from "@/components/user/UserProfileLink";
+import { formatDate } from "@/lib/utils";
+import ReplyForm from "@/components/post/ReplyForm";
 
 interface PostReplyProps {
   reply: PostDetailReply;
@@ -46,11 +48,11 @@ export const PostReply: FC<PostReplyProps> = ({
     >
       <div className="pt-4 pb-4 px-6">
         <div className="flex gap-3">
-          <Avatar className="h-10 w-10 bg-social-primary text-white">
+          <AppAvatar size="h-10 w-10">
             <div className="flex h-full w-full items-center justify-center">
               <User className="h-5 w-5" />
             </div>
-          </Avatar>
+          </AppAvatar>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2 justify-between">
               <div className="flex items-center gap-2">
@@ -59,7 +61,7 @@ export const PostReply: FC<PostReplyProps> = ({
                   userName={reply.userName}
                 />
                 <span className="text-sm text-gray-400 font-normal">
-                  {reply.timestamp.toLocaleDateString()}
+                  {formatDate(reply.timestamp)}
                 </span>
               </div>
               <div className="flex gap-2 items-center">
@@ -134,36 +136,18 @@ export const PostReply: FC<PostReplyProps> = ({
               )}
             </div>
             {replyToId === reply.id && !postLocked && !reply.isLocked && (
-              <div className="mt-4 flex gap-3">
-                <Avatar className="h-8 w-8 bg-social-primary text-white">
-                  <div className="flex h-full w-full items-center justify-center">
-                    <User className="h-4 w-4" />
-                  </div>
-                </Avatar>
-                <div className="flex-1 flex gap-3">
-                  <textarea
-                    placeholder={`Reply to ${
-                      reply.userName || reply.author
-                    }...`}
-                    value={replyContent[reply.id] || ""}
-                    onChange={(e) =>
-                      setReplyContent((prev) => ({
-                        ...prev,
-                        [reply.id]: e.target.value,
-                      }))
-                    }
-                    className="flex-1 border rounded p-2"
-                    rows={2}
-                  />
-                  <Button
-                    onClick={() => handleSubmitReply(reply.id)}
-                    disabled={!replyContent[reply.id]?.trim()}
-                    size="sm"
-                    className="self-end"
-                  >
-                    Reply
-                  </Button>
-                </div>
+              <div className="mt-4">
+                <ReplyForm
+                  value={replyContent[reply.id] || ""}
+                  onChange={(val) =>
+                    setReplyContent((prev) => ({ ...prev, [reply.id]: val }))
+                  }
+                  onSubmit={() => handleSubmitReply(reply.id)}
+                  disabled={false}
+                  placeholder={`Reply to ${reply.userName || reply.author}...`}
+                  avatarSize="h-8 w-8"
+                  buttonLabel="Reply"
+                />
               </div>
             )}
             {/* Render nested replies */}

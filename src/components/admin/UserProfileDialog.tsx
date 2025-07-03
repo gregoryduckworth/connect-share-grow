@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, Users, Shield, AlertTriangle } from "lucide-react";
 import type { User } from "@/lib/types";
+import { formatDate } from "@/lib/utils";
 
 interface UserProfileDialogProps {
   user: {
@@ -117,11 +118,11 @@ const UserProfileDialog = ({
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Joined:</span>
-                <span>{user.createdAt.toLocaleDateString()}</span>
+                <span>{formatDate(user.createdAt)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Last Active:</span>
-                <span>{userStats.lastActive.toLocaleDateString()}</span>
+                <span>{formatDate(userStats.lastActive)}</span>
               </div>
             </CardContent>
           </Card>
@@ -145,7 +146,7 @@ const UserProfileDialog = ({
                 {user.suspendedAt && (
                   <div className="flex justify-between">
                     <span className="font-medium">Suspended Date:</span>
-                    <span>{user.suspendedAt.toLocaleDateString()}</span>
+                    <span>{formatDate(user.suspendedAt)}</span>
                   </div>
                 )}
                 {user.suspendedBy && (

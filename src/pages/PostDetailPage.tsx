@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar } from "@/components/ui/avatar";
+import AppAvatar from "@/components/common/AppAvatar";
 import {
   Heart,
   MessageSquare,
@@ -35,46 +35,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { REPLIES_DATA } from "@/lib/backend/data/replies";
 import { USERS_DATA } from "@/lib/backend/data/users";
 import PostReply from "@/components/post/PostReply";
-
-// Utility to build nested reply tree from flat REPLIES_DATA
-function buildReplyTree(postId: string): PostDetailReply[] {
-  const flatReplies = REPLIES_DATA.filter((r) => r.postId === postId);
-  const idToReply: { [id: string]: PostDetailReply } = {};
-  flatReplies.forEach((r) => {
-    idToReply[r.id] = {
-      id: r.id,
-      author: r.author,
-      content: r.content,
-      timestamp: r.createdAt,
-      likes: r.likes,
-      isLiked: false,
-      isLocked: false,
-      parentId: r.parentReplyId || undefined,
-      replies: [],
-    };
-  });
-  const rootReplies: PostDetailReply[] = [];
-  Object.values(idToReply).forEach((reply) => {
-    if (reply.parentId) {
-      idToReply[reply.parentId]?.replies.push(reply);
-    } else {
-      rootReplies.push(reply);
-    }
-  });
-  return rootReplies;
-}
-
-// Utility to recursively map userName into replies
-function mapUserNamesToReplies(replies: PostDetailReply[]): PostDetailReply[] {
-  return replies.map((reply) => {
-    const user = USERS_DATA.find((u) => u.id === reply.author);
-    return {
-      ...reply,
-      userName: user?.name || undefined,
-      replies: mapUserNamesToReplies(reply.replies || []),
-    };
-  });
-}
+import ReplyForm from "@/components/post/ReplyForm";
+import {
+  formatDate,
+  buildReplyTree,
+  mapUserNamesToReplies,
+  lockReplyRecursive,
+  unlockReplyRecursive,
+} from "@/lib/utils";
+import { useReportModal } from "@/hooks/useReportModal";
 
 const PostDetailPage = () => {
   const { communityId, postId } = useParams();
@@ -86,14 +55,8 @@ const PostDetailPage = () => {
     {}
   );
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [reportModalOpen, setReportModalOpen] = useState(false);
-  const [reportContext, setReportContext] = useState<{
-    type: "post" | "reply";
-    postId: string;
-    replyId?: string;
-    communityId?: string;
-    originalContent?: string;
-  } | null>(null);
+  const { reportModalOpen, reportContext, openReportModal, closeReportModal } =
+    useReportModal();
 
   const [post, setPost] = useState<PostDetailData | null>(null);
   const isModerator = checkIsModerator();
@@ -102,7 +65,10 @@ const PostDetailPage = () => {
     if (postId) {
       api.getPostDetail(postId).then((postData) => {
         // Attach nested replies for this post
-        const replies = buildReplyTree(postId);
+        const replies = buildReplyTree(
+          postId,
+          REPLIES_DATA.filter((r) => r.postId === postId)
+        );
         // Map userName into post and replies
         const user = USERS_DATA.find((u) => u.id === postData?.author);
         setPost(
@@ -217,12 +183,6 @@ const PostDetailPage = () => {
     });
   };
 
-  const openReportModal = (context: typeof reportContext) => {
-    setReportContext(context);
-    setReportModalOpen(true);
-  };
-  const closeReportModal = () => setReportModalOpen(false);
-
   // Helper functions for locking/unlocking replies
   const handleLockReply = (replyId: string) => {
     setPost((prev) =>
@@ -244,26 +204,6 @@ const PostDetailPage = () => {
         : prev
     );
   };
-  function lockReplyRecursive(
-    replies: PostDetailReply[],
-    replyId: string
-  ): PostDetailReply[] {
-    return replies.map((r) =>
-      r.id === replyId
-        ? { ...r, isLocked: true, lockReason: "Locked by moderator" }
-        : { ...r, replies: lockReplyRecursive(r.replies, replyId) }
-    );
-  }
-  function unlockReplyRecursive(
-    replies: PostDetailReply[],
-    replyId: string
-  ): PostDetailReply[] {
-    return replies.map((r) =>
-      r.id === replyId
-        ? { ...r, isLocked: false, lockReason: undefined }
-        : { ...r, replies: unlockReplyRecursive(r.replies, replyId) }
-    );
-  }
 
   if (!post) {
     return (
@@ -335,11 +275,11 @@ const PostDetailPage = () => {
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12 bg-social-primary text-white">
+                <AppAvatar size="h-12 w-12">
                   <div className="flex h-full w-full items-center justify-center">
                     <User className="h-6 w-6" />
                   </div>
-                </Avatar>
+                </AppAvatar>
                 <div>
                   <div className="flex items-center gap-2">
                     <h1 className="text-2xl font-bold" data-testid="post-title">
@@ -367,7 +307,7 @@ const PostDetailPage = () => {
                       userId={post.author}
                       userName={post.userName}
                     />{" "}
-                    • {post.timestamp.toLocaleDateString()}
+                    • {formatDate(post.timestamp)}
                   </p>
                 </div>
               </div>
@@ -537,31 +477,17 @@ const PostDetailPage = () => {
           {!post.isLocked && !post.commentsLocked && (
             <Card className="ml-4" data-testid="main-reply-form">
               <CardContent className="pt-4">
-                <div className="flex gap-3">
-                  <Avatar className="h-10 w-10 bg-social-primary text-white">
-                    <div className="flex h-full w-full items-center justify-center">
-                      <User className="h-5 w-5" />
-                    </div>
-                  </Avatar>
-                  <div className="flex-1 flex gap-3">
-                    <Textarea
-                      placeholder="Write a reply..."
-                      value={newReply}
-                      onChange={(e) => setNewReply(e.target.value)}
-                      className="flex-1"
-                      rows={3}
-                      data-testid="main-reply-input"
-                    />
-                    <Button
-                      onClick={() => handleSubmitReply()}
-                      disabled={!newReply.trim()}
-                      className="self-end"
-                      data-testid="main-reply-submit-btn"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                <ReplyForm
+                  value={newReply}
+                  onChange={setNewReply}
+                  onSubmit={() => handleSubmitReply()}
+                  disabled={false}
+                  placeholder="Write a reply..."
+                  avatarSize="h-10 w-10"
+                  buttonLabel="Reply"
+                  dataTestIdInput="main-reply-input"
+                  dataTestIdButton="main-reply-submit-btn"
+                />
               </CardContent>
             </Card>
           )}
