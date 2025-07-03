@@ -19,6 +19,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showSuspensionDialog, setShowSuspensionDialog] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -38,11 +40,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Check for existing session
     const storedUser = localStorage.getItem('auth_user');
     const sessionExpiry = localStorage.getItem('auth_expiry');
+    const storedToken = localStorage.getItem('auth_token');
+    const storedRefreshToken = localStorage.getItem('auth_refresh_token');
 
     if (storedUser && sessionExpiry) {
       const expiryDate = new Date(sessionExpiry);
       if (expiryDate > new Date()) {
         setUser(JSON.parse(storedUser));
+        setToken(storedToken || null);
+        setRefreshToken(storedRefreshToken || null);
       } else {
         // Session expired
         handleSessionExpiry();
@@ -61,14 +67,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (userData && password === 'password123') {
         const user: User = userData;
         setUser(user);
-
+        // Simulate real backend: set fake tokens
+        const fakeToken = 'mock-jwt-token';
+        const fakeRefreshToken = 'mock-refresh-token';
+        setToken(fakeToken);
+        setRefreshToken(fakeRefreshToken);
         // Set session with 24-hour expiry
         const expiryDate = new Date();
         expiryDate.setHours(expiryDate.getHours() + 24);
-
         localStorage.setItem('auth_user', JSON.stringify(user));
         localStorage.setItem('auth_expiry', expiryDate.toISOString());
-
+        localStorage.setItem('auth_token', fakeToken);
+        localStorage.setItem('auth_refresh_token', fakeRefreshToken);
         // Show suspension dialog if user is suspended
         if (user.isSuspended) {
           setShowSuspensionDialog(true);
@@ -119,8 +129,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = useCallback(() => {
     setUser(null);
+    setToken(null);
+    setRefreshToken(null);
     localStorage.removeItem('auth_user');
     localStorage.removeItem('auth_expiry');
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_refresh_token');
     toast({
       title: 'Logged out',
       description: 'You have been successfully logged out.',
@@ -138,28 +152,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     [user],
   );
 
+  // Stub for refreshAuthToken (to be implemented with real backend)
+  const refreshAuthToken = useCallback(async () => {
+    // Example: call backend to refresh token using refreshToken
+    // For now, just log and do nothing
+    if (!refreshToken) return;
+    // const response = await api.refreshToken(refreshToken);
+    // setToken(response.token);
+    // localStorage.setItem('auth_token', response.token);
+    console.log('Refreshing token with:', refreshToken);
+  }, [refreshToken]);
+
   // Memoize context value
   const contextValue = useMemo(
     () => ({
       user,
+      token,
+      refreshToken,
       isLoading,
       authError,
       clearAuthError,
       login,
       register,
       logout,
+      refreshAuthToken,
       isAdmin,
       isModerator,
       canPost,
     }),
     [
       user,
+      token,
+      refreshToken,
       isLoading,
       authError,
       clearAuthError,
       login,
       register,
       logout,
+      refreshAuthToken,
       isAdmin,
       isModerator,
       canPost,
