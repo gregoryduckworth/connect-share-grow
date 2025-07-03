@@ -43,6 +43,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { USERS_DATA } from "@/lib/backend/data/users";
 import { useDialog } from "@/hooks/useDialog";
 import { formatNumber } from "@/lib/utils";
+import { InfoBadge } from "@/components/common/InfoBadge";
 
 const ModeratePage = () => {
   const { communityId } = useParams();
@@ -267,13 +268,14 @@ const ModeratePage = () => {
               {community.name}
             </p>
           </div>
-          <Badge
+          <InfoBadge
+            type="category"
             className="bg-social-primary"
             data-testid="moderator-panel-badge"
+            icon={<Settings className="h-4 w-4 mr-1" />}
           >
-            <Settings className="h-4 w-4 mr-1" />
             Moderator Panel
-          </Badge>
+          </InfoBadge>
         </div>
 
         {/* Pending Moderator Removal Requests Alert */}

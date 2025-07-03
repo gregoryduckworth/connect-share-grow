@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { Shield, Search, User as UserIcon, AlertTriangle } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
@@ -16,6 +15,7 @@ import { api } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 import type { User } from "@/lib/types";
 import UserProfileLink from "@/components/user/UserProfileLink";
+import { StatusBadge } from "@/components/common/StatusBadge";
 
 const AdminUsersPage = () => {
   const { toast } = useToast();
@@ -293,37 +293,26 @@ const AdminUsersPage = () => {
           {
             header: "Role",
             accessor: (user: User) => (
-              <Badge
+              <StatusBadge
+                status={user.role}
                 className={
-                  user.role === "admin"
-                    ? "bg-social-primary"
-                    : user.role === "moderator"
-                    ? "bg-social-secondary"
-                    : "bg-slate-400"
+                  isCurrentUser(user.email)
+                    ? "border-2 border-blue-500"
+                    : undefined
                 }
-                data-testid={`user-role-badge-${user.id}`}
               >
-                {user.role === "admin" && <Shield className="h-3 w-3 mr-1" />}
+                {user.role === "admin" && (
+                  <Shield className="h-3 w-3 mr-1 inline" />
+                )}{" "}
                 {user.role}
                 {isCurrentUser(user.email) && " (You)"}
-              </Badge>
+              </StatusBadge>
             ),
           },
           {
             header: "Status",
             accessor: (user: User) => (
-              <Badge
-                className={
-                  getUserStatus(user) === "active"
-                    ? "bg-green-500"
-                    : getUserStatus(user) === "suspended"
-                    ? "bg-orange-500"
-                    : "bg-red-500"
-                }
-                data-testid={`user-status-badge-${user.id}`}
-              >
-                {getUserStatus(user)}
-              </Badge>
+              <StatusBadge status={getUserStatus(user)} />
             ),
           },
           {

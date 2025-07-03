@@ -19,6 +19,7 @@ import type { User } from "@/lib/types";
 import AppAvatar from "@/components/common/AppAvatar";
 import { useDialog } from "@/hooks/useDialog";
 import { formatDate } from "@/lib/utils"; // Import formatDate
+import { InfoBadge } from "@/components/common/InfoBadge";
 
 export interface UserProfileDialogProps {
   userId: string;
@@ -228,9 +229,9 @@ const UserProfileDialog = ({
               <h3 className="font-semibold mb-3">Interests</h3>
               <div className="flex flex-wrap gap-2">
                 {interests.map((interest, index) => (
-                  <Badge key={index} variant="secondary">
+                  <InfoBadge key={index} type="tag">
                     {interest}
-                  </Badge>
+                  </InfoBadge>
                 ))}
               </div>
             </div>

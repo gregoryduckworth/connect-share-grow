@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { Shield, Search, User as UserIcon } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
@@ -19,6 +18,7 @@ import AdminTablePagination from "@/components/admin/AdminTablePagination";
 import { USERS_DATA } from "@/lib/backend/data/users";
 import { User } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
+import { StatusBadge } from "@/components/common/StatusBadge";
 
 const AdminUsersPage = () => {
   console.log("AdminUsersPage rendering...");
@@ -125,38 +125,31 @@ const AdminUsersPage = () => {
                   {formatDate(user.createdAt)}
                 </TableCell>
                 <TableCell>
-                  <Badge
+                  <StatusBadge
+                    status={user.role}
                     className={
-                      user.role === "admin"
-                        ? "bg-social-primary"
-                        : user.role === "moderator"
-                        ? "bg-social-secondary"
-                        : "bg-slate-400"
+                      isCurrentUser(user.email)
+                        ? "border-2 border-blue-500"
+                        : undefined
                     }
                   >
                     {user.role === "admin" && (
-                      <Shield className="h-3 w-3 mr-1" />
-                    )}
+                      <Shield className="h-3 w-3 mr-1 inline" />
+                    )}{" "}
                     {user.role}
                     {isCurrentUser(user.email) && " (You)"}
-                  </Badge>
+                  </StatusBadge>
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    className={
+                  <StatusBadge
+                    status={
                       user.isActive
-                        ? "bg-green-500"
+                        ? "active"
                         : user.isSuspended
-                        ? "bg-orange-500"
-                        : "bg-red-500"
+                        ? "suspended"
+                        : "banned"
                     }
-                  >
-                    {user.isActive
-                      ? "Active"
-                      : user.isSuspended
-                      ? "Suspended"
-                      : "Banned"}
-                  </Badge>
+                  />
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">

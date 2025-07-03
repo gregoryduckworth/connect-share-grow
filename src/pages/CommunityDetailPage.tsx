@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { USERS_DATA } from "@/lib/backend/data/users";
 import { formatNumber } from "@/lib/utils";
+import { InfoBadge } from "@/components/common/InfoBadge";
 
 const CommunityDetailPage = () => {
   const { communitySlug } = useParams<{ communitySlug: string }>();
@@ -234,14 +235,14 @@ const CommunityDetailPage = () => {
                 data-testid="community-detail-tags"
               >
                 {community.tags.map((tag, index) => (
-                  <Badge
+                  <InfoBadge
                     key={index}
-                    variant="secondary"
+                    type="tag"
                     data-testid={`community-detail-tag-${tag}`}
+                    icon={<Tag className="h-3 w-3 mr-1" />}
                   >
-                    <Tag className="h-3 w-3 mr-1" />
                     {tag}
-                  </Badge>
+                  </InfoBadge>
                 ))}
               </div>
 

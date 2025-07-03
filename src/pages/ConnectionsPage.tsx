@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Search, Users, MessageCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import UserProfileDialog from "@/components/user/UserProfileDialog";
@@ -14,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Connection, ConnectionRequest } from "@/lib/types";
 import { useDialog } from "@/hooks/useDialog";
 import { formatDate } from "@/lib/utils";
+import { InfoBadge } from "@/components/common/InfoBadge";
 
 const ConnectionsPage = () => {
   const { toast } = useToast();
@@ -211,12 +211,12 @@ const ConnectionsPage = () => {
                 }
                 description={connection.bio}
                 headerRight={
-                  <Badge
-                    variant="outline"
+                  <InfoBadge
+                    type="connection"
                     className="text-xs whitespace-nowrap"
                   >
                     {connection.mutualConnections} mutual
-                  </Badge>
+                  </InfoBadge>
                 }
                 contentTop={
                   <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
@@ -264,12 +264,12 @@ const ConnectionsPage = () => {
                 }
                 description={connection.bio}
                 headerRight={
-                  <Badge
-                    variant="outline"
+                  <InfoBadge
+                    type="connection"
                     className="text-xs whitespace-nowrap"
                   >
                     {connection.mutualConnections} mutual
-                  </Badge>
+                  </InfoBadge>
                 }
                 contentTop={
                   <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">

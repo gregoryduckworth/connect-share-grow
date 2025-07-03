@@ -15,6 +15,8 @@ import CommunityActivateDialog from "@/components/admin/CommunityActivateDialog"
 import { api } from "@/lib/api";
 import { formatDate, formatNumber } from "@/lib/utils";
 import type { Community as ApiCommunity } from "@/lib/types";
+import { InfoBadge } from "@/components/common/InfoBadge";
+import { StatusBadge } from "@/components/common/StatusBadge";
 
 interface Community {
   id: string;
@@ -282,12 +284,9 @@ const AdminCommunitiesPage = () => {
     {
       header: "Category",
       accessor: (community: PendingCommunity) => (
-        <Badge
-          variant="outline"
-          className="bg-purple-100 text-purple-700 border-purple-200 group-hover:bg-purple-200"
-        >
+        <InfoBadge type="category" className="group-hover:bg-purple-200">
           {community.category}
-        </Badge>
+        </InfoBadge>
       ),
     },
     {
@@ -353,12 +352,9 @@ const AdminCommunitiesPage = () => {
     {
       header: "Category",
       accessor: (community: Community) => (
-        <Badge
-          variant="outline"
-          className="bg-purple-100 text-purple-700 border-purple-200 group-hover:bg-purple-200"
-        >
+        <InfoBadge type="category" className="group-hover:bg-purple-200">
           {community.category}
-        </Badge>
+        </InfoBadge>
       ),
     },
     {
@@ -386,17 +382,7 @@ const AdminCommunitiesPage = () => {
     {
       header: "Status",
       accessor: (community: Community) => (
-        <Badge
-          className={
-            community.status === "active"
-              ? "bg-green-500 text-white"
-              : community.status === "suspended"
-              ? "bg-red-500 text-white"
-              : "bg-orange-500 text-white"
-          }
-        >
-          {community.status}
-        </Badge>
+        <StatusBadge status={community.status} />
       ),
     },
     {

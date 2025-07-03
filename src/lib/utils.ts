@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { PostDetailReply } from "@/lib/types";
+import { PostDetailReply, Reply } from "@/lib/types";
 import { USERS_DATA } from "@/lib/backend/data/users";
 
 export function cn(...inputs: ClassValue[]) {
@@ -31,7 +31,7 @@ export function formatNumber(value: number): string {
 
 export function buildReplyTree(
   postId: string,
-  flatReplies: any[]
+  flatReplies: Reply[]
 ): PostDetailReply[] {
   const idToReply: { [id: string]: PostDetailReply } = {};
   flatReplies.forEach((r) => {
@@ -42,7 +42,7 @@ export function buildReplyTree(
       timestamp: r.createdAt,
       likes: r.likes,
       isLiked: false,
-      isLocked: false,
+      isLocked: r.isLocked,
       parentId: r.parentReplyId || undefined,
       replies: [],
     };

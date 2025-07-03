@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, Users, Shield, AlertTriangle } from "lucide-react";
 import type { User } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
+import { StatusBadge } from "@/components/common/StatusBadge";
 
 interface UserProfileDialogProps {
   user: {
@@ -89,32 +90,14 @@ const UserProfileDialog = ({
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Role:</span>
-                <Badge
-                  className={
-                    user.role === "admin"
-                      ? "bg-social-primary"
-                      : user.role === "moderator"
-                      ? "bg-social-secondary"
-                      : "bg-slate-400"
-                  }
-                >
+                <StatusBadge status={user.role}>
                   {user.role === "admin" && <Shield className="h-3 w-3 mr-1" />}
                   {user.role}
-                </Badge>
+                </StatusBadge>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Status:</span>
-                <Badge
-                  className={
-                    getUserStatus(user) === "active"
-                      ? "bg-green-500"
-                      : getUserStatus(user) === "suspended"
-                      ? "bg-orange-500"
-                      : "bg-red-500"
-                  }
-                >
-                  {getUserStatus(user)}
-                </Badge>
+                <StatusBadge status={getUserStatus(user)} />
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Joined:</span>

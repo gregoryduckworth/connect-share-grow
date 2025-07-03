@@ -10,6 +10,7 @@ import UserProfileLink from "@/components/user/UserProfileLink";
 import { CommunityPostProps } from "@/lib/types";
 import { useDialog } from "@/hooks/useDialog";
 import { formatDate } from "@/lib/utils";
+import { InfoBadge } from "@/components/common/InfoBadge";
 
 const CommunityPost = ({
   post,
@@ -236,13 +237,13 @@ const CommunityPost = ({
           data-testid="community-post-tags"
         >
           {post.tags.map((tag, index) => (
-            <Badge
+            <InfoBadge
               key={index}
-              variant="secondary"
+              type="tag"
               data-testid={`community-post-tag-${tag}`}
             >
               {tag}
-            </Badge>
+            </InfoBadge>
           ))}
         </div>
 

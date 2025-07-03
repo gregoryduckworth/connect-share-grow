@@ -44,6 +44,7 @@ import {
   unlockReplyRecursive,
 } from "@/lib/utils";
 import { useReportModal } from "@/hooks/useReportModal";
+import { InfoBadge } from "@/components/common/InfoBadge";
 
 const PostDetailPage = () => {
   const { communityId, postId } = useParams();
@@ -411,13 +412,13 @@ const PostDetailPage = () => {
 
             <div className="flex flex-wrap gap-2 mb-4" data-testid="post-tags">
               {post.tags.map((tag, index) => (
-                <Badge
+                <InfoBadge
                   key={index}
-                  variant="secondary"
+                  type="tag"
                   data-testid={`post-tag-${tag}`}
                 >
                   {tag}
-                </Badge>
+                </InfoBadge>
               ))}
             </div>
 
