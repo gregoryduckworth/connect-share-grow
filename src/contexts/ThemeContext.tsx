@@ -1,22 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { setLanguage, getCurrentLanguage } from "@/lib/i18n";
-
-interface ThemeContextType {
-  theme: "light" | "dark" | "system";
-  language: string;
-  setTheme: (theme: "light" | "dark" | "system") => void;
-  updateLanguage: (language: string) => void;
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
-};
+import { ThemeContext } from "./ThemeContextBase";
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -56,18 +55,19 @@ const ProfileSetup = () => {
   // Get the user data from the previous step
   const userData = location.state?.userData;
 
-  // If no user data is present, redirect to the registration page
-  if (!userData) {
-    navigate("/register");
-    return null;
-  }
-
+  // Always initialize the form hook (not conditionally)
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       interests: [],
     },
   });
+
+  // If no user data is present, redirect to the registration page
+  if (!userData) {
+    navigate("/register");
+    return null;
+  }
 
   const onSubmit = async (data: ProfileFormData) => {
     setLoading(true);

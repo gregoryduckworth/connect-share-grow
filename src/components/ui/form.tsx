@@ -164,8 +164,8 @@ const FormMessage = React.forwardRef<
 })
 FormMessage.displayName = "FormMessage"
 
+// Only export React components and hooks, do not export useFormField separately
 export {
-  useFormField,
   Form,
   FormItem,
   FormLabel,

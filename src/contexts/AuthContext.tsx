@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { AlertTriangle } from "lucide-react";
@@ -12,24 +12,7 @@ import {
 import { t } from "@/lib/i18n";
 import { mockUsers } from "@/lib/api";
 import { User } from "@/lib/types";
-
-interface AuthContextType {
-  user: User | null;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (
-    email: string,
-    password: string,
-    name: string,
-    language: string
-  ) => Promise<boolean>;
-  logout: () => void;
-  isAdmin: () => boolean;
-  isModerator: () => boolean;
-  canPost: () => boolean;
-}
-
-export const AuthContext = createContext<AuthContextType | null>(null);
+import { AuthContext, AuthContextType } from "./AuthContextBase";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
