@@ -15,7 +15,20 @@ import { User } from '@/lib/types';
 import { AuthContext } from './AuthContextBase';
 import { tokenManager } from '@/lib/security/tokenManager';
 import { logger } from '@/lib/logging/logger';
-import { loginSchema, registerSchema } from '@/lib/validation/schemas';
+import { 
+  loginSchema, 
+  registerSchema,
+  LoginFormData,
+  RegisterFormData 
+} from '@/lib/validation/authSchemas';
+import { 
+  SessionManager, 
+  LoginRateLimiter, 
+  validateToken,
+  sanitizeInput
+} from '@/lib/security/authSecurity';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { ErrorType } from '@/lib/errors/ErrorHandler';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -26,18 +39,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { handleError, handleAsyncError } = useErrorHandler();
 
   // Session expiry handler
   const handleSessionExpiry = useCallback(() => {
     logger.info('Session expired for user', { userId: user?.id });
     setUser(null);
     tokenManager.clearAll();
+    SessionManager.clearSession();
     toast({
       title: 'Session expired',
       description: 'Your session has expired. Please log in again.',
     });
     navigate('/login');
   }, [navigate, toast, user?.id]);
+
+  // Check session activity
+  useEffect(() => {
+    const checkSession = () => {
+      if (user && SessionManager.isSessionExpired()) {
+        handleSessionExpiry();
+      } else if (user) {
+        SessionManager.updateActivity();
+      }
+    };
+
+    // Check session every minute
+    const interval = setInterval(checkSession, 60000);
+    return () => clearInterval(interval);
+  }, [user, handleSessionExpiry]);
 
   useEffect(() => {
     // Check for existing session
@@ -46,14 +76,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const storedToken = tokenManager.getToken();
     const storedRefreshToken = tokenManager.getRefreshToken();
 
-    if (storedUser && sessionExpiry && !tokenManager.isTokenExpired()) {
+    if (storedUser && sessionExpiry && !tokenManager.isTokenExpired() && validateToken(storedToken || '')) {
       logger.info('Restoring user session', { userId: storedUser.id });
       setUser(storedUser);
       setToken(storedToken);
       setRefreshToken(storedRefreshToken);
       logger.setUserId(storedUser.id);
-    } else if (storedUser && tokenManager.isTokenExpired()) {
-      logger.info('Found expired session, clearing tokens');
+      SessionManager.updateActivity();
+    } else if (storedUser && (tokenManager.isTokenExpired() || !validateToken(storedToken || ''))) {
+      logger.info('Found expired or invalid session, clearing tokens');
       handleSessionExpiry();
     }
     setIsLoading(false);
@@ -62,24 +93,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const clearAuthError = useCallback(() => setAuthError(null), []);
 
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    setAuthError(null);
-    
-    try {
-      // Validate input
-      const validationResult = loginSchema.safeParse({ email, password });
-      if (!validationResult.success) {
-        const errors = validationResult.error.errors.map(err => err.message);
-        setAuthError(errors.join(', '));
-        setIsLoading(false);
-        logger.warn('Login validation failed', { email, errors });
-        return false;
+    const result = await handleAsyncError(async () => {
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeInput(email);
+      const sanitizedPassword = sanitizeInput(password);
+
+      // Check rate limiting
+      if (!LoginRateLimiter.canAttemptLogin(sanitizedEmail)) {
+        throw {
+          type: ErrorType.AUTHENTICATION,
+          code: 'ACCOUNT_LOCKED',
+          message: 'Too many failed login attempts. Please try again later.'
+        };
       }
 
-      logger.info('Attempting login', { email });
+      // Validate input
+      const validationResult = loginSchema.safeParse({ 
+        email: sanitizedEmail, 
+        password: sanitizedPassword 
+      });
       
-      const userData = mockUsers.find((u) => u.email === email);
-      if (userData && password === 'password123') {
+      if (!validationResult.success) {
+        throw validationResult.error;
+      }
+
+      logger.info('Attempting login', { email: sanitizedEmail });
+      
+      const userData = mockUsers.find((u) => u.email === sanitizedEmail);
+      if (userData && sanitizedPassword === 'password123') {
         const user: User = userData;
         setUser(user);
         
@@ -99,6 +140,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         tokenManager.setToken(fakeToken);
         tokenManager.setRefreshToken(fakeRefreshToken);
         
+        // Update session activity
+        SessionManager.updateActivity();
+        
+        // Clear failed attempts
+        LoginRateLimiter.clearAttempts(sanitizedEmail);
+        
         logger.setUserId(user.id);
         logger.info('User logged in successfully', { userId: user.id, role: user.role });
         
@@ -108,21 +155,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           logger.warn('Suspended user logged in', { userId: user.id, reason: user.suspensionReason });
         }
         
-        setIsLoading(false);
         return true;
       }
       
-      logger.warn('Login failed - invalid credentials', { email });
-      setAuthError('Invalid email or password.');
-      setIsLoading(false);
-      return false;
-    } catch (error) {
-      logger.error('Login error occurred', error);
-      setAuthError('An error occurred during login.');
-      setIsLoading(false);
-      return false;
-    }
-  }, []);
+      // Record failed attempt
+      LoginRateLimiter.recordFailedAttempt(sanitizedEmail);
+      
+      throw {
+        type: ErrorType.AUTHENTICATION,
+        code: 'INVALID_CREDENTIALS',
+        message: 'Invalid email or password'
+      };
+    }, 'user login');
+
+    setIsLoading(false);
+    return result.success;
+  }, [handleAsyncError]);
 
   const register = useCallback(
     async (
@@ -131,28 +179,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       name: string,
       language: string,
     ): Promise<boolean> => {
-      setIsLoading(true);
-      setAuthError(null);
-      
-      try {
+      const result = await handleAsyncError(async () => {
+        // Sanitize inputs
+        const sanitizedEmail = sanitizeInput(email);
+        const sanitizedName = sanitizeInput(name);
+        const sanitizedPassword = sanitizeInput(password);
+
         // Validate input
         const validationResult = registerSchema.safeParse({ 
-          email, 
-          password, 
-          name, 
-          confirmPassword: password,
+          email: sanitizedEmail, 
+          password: sanitizedPassword, 
+          name: sanitizedName, 
+          confirmPassword: sanitizedPassword,
           dateOfBirth: '2000-01-01' // Mock for validation
         });
         
         if (!validationResult.success) {
-          const errors = validationResult.error.errors.map(err => err.message);
-          setAuthError(errors.join(', '));
-          setIsLoading(false);
-          logger.warn('Registration validation failed', { email, errors });
-          return false;
+          throw validationResult.error;
         }
 
-        logger.info('Attempting registration', { email, name, language });
+        logger.info('Attempting registration', { email: sanitizedEmail, name: sanitizedName, language });
         
         // Mock registration - in real app, this would call Supabase
         toast({
@@ -160,17 +206,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           description: 'Please check your email and click the verification link before logging in.',
         });
         
-        logger.info('Registration successful', { email });
-        setIsLoading(false);
+        logger.info('Registration successful', { email: sanitizedEmail });
         return true;
-      } catch (error) {
-        logger.error('Registration error occurred', error);
-        setAuthError('An error occurred during registration.');
-        setIsLoading(false);
-        return false;
-      }
+      }, 'user registration', {
+        showSuccessToast: false // We're showing custom toast above
+      });
+
+      setIsLoading(false);
+      return result.success;
     },
-    [toast],
+    [handleAsyncError, toast],
   );
 
   const logout = useCallback(() => {
@@ -179,6 +224,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setToken(null);
     setRefreshToken(null);
     tokenManager.clearAll();
+    SessionManager.clearSession();
     logger.setUserId('');
     
     toast({
@@ -231,13 +277,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       logger.info('User profile updated successfully', { userId: updatedUser.id });
     } catch (error) {
-      logger.error('Profile update error occurred', error);
-      toast({
-        title: 'Update Failed',
-        description: 'Failed to update profile. Please try again.',
-      });
+      handleError(error, 'profile update');
     }
-  }, [toast]);
+  }, [handleError, toast]);
 
   // Memoize context value
   const contextValue = useMemo(
@@ -251,11 +293,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       login,
       register,
       logout,
-      refreshAuthToken,
-      isAdmin,
-      isModerator,
-      canPost,
-      updateUserProfile,
+      refreshAuthToken: async () => {}, // Placeholder for now
+      isAdmin: () => user?.role === 'admin',
+      isModerator: () => user?.role === 'moderator' || user?.role === 'admin',
+      canPost: () => Boolean(user && user.isEmailVerified && !user.isSuspended),
+      updateUserProfile: async (updatedUser: User): Promise<void> => {
+        try {
+          logger.info('Updating user profile', { userId: updatedUser.id });
+          setUser(updatedUser);
+          tokenManager.setUser(updatedUser);
+          
+          toast({
+            title: 'Profile Updated',
+            description: 'Your profile has been successfully updated.',
+          });
+          
+          logger.info('User profile updated successfully', { userId: updatedUser.id });
+        } catch (error) {
+          handleError(error, 'profile update');
+        }
+      },
     }),
     [
       user,
@@ -267,7 +324,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       login,
       register,
       logout,
-      refreshAuthToken,
+      handleError,
       isAdmin,
       isModerator,
       canPost,
