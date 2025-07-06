@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,11 +18,6 @@ import { mockPendingModeratorRoleChanges } from "@/lib/api";
 import type { Community, ReportBase, PendingAdminRoleChange } from "@/lib/types";
 import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/useAuth";
-
-type PendingModeratorRoleChange = {
-  status: string;
-  communityName?: string;
-};
 
 const CommunitiesPage = () => {
   const { toast } = useToast();
