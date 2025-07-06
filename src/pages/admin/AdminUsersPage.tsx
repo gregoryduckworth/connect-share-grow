@@ -56,7 +56,7 @@ const AdminUsersPage = () => {
       try {
         const pendingChanges = await api.getPendingAdminRoleChanges();
         setPendingAdminRoleChanges(
-          pendingChanges.map((change) => ({
+          pendingChanges.map((change: any) => ({
             id: change.id,
             user: {
               id: change.user.id,

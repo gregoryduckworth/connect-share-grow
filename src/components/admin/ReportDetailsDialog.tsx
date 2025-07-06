@@ -24,32 +24,14 @@ import { logAdminAction } from "@/lib/admin-logger";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-interface Report {
-  id: string;
-  contentType: "post" | "reply" | "user";
-  contentId: string;
-  contentPreview: string;
-  reportedBy: string;
-  reason: string;
-  createdAt: Date;
-  status: "pending" | "reviewed";
-  originalContent?: {
-    title?: string;
-    community?: string;
-    parentPost?: string;
-    author?: string;
-    fullText: string;
-  };
-  originalLink?: string;
-}
+import { ReportBase } from "@/lib/types";
 
 interface ReportDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  report: Report | null;
-  onResolve: (reportId: string) => void;
-  onLockContent: (reportId: string) => void;
+  report: ReportBase | null;
+  onResolve?: (reportId: string) => void;
+  onLockContent?: (reportId: string) => void;
 }
 
 const ReportDetailsDialog = ({
@@ -67,12 +49,16 @@ const ReportDetailsDialog = ({
   if (!report) return null;
 
   const handleResolve = () => {
-    onResolve(report.id);
+    if (onResolve) {
+      onResolve(report.id);
+    }
     onClose();
   };
 
   const handleLockContent = () => {
-    onLockContent(report.id);
+    if (onLockContent) {
+      onLockContent(report.id);
+    }
     onClose();
   };
 
@@ -152,7 +138,6 @@ const ReportDetailsDialog = ({
     }
   };
 
-  // Prefer originalContent from report if available
   const getDetailedContent = () => {
     if (report.originalContent) {
       if (report.contentType === "post") {
@@ -440,20 +425,24 @@ const ReportDetailsDialog = ({
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            variant="outline"
-            className="border-orange-400 text-orange-500 hover:bg-orange-50"
-            onClick={handleLockContent}
-          >
-            <Lock className="h-4 w-4 mr-2" /> Lock Content
-          </Button>
-          <Button
-            variant="default"
-            className="bg-green-500 hover:bg-green-600"
-            onClick={handleResolve}
-          >
-            <Check className="h-4 w-4 mr-2" /> Mark Resolved
-          </Button>
+          {onLockContent && (
+            <Button
+              variant="outline"
+              className="border-orange-400 text-orange-500 hover:bg-orange-50"
+              onClick={handleLockContent}
+            >
+              <Lock className="h-4 w-4 mr-2" /> Lock Content
+            </Button>
+          )}
+          {onResolve && (
+            <Button
+              variant="default"
+              className="bg-green-500 hover:bg-green-600"
+              onClick={handleResolve}
+            >
+              <Check className="h-4 w-4 mr-2" /> Mark Resolved
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

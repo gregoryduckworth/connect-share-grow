@@ -1,3 +1,4 @@
+
 import {
   AnalyticsCommunity,
   AnalyticsDataPoint,
@@ -52,3 +53,46 @@ export const fetchAnalyticsData = async (): Promise<{
     chartData
   };
 };
+
+// Admin service functions
+export const adminService = {
+  getAdminRoles: async () => {
+    // Mock implementation
+    return [];
+  },
+  getPendingAdminRoleChanges: async () => {
+    return mockPendingModeratorRoleChanges;
+  },
+  getAnalyticsCommunities: async () => {
+    const data = await fetchAnalyticsData();
+    return data.communities;
+  },
+  getPlatformStats: async () => {
+    const data = await fetchAnalyticsData();
+    return data.platformStats;
+  },
+  getActivityData: async () => {
+    const data = await fetchAnalyticsData();
+    return data.activityData;
+  },
+  getSizeDistribution: async () => {
+    const data = await fetchAnalyticsData();
+    return data.chartData;
+  }
+};
+
+// Mock pending moderator role changes
+export const mockPendingModeratorRoleChanges = [
+  {
+    id: "change-1",
+    user: {
+      id: "user-1",
+      name: "John Doe",
+      email: "john@example.com",
+      role: "user" as const
+    },
+    requestedBy: "admin@example.com",
+    requestedAt: new Date(),
+    newRole: "admin" as const
+  }
+];

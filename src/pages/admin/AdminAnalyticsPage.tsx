@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -66,10 +67,6 @@ const AdminAnalyticsPage = () => {
     (c) => c.name === selectedCommunity
   );
 
-  const handleCommunitySelect = (communityName: string) => {
-    setSelectedCommunity(communityName);
-  };
-
   const COLORS = [
     "#0088FE",
     "#00C49F",
@@ -136,11 +133,11 @@ const AdminAnalyticsPage = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Total Reports</CardTitle>
+                <CardTitle>Active Users</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {platformStats?.totalReports || "Loading..."}
+                  {platformStats?.activeUsers || "Loading..."}
                 </div>
               </CardContent>
             </Card>
@@ -181,7 +178,11 @@ const AdminAnalyticsPage = () => {
                 </TableHeader>
                 <TableBody>
                   {topCommunities.map((community) => (
-                    <TableRow key={community.id}>
+                    <TableRow 
+                      key={community.id}
+                      className="cursor-pointer hover:bg-muted"
+                      onClick={() => setSelectedCommunity(community.name)}
+                    >
                       <TableCell>{community.name}</TableCell>
                       <TableCell>{community.members}</TableCell>
                       <TableCell>{community.posts}</TableCell>
@@ -206,11 +207,11 @@ const AdminAnalyticsPage = () => {
                     <p>Comments: {selectedCommunityData.comments}</p>
                   )}
                   {selectedCommunityData.activity !== undefined && (
-                    <p>Activity: {selectedCommunityData.activity}</p>
+                    <p>Activity: {selectedCommunityData.activity}%</p>
                   )}
                 </div>
               ) : (
-                <p className="text-muted-foreground">Select a community to view details.</p>
+                <p className="text-muted-foreground">Click on a community to view details.</p>
               )}
             </CardContent>
           </Card>
@@ -255,7 +256,7 @@ const AdminAnalyticsPage = () => {
                     fill="#8884d8"
                     label
                   >
-                    {chartData.map((entry, index) => (
+                    {chartData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>

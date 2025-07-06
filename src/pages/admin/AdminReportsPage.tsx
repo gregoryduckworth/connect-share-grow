@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Table,
@@ -32,11 +33,16 @@ const AdminReportsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedReport, setSelectedReport] = useState<ReportBase | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [reportToDelete, setReportToDelete] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     // Simulate fetching reports from an API
-    setReports(ADMIN_REPORTS_DATA);
+    const processedReports = ADMIN_REPORTS_DATA.map(report => ({
+      ...report,
+      status: report.status as "pending" | "reviewed" | "resolved"
+    }));
+    setReports(processedReports);
   }, []);
 
   const filteredReports = reports.filter(
@@ -79,6 +85,19 @@ const AdminReportsPage = () => {
       targetId: id,
       targetType: "report",
     });
+  };
+
+  const openDeleteDialog = (reportId: string) => {
+    setReportToDelete(reportId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (reportToDelete) {
+      handleDeleteReport(reportToDelete);
+      setReportToDelete(null);
+      setIsDeleteDialogOpen(false);
+    }
   };
 
   return (
@@ -153,7 +172,7 @@ const AdminReportsPage = () => {
                       variant="outline"
                       size="sm"
                       className="border-red-500 text-red-500 hover:bg-red-50"
-                      onClick={() => setIsDeleteDialogOpen(true)}
+                      onClick={() => openDeleteDialog(report.id)}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete
@@ -184,12 +203,7 @@ const AdminReportsPage = () => {
             <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-500 text-red-50"
-              onClick={() => {
-                if (selectedReport) {
-                  handleDeleteReport(selectedReport.id);
-                  setIsDeleteDialogOpen(false);
-                }
-              }}
+              onClick={confirmDelete}
             >
               Delete
             </AlertDialogAction>
@@ -201,6 +215,7 @@ const AdminReportsPage = () => {
         report={selectedReport}
         isOpen={!!selectedReport}
         onClose={() => setSelectedReport(null)}
+        onResolve={handleResolveReport}
       />
     </div>
   );
