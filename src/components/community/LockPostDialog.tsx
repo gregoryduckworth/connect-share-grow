@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Dialog,
@@ -17,22 +18,35 @@ interface LockPostDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (reason: string) => void;
-  postTitle: string;
-  contentType: "post" | "comments";
+  postTitle?: string;
+  contentType?: "post" | "comments";
+  lockReason?: string;
+  setLockReason?: (reason: string) => void;
+  title?: string;
+  description?: string;
+  lockReasonLabel?: string;
 }
 
 const LockPostDialog = ({
   isOpen,
   onClose,
   onConfirm,
-  postTitle,
-  contentType,
+  postTitle = "this content",
+  contentType = "post",
+  lockReason,
+  setLockReason,
+  title,
+  description,
+  lockReasonLabel,
 }: LockPostDialogProps) => {
-  const [reason, setReason] = useState("");
+  const [internalReason, setInternalReason] = useState("");
   const { toast } = useToast();
 
+  const currentReason = lockReason || internalReason;
+  const setCurrentReason = setLockReason || setInternalReason;
+
   const handleConfirm = () => {
-    if (!reason.trim()) {
+    if (!currentReason.trim()) {
       toast({
         title: "Reason required",
         description: "Please provide a reason for locking this content.",
@@ -40,13 +54,13 @@ const LockPostDialog = ({
       return;
     }
 
-    onConfirm(reason);
-    setReason("");
+    onConfirm(currentReason);
+    setCurrentReason("");
     onClose();
   };
 
   const handleClose = () => {
-    setReason("");
+    setCurrentReason("");
     onClose();
   };
 
@@ -60,23 +74,25 @@ const LockPostDialog = ({
             ) : (
               <Ban className="h-5 w-5" />
             )}
-            Lock {contentType === "post" ? "Post" : "Comments"}
+            {title || `Lock ${contentType === "post" ? "Post" : "Comments"}`}
           </DialogTitle>
           <DialogDescription>
-            You are about to lock{" "}
-            {contentType === "post" ? "the post" : "comments for"}: "{postTitle}
-            ". The author will be notified of this action.
+            {description || 
+              `You are about to lock ${contentType === "post" ? "the post" : "comments for"}: "${postTitle}". The author will be notified of this action.`
+            }
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="reason">Reason for locking *</Label>
+            <Label htmlFor="reason">
+              {lockReasonLabel || "Reason for locking *"}
+            </Label>
             <Textarea
               id="reason"
               placeholder={`Please provide a reason for locking this ${contentType}...`}
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              value={currentReason}
+              onChange={(e) => setCurrentReason(e.target.value)}
               rows={4}
             />
             <p className="text-sm text-muted-foreground">

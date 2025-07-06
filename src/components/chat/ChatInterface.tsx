@@ -7,22 +7,37 @@ import { Send } from "lucide-react";
 import { ChatMessage } from "@/lib/types";
 
 interface ChatInterfaceProps {
-  connectionId: string;
-  connectionName: string;
+  connectionId?: string;
+  connectionName?: string;
   chatId?: string;
+  chatName?: string;
+  chatType?: "individual" | "group";
+  participants?: string[];
+  currentUser?: string;
 }
 
-const ChatInterface = ({ connectionId, connectionName }: ChatInterfaceProps) => {
+const ChatInterface = ({ 
+  connectionId, 
+  connectionName, 
+  chatId,
+  chatName,
+  chatType,
+  participants,
+  currentUser
+}: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const displayName = chatName || connectionName || "Chat";
+  const chatConnectionId = connectionId || chatId || "default";
 
   useEffect(() => {
     // Dummy data for testing
     const initialMessages: ChatMessage[] = [
       {
         id: "1",
-        connectionId: connectionId,
+        connectionId: chatConnectionId,
         senderId: "user1",
         content: "Hey, how's it going?",
         sentAt: new Date(),
@@ -30,7 +45,7 @@ const ChatInterface = ({ connectionId, connectionName }: ChatInterfaceProps) => 
       },
       {
         id: "2",
-        connectionId: connectionId,
+        connectionId: chatConnectionId,
         senderId: "user2",
         content: "Not bad, just chilling. You?",
         sentAt: new Date(),
@@ -38,7 +53,7 @@ const ChatInterface = ({ connectionId, connectionName }: ChatInterfaceProps) => 
       },
     ];
     setMessages(initialMessages);
-  }, [connectionId]);
+  }, [chatConnectionId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -51,9 +66,9 @@ const ChatInterface = ({ connectionId, connectionName }: ChatInterfaceProps) => 
   const handleSendMessage = () => {
     if (newMessage.trim() !== "") {
       const newChatMessage: ChatMessage = {
-        id: String(messages.length + 1), // Simple ID generation
-        connectionId: connectionId,
-        senderId: "currentUser", // Replace with actual user ID
+        id: String(messages.length + 1),
+        connectionId: chatConnectionId,
+        senderId: currentUser || "currentUser",
         content: newMessage,
         sentAt: new Date(),
         isRead: false,
@@ -67,7 +82,12 @@ const ChatInterface = ({ connectionId, connectionName }: ChatInterfaceProps) => 
   return (
     <div className="flex flex-col h-full">
       <div className="border-b p-4">
-        <h2 className="text-lg font-semibold">{connectionName}</h2>
+        <h2 className="text-lg font-semibold">{displayName}</h2>
+        {chatType === "group" && participants && (
+          <p className="text-sm text-gray-500">
+            {participants.length} participants
+          </p>
+        )}
       </div>
       <ScrollArea className="flex-grow p-4">
         <div className="space-y-2">
@@ -75,12 +95,12 @@ const ChatInterface = ({ connectionId, connectionName }: ChatInterfaceProps) => 
             <div
               key={message.id}
               className={`flex flex-col ${
-                message.senderId === "currentUser" ? "items-end" : "items-start"
+                message.senderId === (currentUser || "currentUser") ? "items-end" : "items-start"
               }`}
             >
               <div
                 className={`rounded-lg px-3 py-2 text-sm ${
-                  message.senderId === "currentUser"
+                  message.senderId === (currentUser || "currentUser")
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200 text-gray-800"
                 }`}
@@ -88,7 +108,7 @@ const ChatInterface = ({ connectionId, connectionName }: ChatInterfaceProps) => 
                 {message.content}
               </div>
               <div className="text-xs text-gray-500">
-                {message.senderId === "currentUser" ? "You" : "Them"} -{" "}
+                {message.senderId === (currentUser || "currentUser") ? "You" : "Them"} -{" "}
                 {message.sentAt.toLocaleTimeString()}
               </div>
             </div>

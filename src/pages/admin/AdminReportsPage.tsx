@@ -23,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ReportDetailsDialog } from "@/components/admin/ReportDetailsDialog";
+import ReportDetailsDialog from "@/components/admin/ReportDetailsDialog";
 import { ADMIN_REPORTS_DATA } from "@/lib/backend/data/admin-reports";
 import { ReportBase } from "@/lib/types";
 
@@ -47,7 +47,7 @@ const AdminReportsPage = () => {
 
   const handleResolveReport = (report: ReportBase) => {
     const updatedReports = reports.map((r) =>
-      r.id === report.id ? { ...r, status: "resolved" } : r
+      r.id === report.id ? { ...r, status: "resolved" as const } : r
     );
     setReports(updatedReports);
 
@@ -198,7 +198,7 @@ const AdminReportsPage = () => {
       </AlertDialog>
 
       <ReportDetailsDialog
-        report={selectedReport as ReportBase | null}
+        report={selectedReport}
         isOpen={!!selectedReport}
         onClose={() => setSelectedReport(null)}
       />
