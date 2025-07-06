@@ -1,24 +1,9 @@
-import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  AlertTriangle,
-  CheckCircle2,
-  Ban,
-  MessageSquare,
-  Shield,
-  Users,
-  Unlock,
-} from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -27,493 +12,555 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Avatar } from "@/components/ui/avatar";
-
-export interface Report {
-  id: string;
-  contentType: "post" | "reply";
-  contentId: string;
-  contentTitle?: string;
-  contentPreview: string;
-  reportedBy: string;
-  reason: string;
-  createdAt: Date;
-  status: "pending" | "reviewed";
-}
-
-interface CommunityMember {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-  joinDate: Date;
-  isBanned: boolean;
-}
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Shield,
+  Users,
+  AlertTriangle,
+  Ban,
+  Lock,
+  Unlock,
+  MessageSquareOff,
+  MessageSquare,
+  Pin,
+  PinOff,
+  Eye,
+  UserMinus,
+  Search,
+  Calendar,
+  TrendingUp,
+} from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { logAdminAction } from "@/lib/admin-logger";
+import ModeratorSuccessionDialog from "./ModeratorSuccessionDialog";
+import LockPostDialog from "./LockPostDialog";
+import { formatDate } from "@/lib/utils";
+import { User, CommunityPost, Moderator, CommunityAnalytics, FlaggedReport } from "@/lib/types";
 
 interface ModeratorPanelProps {
-  communityId: string;
-  reports: Report[];
-  members?: CommunityMember[];
-  posts?: Array<{
-    id: string;
-    title: string;
-    isLocked: boolean;
-    areCommentsLocked: boolean;
-  }>;
-  onResolveReport: (reportId: string) => void;
-  onLockPost: (postId: string) => void;
-  onLockComments: (postId: string) => void;
-  onUnlockPost?: (postId: string) => void;
-  onUnlockComments?: (postId: string) => void;
-  onBanUser?: (userId: string) => void;
-  onUnbanUser?: (userId: string) => void;
+  communitySlug: string;
+  isModerator: boolean;
 }
 
-const ModeratorPanel = ({
-  communityId,
-  reports = [],
-  members = [],
-  posts = [],
-  onResolveReport,
-  onLockPost,
-  onLockComments,
-  onUnlockPost,
-  onUnlockComments,
-  onBanUser,
-  onUnbanUser,
-}: ModeratorPanelProps) => {
+const ModeratorPanel = ({ communitySlug, isModerator }: ModeratorPanelProps) => {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("reports");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [moderators, setModerators] = useState<Moderator[]>([
+    {
+      id: "mod-1",
+      name: "Jane Smith",
+      role: "moderator",
+      joinedAsModAt: new Date(),
+      actionsThisMonth: 42,
+    },
+    {
+      id: "mod-2",
+      name: "Robert Johnson",
+      role: "moderator",
+      joinedAsModAt: new Date(),
+      actionsThisMonth: 15,
+    },
+  ]);
+  const [pendingReports, setPendingReports] = useState<FlaggedReport[]>([
+    {
+      id: "report-1",
+      contentType: "post",
+      contentId: "post-123",
+      contentPreview: "This post violates community guidelines...",
+      reportedBy: "user-456",
+      createdAt: new Date(),
+      reason: "Hate speech",
+      status: "pending",
+      content: "Offensive content",
+      communityId: "comm-1",
+      reportedByName: "Alice Johnson",
+    },
+    {
+      id: "report-2",
+      contentType: "reply",
+      contentId: "reply-789",
+      contentPreview: "Inappropriate language in this reply...",
+      reportedBy: "user-789",
+      createdAt: new Date(),
+      reason: "Harassment",
+      status: "pending",
+      content: "Harassing content",
+      communityId: "comm-1",
+      reportedByName: "Bob Williams",
+    },
+  ]);
+  const [communityAnalytics, setCommunityAnalytics] = useState<CommunityAnalytics>({
+    totalMembers: 1234,
+    totalPosts: 567,
+    postsThisWeek: 89,
+    activeMembers: 345,
+    reportsThisWeek: 12,
+  });
+  const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isLockDialogOpen, setIsLockDialogOpen] = useState(false);
+  const [isUnlockDialogOpen, setIsUnlockDialogOpen] = useState(false);
+  const [isCommentsLockDialogOpen, setIsCommentsLockDialogOpen] = useState(false);
+  const [isCommentsUnlockDialogOpen, setIsCommentsUnlockDialogOpen] = useState(false);
+  const [lockReason, setLockReason] = useState("");
+  const [commentsLockReason, setCommentsLockReason] = useState("");
+  const [isSuccessionDialogOpen, setIsSuccessionDialogOpen] = useState(false);
+  const [pendingAdminRoleChanges, setPendingAdminRoleChanges] = useState([]);
 
-  const pendingReports = reports.filter(
-    (report) => report.status === "pending"
-  );
-  const resolvedReports = reports.filter(
-    (report) => report.status === "reviewed"
-  );
-  const lockedPosts = posts.filter(
-    (post) => post.isLocked || post.areCommentsLocked
+  const filteredModerators = moderators.filter((moderator) =>
+    moderator.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Mock data for members if not provided
-  const displayMembers =
-    members.length > 0
-      ? members
-      : [
-          {
-            id: "user-1",
-            name: "John Doe",
-            joinDate: new Date(2023, 1, 15),
-            isBanned: false,
-          },
-          {
-            id: "user-2",
-            name: "Jane Smith",
-            joinDate: new Date(2023, 2, 5),
-            isBanned: true,
-          },
-          {
-            id: "user-3",
-            name: "Robert Johnson",
-            joinDate: new Date(2023, 3, 20),
-            isBanned: false,
-          },
-          {
-            id: "user-4",
-            name: "Lisa Brown",
-            joinDate: new Date(2023, 4, 12),
-            isBanned: false,
-          },
-        ];
+  const handleRemoveModerator = (moderatorId: string) => {
+    setModerators(moderators.filter((m) => m.id !== moderatorId));
+
+    toast({
+      title: "Moderator Removed",
+      description: "The moderator has been successfully removed.",
+    });
+
+    logAdminAction({
+      action: "moderator_removed",
+      details: `Removed moderator ${moderatorId} from community ${communitySlug}`,
+      targetId: moderatorId,
+      targetType: "moderator",
+    });
+  };
+
+  const handleApproveAdminRoleChange = (userId: string) => {
+    setPendingAdminRoleChanges(
+      pendingAdminRoleChanges.filter((change) => change.user.id !== userId)
+    );
+
+    toast({
+      title: "Admin Role Approved",
+      description: "The user has been granted admin privileges.",
+    });
+
+    logAdminAction({
+      action: "admin_role_approved",
+      details: `Approved admin role for user ${userId} in community ${communitySlug}`,
+      targetId: userId,
+      targetType: "user",
+    });
+  };
+
+  const handleRejectAdminRoleChange = (userId: string) => {
+    setPendingAdminRoleChanges(
+      pendingAdminRoleChanges.filter((change) => change.user.id !== userId)
+    );
+
+    toast({
+      title: "Admin Role Rejected",
+      description: "The admin role request has been rejected.",
+    });
+
+    logAdminAction({
+      action: "admin_role_rejected",
+      details: `Rejected admin role for user ${userId} in community ${communitySlug}`,
+      targetId: userId,
+      targetType: "user",
+    });
+  };
 
   const handleResolveReport = (reportId: string) => {
-    onResolveReport(reportId);
+    setPendingReports(pendingReports.filter((report) => report.id !== reportId));
 
     toast({
-      title: "Report resolved",
-      description: "The report has been marked as reviewed.",
+      title: "Report Resolved",
+      description: "The report has been marked as resolved.",
+    });
+
+    logAdminAction({
+      action: "report_resolved",
+      details: `Resolved report ${reportId} in community ${communitySlug}`,
+      targetId: reportId,
+      targetType: "report",
     });
   };
 
-  const handleLockPost = (postId: string) => {
-    onLockPost(postId);
-
-    toast({
-      title: "Post locked",
-      description: "The post has been locked successfully.",
-    });
-  };
-
-  const handleLockComments = (postId: string) => {
-    onLockComments(postId);
-
-    toast({
-      title: "Comments locked",
-      description: "Comments for this post have been locked successfully.",
-    });
-  };
-
-  const handleUnlockPost = (postId: string) => {
-    if (onUnlockPost) {
-      onUnlockPost(postId);
-
+  const handleLockPost = () => {
+    if (selectedPost) {
       toast({
-        title: "Post unlocked",
-        description: "The post has been unlocked successfully.",
+        title: "Post Locked",
+        description: "The post has been locked.",
+      });
+
+      logAdminAction({
+        action: "post_locked",
+        details: `Locked post ${selectedPost.id} in community ${communitySlug} with reason: ${lockReason}`,
+        targetId: selectedPost.id,
+        targetType: "post",
       });
     }
+    setIsLockDialogOpen(false);
   };
 
-  const handleUnlockComments = (postId: string) => {
-    if (onUnlockComments) {
-      onUnlockComments(postId);
-
+  const handleUnlockPost = () => {
+    if (selectedPost) {
       toast({
-        title: "Comments unlocked",
-        description: "Comments for this post have been unlocked successfully.",
+        title: "Post Unlocked",
+        description: "The post has been unlocked.",
+      });
+
+      logAdminAction({
+        action: "post_unlocked",
+        details: `Unlocked post ${selectedPost.id} in community ${communitySlug}`,
+        targetId: selectedPost.id,
+        targetType: "post",
       });
     }
+    setIsUnlockDialogOpen(false);
   };
 
-  const handleBanUser = (userId: string) => {
-    if (onBanUser) {
-      onBanUser(userId);
-
+  const handleLockComments = () => {
+    if (selectedPost) {
       toast({
-        title: "User banned",
-        description: "The user has been banned from this community.",
+        title: "Comments Locked",
+        description: "Comments have been locked for this post.",
+      });
+
+      logAdminAction({
+        action: "comments_locked",
+        details: `Locked comments for post ${selectedPost.id} in community ${communitySlug} with reason: ${commentsLockReason}`,
+        targetId: selectedPost.id,
+        targetType: "post",
       });
     }
+    setIsCommentsLockDialogOpen(false);
   };
 
-  const handleUnbanUser = (userId: string) => {
-    if (onUnbanUser) {
-      onUnbanUser(userId);
-
+  const handleUnlockComments = () => {
+    if (selectedPost) {
       toast({
-        title: "User unbanned",
-        description: "The user has been unbanned from this community.",
+        title: "Comments Unlocked",
+        description: "Comments have been unlocked for this post.",
+      });
+
+      logAdminAction({
+        action: "comments_unlocked",
+        details: `Unlocked comments for post ${selectedPost.id} in community ${communitySlug}`,
+        targetId: selectedPost.id,
+        targetType: "post",
       });
     }
-  };
-
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
+    setIsCommentsUnlockDialogOpen(false);
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-social-primary" />
-          <CardTitle>Moderator Panel</CardTitle>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h2 className="text-2xl font-semibold">Moderator Panel</h2>
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search moderators..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-        <CardDescription>
-          Manage reported content and community members
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="reports" className="flex gap-2 items-center">
-              <AlertTriangle className="h-4 w-4" />
-              <span>Reports</span>
-              {pendingReports.length > 0 && (
-                <Badge className="ml-1 bg-red-500">
-                  {pendingReports.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="resolved">
-              <CheckCircle2 className="h-4 w-4 mr-2" />
-              Resolved
-            </TabsTrigger>
-            <TabsTrigger value="locked" className="flex gap-2 items-center">
-              <Ban className="h-4 w-4" />
-              <span>Locked</span>
-              {lockedPosts.length > 0 && (
-                <Badge className="ml-1 bg-orange-500">
-                  {lockedPosts.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="members" className="flex gap-2 items-center">
-              <Users className="h-4 w-4" />
-              <span>Members</span>
-            </TabsTrigger>
-          </TabsList>
+      </div>
 
-          <TabsContent value="reports" className="pt-4">
-            {pendingReports.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <AlertTriangle className="mx-auto h-10 w-10 mb-2 text-muted-foreground/60" />
-                <p>No pending reports at the moment.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {pendingReports.map((report) => (
-                  <Card key={report.id} className="border-orange-200">
-                    <CardHeader className="py-3 px-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <Badge
-                              variant="outline"
-                              className="bg-orange-100 text-orange-800"
-                            >
-                              {report.contentType === "post" ? "Post" : "Reply"}
-                            </Badge>
-                            <span className="text-sm text-muted-foreground">
-                              Reported on {formatDate(report.createdAt)}
-                            </span>
-                          </div>
-                          <div className="font-medium">
-                            {report.contentTitle ||
-                              `Reported ${report.contentType}`}
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="py-2 px-4">
-                      <div className="mb-2">
-                        <div className="text-sm font-medium text-muted-foreground mb-1">
-                          Content preview:
-                        </div>
-                        <div className="text-sm border-l-2 border-gray-200 pl-3 py-1 mb-2 bg-gray-50 rounded">
-                          {report.contentPreview}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-muted-foreground mb-1">
-                          Reason for report:
-                        </div>
-                        <div className="text-sm border-l-2 border-orange-200 pl-3 py-1 bg-orange-50 rounded">
-                          {report.reason}
-                        </div>
-                      </div>
-                    </CardContent>
-                    <div className="px-4 pb-4 flex flex-wrap gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs"
-                        onClick={() => handleResolveReport(report.id)}
-                      >
-                        <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                        Mark as Resolved
-                      </Button>
-                      {report.contentType === "post" && (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs border-orange-200 hover:bg-orange-50"
-                            onClick={() => handleLockPost(report.contentId)}
-                          >
-                            <Ban className="h-3.5 w-3.5 mr-1" />
-                            Lock Post
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs border-amber-200 hover:bg-amber-50"
-                            onClick={() => handleLockComments(report.contentId)}
-                          >
-                            <MessageSquare className="h-3.5 w-3.5 mr-1" />
-                            Lock Comments
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="resolved" className="pt-4">
-            {resolvedReports.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <CheckCircle2 className="mx-auto h-10 w-10 mb-2 text-muted-foreground/60" />
-                <p>No resolved reports yet.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {resolvedReports.map((report) => (
-                  <div
-                    key={report.id}
-                    className="flex items-center justify-between border-b pb-3"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <Badge
-                          variant="outline"
-                          className="bg-gray-100 text-gray-800"
-                        >
-                          {report.contentType === "post" ? "Post" : "Reply"}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDate(report.createdAt)}
-                        </span>
-                      </div>
-                      <p className="text-sm line-clamp-1">
-                        {report.contentPreview}
-                      </p>
-                    </div>
-                    <Badge className="bg-green-100 text-green-800 flex items-center gap-1">
-                      <CheckCircle2 className="h-3 w-3" />
-                      Resolved
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="locked" className="pt-4">
-            {lockedPosts.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Ban className="mx-auto h-10 w-10 mb-2 text-muted-foreground/60" />
-                <p>No locked posts or comments.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {lockedPosts.map((post) => (
-                  <Card key={post.id} className="border-orange-200">
-                    <CardHeader className="py-3 px-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-medium">{post.title}</div>
-                          <div className="flex gap-2 mt-1">
-                            {post.isLocked && (
-                              <Badge
-                                variant="outline"
-                                className="bg-red-100 text-red-800"
-                              >
-                                Post Locked
-                              </Badge>
-                            )}
-                            {post.areCommentsLocked && (
-                              <Badge
-                                variant="outline"
-                                className="bg-orange-100 text-orange-800"
-                              >
-                                Comments Locked
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <div className="px-4 pb-4 flex flex-wrap gap-2">
-                      {post.isLocked && onUnlockPost && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-xs border-green-200 hover:bg-green-50"
-                          onClick={() => handleUnlockPost(post.id)}
-                        >
-                          <Unlock className="h-3.5 w-3.5 mr-1" />
-                          Unlock Post
-                        </Button>
-                      )}
-                      {post.areCommentsLocked && onUnlockComments && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-xs border-blue-200 hover:bg-blue-50"
-                          onClick={() => handleUnlockComments(post.id)}
-                        >
-                          <MessageSquare className="h-3.5 w-3.5 mr-1" />
-                          Unlock Comments
-                        </Button>
-                      )}
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="members" className="pt-4">
-            <div className="rounded-md border">
+      <Tabs defaultValue="moderators" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="moderators">
+            <Users className="h-4 w-4 mr-2" /> Moderators ({moderators.length})
+          </TabsTrigger>
+          <TabsTrigger value="reports">
+            <AlertTriangle className="h-4 w-4 mr-2" /> Reports ({pendingReports.length})
+          </TabsTrigger>
+          <TabsTrigger value="analytics">
+            <TrendingUp className="h-4 w-4 mr-2" /> Analytics
+          </TabsTrigger>
+          <TabsTrigger value="admin-requests">
+            <Shield className="h-4 w-4 mr-2" /> Admin Requests ({pendingAdminRoleChanges.length})
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="moderators" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Current Moderators</CardTitle>
+            </CardHeader>
+            <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Member</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Role</TableHead>
                     <TableHead>Joined</TableHead>
-                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {displayMembers.map((member) => (
-                    <TableRow key={member.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8 bg-social-primary text-white">
-                            <div className="flex h-full w-full items-center justify-center">
-                              {member.name.charAt(0)}
-                            </div>
-                          </Avatar>
-                          <span>{member.name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{formatDate(member.joinDate)}</TableCell>
-                      <TableCell>
-                        {member.isBanned ? (
-                          <Badge
-                            variant="outline"
-                            className="bg-red-100 text-red-800"
-                          >
-                            Banned
-                          </Badge>
-                        ) : (
-                          <Badge
-                            variant="outline"
-                            className="bg-green-100 text-green-800"
-                          >
-                            Active
-                          </Badge>
-                        )}
-                      </TableCell>
+                  {filteredModerators.map((moderator) => (
+                    <TableRow key={moderator.id}>
+                      <TableCell>{moderator.name}</TableCell>
+                      <TableCell>{moderator.role}</TableCell>
+                      <TableCell>{formatDate(moderator.joinedAsModAt)}</TableCell>
                       <TableCell className="text-right">
-                        {member.isBanned ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs"
-                            onClick={() => handleUnbanUser(member.id)}
-                            disabled={!onUnbanUser}
-                          >
-                            Unban User
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs border-red-200 hover:bg-red-50"
-                            onClick={() => handleBanUser(member.id)}
-                            disabled={!onBanUser}
-                          >
-                            <Ban className="h-3.5 w-3.5 mr-1" />
-                            Ban from Community
-                          </Button>
-                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-red-500 text-red-500 hover:bg-red-50"
+                          onClick={() => handleRemoveModerator(moderator.id)}
+                        >
+                          <UserMinus className="h-3.5 w-3.5 mr-1" />
+                          Remove
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+              {filteredModerators.length === 0 && (
+                <div className="text-center p-8">
+                  <p className="text-social-muted">No moderators found.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          <ModeratorSuccessionDialog
+            isOpen={isSuccessionDialogOpen}
+            onClose={() => setIsSuccessionDialogOpen(false)}
+          />
+        </TabsContent>
+
+        <TabsContent value="reports" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pending Reports</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Content</TableHead>
+                    <TableHead>Reported By</TableHead>
+                    <TableHead>Reason</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pendingReports.map((report) => (
+                    <TableRow key={report.id}>
+                      <TableCell>{report.contentPreview}</TableCell>
+                      <TableCell>{report.reportedByName}</TableCell>
+                      <TableCell>{report.reason}</TableCell>
+                      <TableCell>{formatDate(report.createdAt)}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-green-500 text-green-500 hover:bg-green-50"
+                          onClick={() => handleResolveReport(report.id)}
+                        >
+                          <Check className="h-3.5 w-3.5 mr-1" />
+                          Resolve
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {pendingReports.length === 0 && (
+                <div className="text-center p-8">
+                  <p className="text-social-muted">No pending reports.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Community Analytics</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <div className="text-lg font-medium">Total Members</div>
+                <div className="text-2xl font-bold">{communityAnalytics.totalMembers}</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-lg font-medium">Total Posts</div>
+                <div className="text-2xl font-bold">{communityAnalytics.totalPosts}</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-lg font-medium">Posts This Week</div>
+                <div className="text-2xl font-bold">{communityAnalytics.postsThisWeek}</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-lg font-medium">Active Members</div>
+                <div className="text-2xl font-bold">{communityAnalytics.activeMembers}</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-lg font-medium">Reports This Week</div>
+                <div className="text-2xl font-bold">{communityAnalytics.reportsThisWeek}</div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="admin-requests" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pending Admin Role Requests</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Requested By</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {pendingAdminRoleChanges.map((change) => (
+                    <TableRow key={change.user.id}>
+                      <TableCell>{change.user.name}</TableCell>
+                      <TableCell>{change.requestedBy}</TableCell>
+                      <TableCell>{formatDate(change.requestedAt)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-green-500 text-green-500 hover:bg-green-50"
+                            onClick={() => handleApproveAdminRoleChange(change.user.id)}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-red-500 text-red-500 hover:bg-red-50"
+                            onClick={() => handleRejectAdminRoleChange(change.user.id)}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {pendingAdminRoleChanges.length === 0 && (
+                <div className="text-center p-8">
+                  <p className="text-social-muted">No pending admin role requests.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the post from the
+              community.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 text-red-50"
+              onClick={() => {
+                setIsDeleteDialogOpen(false);
+                toast({
+                  title: "Post Deleted",
+                  description: "The post has been successfully deleted.",
+                });
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <LockPostDialog
+        isOpen={isLockDialogOpen}
+        onClose={() => setIsLockDialogOpen(false)}
+        onConfirm={handleLockPost}
+        setLockReason={setLockReason}
+      />
+
+      <Dialog open={isUnlockDialogOpen} onOpenChange={setIsUnlockDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Unlock Post</DialogTitle>
+            <DialogDescription>Are you sure you want to unlock this post?</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={() => setIsUnlockDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" onClick={handleUnlockPost}>
+              Unlock
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <LockPostDialog
+        isOpen={isCommentsLockDialogOpen}
+        onClose={() => setIsCommentsLockDialogOpen(false)}
+        onConfirm={handleLockComments}
+        setLockReason={setCommentsLockReason}
+        title="Lock Comments"
+        description="Are you sure you want to lock comments for this post?"
+        lockReasonLabel="Reason for locking comments:"
+      />
+
+      <Dialog open={isCommentsUnlockDialogOpen} onOpenChange={setIsCommentsUnlockDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Unlock Comments</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to unlock comments for this post?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={() => setIsCommentsUnlockDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" onClick={handleUnlockComments}>
+              Unlock Comments
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 

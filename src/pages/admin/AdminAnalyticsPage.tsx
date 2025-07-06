@@ -1,3 +1,4 @@
+
 import { api } from "@/lib/api";
 import { useEffect, useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +50,7 @@ import {
 } from "lucide-react";
 import AdminMetricsCard from "@/components/admin/AdminMetricsCard";
 import { formatNumber } from "@/lib/utils";
+import { AnalyticsCommunity, PlatformStats, ActivityDataPoint, AnalyticsDataPoint } from "@/lib/types";
 
 const AdminAnalyticsPage = () => {
   const [selectedCommunity, setSelectedCommunity] = useState("all");
@@ -56,10 +58,10 @@ const AdminAnalyticsPage = () => {
   const [open, setOpen] = useState(false);
 
   // Centralized analytics data from api.ts
-  const [communities, setCommunities] = useState([]);
-  const [platformStats, setPlatformStats] = useState(null);
-  const [activityData, setActivityData] = useState([]);
-  const [sizeDistribution, setSizeDistribution] = useState([]);
+  const [communities, setCommunities] = useState<AnalyticsCommunity[]>([]);
+  const [platformStats, setPlatformStats] = useState<PlatformStats | null>(null);
+  const [activityData, setActivityData] = useState<ActivityDataPoint[]>([]);
+  const [sizeDistribution, setSizeDistribution] = useState<AnalyticsDataPoint[]>([]);
 
   useEffect(() => {
     api.getAnalyticsCommunities().then(setCommunities);

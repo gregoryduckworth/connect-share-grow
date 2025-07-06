@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,24 +12,25 @@ import { api } from "@/lib/api";
 import AdminTable from "@/components/admin/AdminTable";
 import AdminTablePagination from "@/components/admin/AdminTablePagination";
 import { formatDate } from "@/lib/utils";
+import { ReportBase } from "@/lib/types";
 
 const AdminReportsPage = () => {
   const { toast } = useToast();
-  const [selectedReport, setSelectedReport] = useState(null);
+  const [selectedReport, setSelectedReport] = useState<ReportBase | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
-  const [reports, setReports] = useState([]);
+  const [reports, setReports] = useState<ReportBase[]>([]);
 
   // Load reports from api.ts
   useEffect(() => {
     api.getReports().then(setReports);
   }, []);
 
-  const handleViewContent = (report) => {
+  const handleViewContent = (report: ReportBase) => {
     setSelectedReport(report);
     setDetailsDialogOpen(true);
   };
 
-  const handleResolve = (id) => {
+  const handleResolve = (id: string) => {
     const report = reports.find((r) => r.id === id);
     if (report) {
       setReports(
@@ -47,7 +49,7 @@ const AdminReportsPage = () => {
     }
   };
 
-  const handleLockContent = (id) => {
+  const handleLockContent = (id: string) => {
     const report = reports.find((r) => r.id === id);
     if (report) {
       setReports(
