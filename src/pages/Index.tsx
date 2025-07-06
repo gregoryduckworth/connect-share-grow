@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/pagination";
 import CommunityCard from "@/components/community/CommunityCard";
 import { mockPendingModeratorRoleChanges } from "@/lib/api";
-import type { Community, ReportBase as Report } from "@/lib/types";
+import type { Community, ReportBase, PendingAdminRoleChange } from "@/lib/types";
 import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/useAuth";
 
@@ -113,8 +114,8 @@ const CommunitiesPage = () => {
           Promise.resolve(mockPendingModeratorRoleChanges),
         ]).then(
           ([reports, roleChanges]: [
-            Report[],
-            PendingModeratorRoleChange[]
+            ReportBase[],
+            PendingAdminRoleChange[]
           ]) => {
             const reportCount = reports.filter(
               (r) =>

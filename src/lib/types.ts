@@ -1,3 +1,4 @@
+
 // Base types for reuse
 export interface Identifiable {
   id: string;
@@ -127,6 +128,7 @@ export interface ReportBase extends Identifiable {
     community?: string;
     author?: string;
     fullText?: string;
+    parentPost?: string;
   };
   originalLink?: string;
 }
@@ -280,6 +282,7 @@ export interface PendingAdminRoleChange {
   requestedBy: string;
   requestedAt: Date;
   newRole: User["role"];
+  status: "pending" | "approved" | "rejected";
 }
 
 export interface Moderator {

@@ -93,6 +93,7 @@ export const mockPendingModeratorRoleChanges = [
     },
     requestedBy: "admin@example.com",
     requestedAt: new Date(),
-    newRole: "admin" as const
+    newRole: "admin" as const,
+    status: "pending" as const
   }
 ];

@@ -70,6 +70,13 @@ const AdminReportsPage = () => {
     });
   };
 
+  const handleResolveById = (reportId: string) => {
+    const report = reports.find(r => r.id === reportId);
+    if (report) {
+      handleResolveReport(report);
+    }
+  };
+
   const handleDeleteReport = (id: string) => {
     const updatedReports = reports.filter((report) => report.id !== id);
     setReports(updatedReports);
@@ -215,7 +222,7 @@ const AdminReportsPage = () => {
         report={selectedReport}
         isOpen={!!selectedReport}
         onClose={() => setSelectedReport(null)}
-        onResolve={handleResolveReport}
+        onResolve={handleResolveById}
       />
     </div>
   );
