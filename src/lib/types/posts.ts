@@ -1,6 +1,4 @@
 
-import { Identifiable } from "./base";
-
 export interface Post {
   isLiked: boolean;
   id: string;

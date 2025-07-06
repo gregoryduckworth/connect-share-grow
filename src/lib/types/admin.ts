@@ -1,6 +1,5 @@
 
 import { User } from "./user";
-import { Report } from "./reports";
 
 // Admin/Moderation
 export interface PendingAdminRoleChange {
