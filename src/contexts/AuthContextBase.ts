@@ -1,3 +1,4 @@
+
 import { createContext } from 'react';
 import { User } from '@/lib/types';
 
@@ -15,6 +16,7 @@ export interface AuthContextType {
   isAdmin: () => boolean;
   isModerator: () => boolean;
   canPost: () => boolean;
+  updateUserProfile: (user: User) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);

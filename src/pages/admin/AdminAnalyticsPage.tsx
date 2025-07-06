@@ -1,29 +1,5 @@
-
-import { api } from "@/lib/api";
-import { useEffect, useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   BarChart,
   Bar,
@@ -33,442 +9,360 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
 } from "recharts";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  Search,
+  ArrowDown,
+  ArrowUp,
   Users,
+  LayoutDashboard,
   MessageSquare,
-  TrendingUp,
-  Calendar,
-  RotateCcw,
-  Check,
-  ChevronsUpDown,
+  Flag,
 } from "lucide-react";
-import AdminMetricsCard from "@/components/admin/AdminMetricsCard";
-import { formatNumber } from "@/lib/utils";
-import { AnalyticsCommunity, PlatformStats, ActivityDataPoint, AnalyticsDataPoint } from "@/lib/types";
+import { useNavigate } from "react-router-dom";
+import {
+  AnalyticsDataPoint,
+  AnalyticsCommunity,
+  ActivityDataPoint,
+  PlatformStats,
+} from "@/lib/types";
 
 const AdminAnalyticsPage = () => {
-  const [selectedCommunity, setSelectedCommunity] = useState("all");
-  const [timeRange, setTimeRange] = useState("30");
-  const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  // Centralized analytics data from api.ts
-  const [communities, setCommunities] = useState<AnalyticsCommunity[]>([]);
-  const [platformStats, setPlatformStats] = useState<PlatformStats | null>(null);
-  const [activityData, setActivityData] = useState<ActivityDataPoint[]>([]);
-  const [sizeDistribution, setSizeDistribution] = useState<AnalyticsDataPoint[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCommunity, setSelectedCommunity] = useState("");
+  const [selectedCommunitiesData, setSelectedCommunitiesData] = useState<AnalyticsCommunity[]>([]);
+  const [platformStats, setPlatformStats] = useState<PlatformStats>({
+    totalUsers: 0,
+    totalCommunities: 0,
+    totalPosts: 0,
+    totalReports: 0,
+    activeUsers: 0,
+  });
+  const [activityChartData, setActivityChartData] = useState<ActivityDataPoint[]>([]);
+  const [growthChartData, setGrowthChartData] = useState<AnalyticsDataPoint[]>([]);
 
   useEffect(() => {
-    api.getAnalyticsCommunities().then(setCommunities);
-    api.getPlatformStats().then(setPlatformStats);
-    api.getActivityData().then(setActivityData);
-    api.getSizeDistribution().then(setSizeDistribution);
+    const initialCommunitiesData: AnalyticsCommunity[] = [
+      {
+        id: "community-1",
+        name: "Tech Enthusiasts",
+        members: 1234,
+        posts: 567,
+        comments: 234,
+        activity: 89,
+      },
+      {
+        id: "community-2",
+        name: "Bookworms United",
+        members: 876,
+        posts: 432,
+        comments: 187,
+        activity: 67,
+      },
+      {
+        id: "community-3",
+        name: "Fitness Fanatics",
+        members: 987,
+        posts: 654,
+        comments: 321,
+        activity: 98,
+      },
+      {
+        id: "community-4",
+        name: "Foodie Adventures",
+        members: 1122,
+        posts: 789,
+        comments: 456,
+        activity: 112,
+      },
+      {
+        id: "community-5",
+        name: "Travel Junkies",
+        members: 765,
+        posts: 321,
+        comments: 123,
+        activity: 56,
+      },
+    ];
+
+    const initialPlatformStats: PlatformStats = {
+      totalUsers: 5432,
+      totalCommunities: 123,
+      totalPosts: 9876,
+      totalReports: 456,
+      activeUsers: 3211,
+    };
+
+    const initialActivityChartData: ActivityDataPoint[] = [
+      { name: "Jan", posts: 120, users: 80 },
+      { name: "Feb", posts: 150, users: 90 },
+      { name: "Mar", posts: 180, users: 100 },
+      { name: "Apr", posts: 200, users: 110 },
+      { name: "May", posts: 220, users: 120 },
+    ];
+
+    const initialGrowthChartData: AnalyticsDataPoint[] = [
+      { name: "Jan", value: 120, color: "#FF6633" },
+      { name: "Feb", value: 150, color: "#66B2FF" },
+      { name: "Mar", value: 180, color: "#99FF99" },
+      { name: "Apr", value: 200, color: "#FFCC99" },
+      { name: "May", value: 220, color: "#CC99FF" },
+    ];
+
+    setSelectedCommunitiesData(initialCommunitiesData);
+    setPlatformStats(initialPlatformStats);
+    setActivityChartData(initialActivityChartData);
+    setGrowthChartData(initialGrowthChartData);
   }, []);
 
-  const communityBreakdown = useMemo(() => {
-    if (selectedCommunity === "all") {
-      return communities.map((community) => ({
-        name: community.name,
-        members: community.members,
-        posts: community.posts,
-        comments: community.comments,
-        engagement: ((community.comments / community.posts) * 100).toFixed(1),
-      }));
-    } else {
-      return communities
-        .filter((c) => c.id === selectedCommunity)
-        .map((community) => ({
-          name: community.name,
-          members: community.members,
-          posts: community.posts,
-          comments: community.comments,
-          engagement: ((community.comments / community.posts) * 100).toFixed(1),
-        }));
-    }
-  }, [selectedCommunity, communities]);
-
-  const resetFilters = () => {
-    setSelectedCommunity("all");
-    setTimeRange("30");
-  };
-
-  const selectedCommunityData = communities.find(
-    (c) => c.id === selectedCommunity
+  const filteredCommunities = selectedCommunitiesData.filter((community) =>
+    community.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const transformedCommunitiesData = filteredCommunities.map((community) => ({
+    name: community.name,
+    members: community.members,
+    posts: community.posts,
+    comments: community.comments || 0,
+    engagement: (community.comments || 0) / community.posts || 0,
+  }));
+
+  const handleCommunityClick = (data: any) => {
+    const community = selectedCommunitiesData.find((c) => c.id === data.payload.id);
+    if (community) {
+      setSelectedCommunity(community.name);
+      toast({
+        title: "Community Selected",
+        description: `You have selected ${community.name}.`,
+      });
+      navigate(`/community/${community.name.toLowerCase().replace(/ /g, "-")}`);
+    }
+  };
+
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
+
+  const RADIAN = Math.PI / 180;
+  const renderCustomizedLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+    index,
+  }: any) => {
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="white"
+        textAnchor={x > cx ? "start" : "end"}
+        dominantBaseline="central"
+      >
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
+
+  const selectedCommunityData = selectedCommunitiesData.find((c) => c.name === selectedCommunity);
+
+  const communityEngagement = selectedCommunityData?.comments && selectedCommunityData?.posts
+    ? (selectedCommunityData.comments / selectedCommunityData.posts) * 100
+    : 0;
+
+  const engagementRate = selectedCommunityData?.comments || 0;
+
   return (
-    <div
-      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
-      data-testid="admin-analytics-page"
-    >
-      {/* Header with filters */}
-      <div
-        className="flex flex-col md:flex-row md:items-center justify-between gap-4"
-        data-testid="admin-analytics-header"
-      >
-        <h1
-          className="text-3xl font-bold text-social-primary mb-2"
-          data-testid="admin-analytics-title"
-        >
-          Analytics & Statistics
-        </h1>
-        <div
-          className="flex flex-col md:flex-row gap-2"
-          data-testid="admin-analytics-filters"
-        >
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-full md:w-48 justify-between px-4 py-0 h-12 flex items-center bg-white/90 border border-purple-200 rounded-lg shadow-none focus:border-purple-500 focus:shadow-lg focus:shadow-purple-200/40 transition-colors"
-                data-testid="admin-analytics-community-filter"
-              >
-                {selectedCommunity === "all"
-                  ? "All Communities"
-                  : communities.find((c) => c.id === selectedCommunity)?.name}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-48 p-0">
-              <Command>
-                <CommandInput
-                  placeholder="Search communities..."
-                  data-testid="admin-analytics-community-search"
-                />
-                <CommandList>
-                  <CommandEmpty>No community found.</CommandEmpty>
-                  <CommandGroup>
-                    <CommandItem
-                      value="all"
-                      onSelect={() => {
-                        setSelectedCommunity("all");
-                        setOpen(false);
-                      }}
-                      data-testid="admin-analytics-community-all"
-                    >
-                      <Check
-                        className={`mr-2 h-4 w-4 ${
-                          selectedCommunity === "all"
-                            ? "opacity-100"
-                            : "opacity-0"
-                        }`}
-                      />
-                      All Communities
-                    </CommandItem>
-                    {communities.map((community) => (
-                      <CommandItem
-                        key={community.id}
-                        value={community.name}
-                        onSelect={() => {
-                          setSelectedCommunity(community.id);
-                          setOpen(false);
-                        }}
-                        data-testid={`admin-analytics-community-option-${community.id}`}
-                      >
-                        <Check
-                          className={`mr-2 h-4 w-4 ${
-                            selectedCommunity === community.id
-                              ? "opacity-100"
-                              : "opacity-0"
-                          }`}
-                        />
-                        {community.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger className="w-full md:w-32 bg-white/90 border border-purple-200 rounded-lg shadow-none px-4 py-0 h-12 flex items-center focus:border-purple-500 focus:shadow-lg focus:shadow-purple-200/40 transition-colors">
-              <SelectValue placeholder="Time Range" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7" data-testid="admin-analytics-timerange-7">
-                7 days
-              </SelectItem>
-              <SelectItem value="30" data-testid="admin-analytics-timerange-30">
-                30 days
-              </SelectItem>
-              <SelectItem value="90" data-testid="admin-analytics-timerange-90">
-                90 days
-              </SelectItem>
-              <SelectItem
-                value="365"
-                data-testid="admin-analytics-timerange-365"
-              >
-                1 year
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            variant="default"
-            onClick={resetFilters}
-            className="flex items-center gap-2 px-4 py-0 h-12 min-w-[100px]"
-            data-testid="admin-analytics-reset-button"
-          >
-            <RotateCcw className="h-4 w-4" />
-            Reset
-          </Button>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h2 className="text-2xl font-semibold">Analytics Dashboard</h2>
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search communities..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </div>
 
-      {/* Filter indicator */}
-      <div
-        className="flex items-center gap-2 text-sm"
-        data-testid="admin-analytics-filter-indicator"
-      >
-        <span className="text-muted-foreground">Showing:</span>
-        <Badge variant="default" data-testid="admin-analytics-filter-community">
-          {selectedCommunity === "all"
-            ? "All Communities"
-            : selectedCommunityData?.name}
-        </Badge>
-        <Badge variant="default" data-testid="admin-analytics-filter-timerange">
-          Last {timeRange} days
-        </Badge>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="bg-blue-50 text-blue-900">
+          <CardContent className="p-6">
+            <div className="text-2xl font-bold">{platformStats.totalUsers}</div>
+            <p className="text-xs text-muted-foreground">Total Users</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-green-50 text-green-900">
+          <CardContent className="p-6">
+            <div className="text-2xl font-bold">{platformStats.totalCommunities}</div>
+            <p className="text-xs text-muted-foreground">Total Communities</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-orange-50 text-orange-900">
+          <CardContent className="p-6">
+            <div className="text-2xl font-bold">{platformStats.totalPosts}</div>
+            <p className="text-xs text-muted-foreground">Total Posts</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-red-50 text-red-900">
+          <CardContent className="p-6">
+            <div className="text-2xl font-bold">{platformStats.activeUsers}</div>
+            <p className="text-xs text-muted-foreground">
+              +{platformStats.activeUsers} from last month
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Platform Overview Metrics */}
-      {selectedCommunity === "all" && platformStats && (
-        <>
-          <div
-            className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
-            data-testid="admin-analytics-metrics-cards"
-          >
-            <AdminMetricsCard
-              title="Total Users"
-              value={
-                platformStats?.totalUsers != null
-                  ? formatNumber(platformStats.totalUsers)
-                  : "-"
-              }
-              description="Registered platform users"
-              icon={<Users className="h-4 w-4" />}
-              trend={{ value: "+12% from last month", isPositive: true }}
-              data-testid="admin-analytics-metric-users"
-            />
-            <AdminMetricsCard
-              title="Total Communities"
-              value={
-                platformStats?.totalCommunities != null
-                  ? formatNumber(platformStats.totalCommunities)
-                  : "-"
-              }
-              description="Active communities"
-              icon={<Users className="h-4 w-4" />}
-              trend={{ value: "+2 this month", isPositive: true }}
-              data-testid="admin-analytics-metric-communities"
-            />
-            <AdminMetricsCard
-              title="Total Posts"
-              value={
-                platformStats?.totalPosts != null
-                  ? formatNumber(platformStats.totalPosts)
-                  : "-"
-              }
-              description="Posts across all communities"
-              icon={<MessageSquare className="h-4 w-4" />}
-              trend={{ value: "+18% from last month", isPositive: true }}
-              data-testid="admin-analytics-metric-posts"
-            />
-            <AdminMetricsCard
-              title="Active Users"
-              value={
-                platformStats?.activeUsers != null
-                  ? formatNumber(platformStats.activeUsers)
-                  : "-"
-              }
-              description="Users active in last 30 days"
-              icon={<TrendingUp className="h-4 w-4" />}
-              trend={{ value: "66% of total users", isPositive: true }}
-              data-testid="admin-analytics-metric-active-users"
-            />
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="col-span-1 lg:col-span-1">
+          <CardContent>
+            <h3 className="text-lg font-semibold mb-4">Community Engagement</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={transformedCommunitiesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="members" fill="#8884d8" />
+                <Bar dataKey="posts" fill="#82ca9d" />
+                <Bar dataKey="comments" fill="#ffc658" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
-          {/* Community Size Distribution */}
-          <Card data-testid="admin-analytics-size-distribution-card">
-            <CardHeader>
-              <CardTitle>Community Size Distribution</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={sizeDistribution}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, value }) => `${name}: ${value}`}
-                    outerRadius={80}
-                    dataKey="value"
-                    data-testid="admin-analytics-size-distribution-pie"
-                  >
-                    {(sizeDistribution || []).map((entry, index) => {
-                      const COLORS = [
-                        "#8884d8",
-                        "#82ca9d",
-                        "#ffc658",
-                        "#ff8042",
-                        "#8dd1e1",
-                        "#a4de6c",
-                        "#d0ed57",
-                        "#d8854f",
-                        "#b47ddb",
-                        "#f47fa1",
-                      ];
-                      const color =
-                        entry.color || COLORS[index % COLORS.length];
-                      return (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={color}
-                          data-testid={`admin-analytics-size-distribution-segment-${index}`}
-                        />
-                      );
-                    })}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </>
-      )}
+        <Card className="col-span-1 lg:col-span-1">
+          <CardContent>
+            <h3 className="text-lg font-semibold mb-4">Activity Over Time</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={activityChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="posts" fill="#8884d8" />
+                <Bar dataKey="users" fill="#82ca9d" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Community-specific metrics */}
-      {selectedCommunity !== "all" && selectedCommunityData && (
-        <div
-          className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
-          data-testid="admin-analytics-community-metrics"
-        >
-          <AdminMetricsCard
-            title="Members"
-            value={selectedCommunityData.members}
-            description="Total community members"
-            icon={<Users className="h-4 w-4" />}
-            trend={{ value: "+8 this week", isPositive: true }}
-            data-testid="admin-analytics-community-metric-members"
-          />
-          <AdminMetricsCard
-            title="Posts"
-            value={selectedCommunityData.posts}
-            description="Total posts in community"
-            icon={<MessageSquare className="h-4 w-4" />}
-            trend={{ value: "+15 this week", isPositive: true }}
-            data-testid="admin-analytics-community-metric-posts"
-          />
-          <AdminMetricsCard
-            title="Comments"
-            value={selectedCommunityData.comments}
-            description="Total comments"
-            icon={<MessageSquare className="h-4 w-4" />}
-            trend={{ value: "+42 this week", isPositive: true }}
-            data-testid="admin-analytics-community-metric-comments"
-          />
-          <AdminMetricsCard
-            title="Engagement Rate"
-            value={`${(
-              (selectedCommunityData.comments / selectedCommunityData.posts) *
-              100
-            ).toFixed(1)}%`}
-            description="Comments per post"
-            icon={<TrendingUp className="h-4 w-4" />}
-            trend={{ value: "Above average", isPositive: true }}
-            data-testid="admin-analytics-community-metric-engagement"
-          />
-        </div>
-      )}
-
-      {/* Activity Chart */}
-      <Card data-testid="admin-analytics-activity-card">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Activity Over Time
-          </CardTitle>
-        </CardHeader>
+      <Card>
         <CardContent>
+          <h3 className="text-lg font-semibold mb-4">Community Details</h3>
+          {selectedCommunityData ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Name</Label>
+                <p className="font-bold">{selectedCommunityData.name}</p>
+              </div>
+              <div>
+                <Label>Members</Label>
+                <p className="font-bold">{selectedCommunityData.members}</p>
+              </div>
+              <div>
+                <Label>Posts</Label>
+                <p className="font-bold">{selectedCommunityData.posts}</p>
+              </div>
+              <div>
+                <Label>Comments</Label>
+                <p className="font-bold">{selectedCommunityData.comments}</p>
+              </div>
+              <div>
+                <Label>Engagement Rate</Label>
+                <p className="font-bold">{communityEngagement.toFixed(2)}%</p>
+              </div>
+              <div>
+                <Label>Total Engagement</Label>
+                <p className="font-bold">{engagementRate}</p>
+              </div>
+            </div>
+          ) : (
+            <p>Select a community to view details.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent>
+          <h3 className="text-lg font-semibold mb-4">Community Growth</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart
-              data={activityData}
-              data-testid="admin-analytics-activity-chart"
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
+            <PieChart>
+              <Pie
+                data={growthChartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={renderCustomizedLabel}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {growthChartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
               <Tooltip />
               <Legend />
-              <Line
-                type="monotone"
-                dataKey="users"
-                stroke="#8884d8"
-                name="Active Users"
-                data-testid="admin-analytics-activity-users"
-              />
-              <Line
-                type="monotone"
-                dataKey="posts"
-                stroke="#82ca9d"
-                name="Posts"
-                data-testid="admin-analytics-activity-posts"
-              />
-              <Line
-                type="monotone"
-                dataKey="comments"
-                stroke="#ffc658"
-                name="Comments"
-                data-testid="admin-analytics-activity-comments"
-              />
-            </LineChart>
+            </PieChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
-      {/* Community Breakdown */}
-      <Card data-testid="admin-analytics-breakdown-card">
-        <CardHeader>
-          <CardTitle>Community Breakdown</CardTitle>
-        </CardHeader>
+      <Card>
         <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart
-              data={communityBreakdown}
-              data-testid="admin-analytics-breakdown-chart"
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar
-                dataKey="members"
-                fill="#8884d8"
-                name="Members"
-                data-testid="admin-analytics-breakdown-members"
-              />
-              <Bar
-                dataKey="posts"
-                fill="#82ca9d"
-                name="Posts"
-                data-testid="admin-analytics-breakdown-posts"
-              />
-              <Bar
-                dataKey="comments"
-                fill="#ffc658"
-                name="Comments"
-                data-testid="admin-analytics-breakdown-comments"
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <h3 className="text-lg font-semibold mb-4">Top Communities</h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Members</TableHead>
+                <TableHead>Posts</TableHead>
+                <TableHead>Comments</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {transformedCommunitiesData.map((community) => (
+                <TableRow key={community.name}>
+                  <TableCell>{community.name}</TableCell>
+                  <TableCell>{community.members}</TableCell>
+                  <TableCell>{community.posts}</TableCell>
+                  <TableCell>{community.comments}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

@@ -1,14 +1,15 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, Phone, Video } from "lucide-react";
+import { Send } from "lucide-react";
 import { ChatMessage } from "@/lib/types";
 
 interface ChatInterfaceProps {
   connectionId: string;
   connectionName: string;
+  chatId?: string;
 }
 
 const ChatInterface = ({ connectionId, connectionName }: ChatInterfaceProps) => {

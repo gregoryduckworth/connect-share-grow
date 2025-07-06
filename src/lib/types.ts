@@ -99,6 +99,7 @@ export interface AnalyticsDataPoint extends Named {
 }
 
 export interface AnalyticsCommunity extends Named {
+  id: string;
   members: number;
   posts: number;
   comments?: number;
@@ -240,6 +241,7 @@ export type PlatformStats = {
   totalCommunities: number;
   totalPosts: number;
   totalReports: number;
+  activeUsers: number;
 };
 
 // --- Social App Types (moved from src/) ---

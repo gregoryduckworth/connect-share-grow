@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -30,38 +30,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Shield,
   Users,
   AlertTriangle,
-  Ban,
-  Lock,
-  Unlock,
-  MessageSquareOff,
-  MessageSquare,
-  Pin,
-  PinOff,
-  Eye,
   UserMinus,
   Search,
-  Calendar,
   TrendingUp,
+  Check,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { logAdminAction } from "@/lib/admin-logger";
 import ModeratorSuccessionDialog from "./ModeratorSuccessionDialog";
 import LockPostDialog from "./LockPostDialog";
 import { formatDate } from "@/lib/utils";
-import { User, CommunityPost, Moderator, CommunityAnalytics, FlaggedReport } from "@/lib/types";
+import { Moderator, CommunityAnalytics, FlaggedReport, PendingAdminRoleChange } from "@/lib/types";
 
 interface ModeratorPanelProps {
   communitySlug: string;
-  isModerator: boolean;
 }
 
-const ModeratorPanel = ({ communitySlug, isModerator }: ModeratorPanelProps) => {
+const ModeratorPanel = ({ communitySlug }: ModeratorPanelProps) => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [moderators, setModerators] = useState<Moderator[]>([
@@ -108,14 +97,13 @@ const ModeratorPanel = ({ communitySlug, isModerator }: ModeratorPanelProps) => 
       reportedByName: "Bob Williams",
     },
   ]);
-  const [communityAnalytics, setCommunityAnalytics] = useState<CommunityAnalytics>({
+  const [communityAnalytics] = useState<CommunityAnalytics>({
     totalMembers: 1234,
     totalPosts: 567,
     postsThisWeek: 89,
     activeMembers: 345,
     reportsThisWeek: 12,
   });
-  const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isLockDialogOpen, setIsLockDialogOpen] = useState(false);
   const [isUnlockDialogOpen, setIsUnlockDialogOpen] = useState(false);
@@ -124,7 +112,7 @@ const ModeratorPanel = ({ communitySlug, isModerator }: ModeratorPanelProps) => 
   const [lockReason, setLockReason] = useState("");
   const [commentsLockReason, setCommentsLockReason] = useState("");
   const [isSuccessionDialogOpen, setIsSuccessionDialogOpen] = useState(false);
-  const [pendingAdminRoleChanges, setPendingAdminRoleChanges] = useState([]);
+  const [pendingAdminRoleChanges, setPendingAdminRoleChanges] = useState<PendingAdminRoleChange[]>([]);
 
   const filteredModerators = moderators.filter((moderator) =>
     moderator.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -199,70 +187,62 @@ const ModeratorPanel = ({ communitySlug, isModerator }: ModeratorPanelProps) => 
   };
 
   const handleLockPost = () => {
-    if (selectedPost) {
-      toast({
-        title: "Post Locked",
-        description: "The post has been locked.",
-      });
+    toast({
+      title: "Post Locked",
+      description: "The post has been locked.",
+    });
 
-      logAdminAction({
-        action: "post_locked",
-        details: `Locked post ${selectedPost.id} in community ${communitySlug} with reason: ${lockReason}`,
-        targetId: selectedPost.id,
-        targetType: "post",
-      });
-    }
+    logAdminAction({
+      action: "post_locked",
+      details: `Locked post in community ${communitySlug} with reason: ${lockReason}`,
+      targetId: "post-id",
+      targetType: "post",
+    });
     setIsLockDialogOpen(false);
   };
 
   const handleUnlockPost = () => {
-    if (selectedPost) {
-      toast({
-        title: "Post Unlocked",
-        description: "The post has been unlocked.",
-      });
+    toast({
+      title: "Post Unlocked",
+      description: "The post has been unlocked.",
+    });
 
-      logAdminAction({
-        action: "post_unlocked",
-        details: `Unlocked post ${selectedPost.id} in community ${communitySlug}`,
-        targetId: selectedPost.id,
-        targetType: "post",
-      });
-    }
+    logAdminAction({
+      action: "post_unlocked",
+      details: `Unlocked post in community ${communitySlug}`,
+      targetId: "post-id",
+      targetType: "post",
+    });
     setIsUnlockDialogOpen(false);
   };
 
   const handleLockComments = () => {
-    if (selectedPost) {
-      toast({
-        title: "Comments Locked",
-        description: "Comments have been locked for this post.",
-      });
+    toast({
+      title: "Comments Locked",
+      description: "Comments have been locked for this post.",
+    });
 
-      logAdminAction({
-        action: "comments_locked",
-        details: `Locked comments for post ${selectedPost.id} in community ${communitySlug} with reason: ${commentsLockReason}`,
-        targetId: selectedPost.id,
-        targetType: "post",
-      });
-    }
+    logAdminAction({
+      action: "comments_locked",
+      details: `Locked comments for post in community ${communitySlug} with reason: ${commentsLockReason}`,
+      targetId: "post-id",
+      targetType: "post",
+    });
     setIsCommentsLockDialogOpen(false);
   };
 
   const handleUnlockComments = () => {
-    if (selectedPost) {
-      toast({
-        title: "Comments Unlocked",
-        description: "Comments have been unlocked for this post.",
-      });
+    toast({
+      title: "Comments Unlocked",
+      description: "Comments have been unlocked for this post.",
+    });
 
-      logAdminAction({
-        action: "comments_unlocked",
-        details: `Unlocked comments for post ${selectedPost.id} in community ${communitySlug}`,
-        targetId: selectedPost.id,
-        targetType: "post",
-      });
-    }
+    logAdminAction({
+      action: "comments_unlocked",
+      details: `Unlocked comments for post in community ${communitySlug}`,
+      targetId: "post-id",
+      targetType: "post",
+    });
     setIsCommentsUnlockDialogOpen(false);
   };
 
@@ -296,6 +276,7 @@ const ModeratorPanel = ({ communitySlug, isModerator }: ModeratorPanelProps) => 
             <Shield className="h-4 w-4 mr-2" /> Admin Requests ({pendingAdminRoleChanges.length})
           </TabsTrigger>
         </TabsList>
+        
         <TabsContent value="moderators" className="space-y-4">
           <Card>
             <CardHeader>
@@ -342,6 +323,9 @@ const ModeratorPanel = ({ communitySlug, isModerator }: ModeratorPanelProps) => 
           <ModeratorSuccessionDialog
             isOpen={isSuccessionDialogOpen}
             onClose={() => setIsSuccessionDialogOpen(false)}
+            members={[]}
+            onSelectNewModerator={() => {}}
+            communityName={communitySlug}
           />
         </TabsContent>
 
@@ -508,6 +492,7 @@ const ModeratorPanel = ({ communitySlug, isModerator }: ModeratorPanelProps) => 
         isOpen={isLockDialogOpen}
         onClose={() => setIsLockDialogOpen(false)}
         onConfirm={handleLockPost}
+        lockReason={lockReason}
         setLockReason={setLockReason}
       />
 
@@ -517,8 +502,6 @@ const ModeratorPanel = ({ communitySlug, isModerator }: ModeratorPanelProps) => 
             <DialogTitle>Unlock Post</DialogTitle>
             <DialogDescription>Are you sure you want to unlock this post?</DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-          </div>
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={() => setIsUnlockDialogOpen(false)}>
               Cancel
@@ -534,6 +517,7 @@ const ModeratorPanel = ({ communitySlug, isModerator }: ModeratorPanelProps) => 
         isOpen={isCommentsLockDialogOpen}
         onClose={() => setIsCommentsLockDialogOpen(false)}
         onConfirm={handleLockComments}
+        lockReason={commentsLockReason}
         setLockReason={setCommentsLockReason}
         title="Lock Comments"
         description="Are you sure you want to lock comments for this post?"
@@ -548,8 +532,6 @@ const ModeratorPanel = ({ communitySlug, isModerator }: ModeratorPanelProps) => 
               Are you sure you want to unlock comments for this post?
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-          </div>
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={() => setIsCommentsUnlockDialogOpen(false)}>
               Cancel

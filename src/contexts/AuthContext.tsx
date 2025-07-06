@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -219,6 +218,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [refreshToken, handleSessionExpiry]);
 
+  const updateUserProfile = useCallback(async (updatedUser: User): Promise<void> => {
+    try {
+      logger.info('Updating user profile', { userId: updatedUser.id });
+      setUser(updatedUser);
+      tokenManager.setUser(updatedUser);
+      
+      toast({
+        title: 'Profile Updated',
+        description: 'Your profile has been successfully updated.',
+      });
+      
+      logger.info('User profile updated successfully', { userId: updatedUser.id });
+    } catch (error) {
+      logger.error('Profile update error occurred', error);
+      toast({
+        title: 'Update Failed',
+        description: 'Failed to update profile. Please try again.',
+      });
+    }
+  }, [toast]);
+
   // Memoize context value
   const contextValue = useMemo(
     () => ({
@@ -235,6 +255,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       isAdmin,
       isModerator,
       canPost,
+      updateUserProfile,
     }),
     [
       user,
@@ -250,6 +271,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       isAdmin,
       isModerator,
       canPost,
+      updateUserProfile,
     ],
   );
 
