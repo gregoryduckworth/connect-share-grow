@@ -1,3 +1,5 @@
+
+import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -5,6 +7,8 @@ import { useAuth } from "@/contexts/useAuth";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import MainLayout from "@/components/layout/MainLayout";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
+import { initializeGlobalErrorHandler } from "@/lib/errors/globalErrorHandler";
+import { performanceMonitor } from "@/lib/monitoring/performanceMonitor";
 
 // Pages
 import LandingPage from "@/pages/LandingPage";
@@ -36,6 +40,12 @@ import AdminSettingsPage from "@/pages/admin/AdminSettingsPage";
 import "./App.css";
 
 function App() {
+  // Initialize monitoring and error handling
+  useEffect(() => {
+    initializeGlobalErrorHandler();
+    performanceMonitor.measureWebVitals();
+  }, []);
+
   // Custom component to handle root route logic
   const RootRoute = () => {
     const { user, isLoading } = useAuth();
@@ -45,6 +55,7 @@ function App() {
     }
     return <LandingPage />;
   };
+  
   return (
     <ErrorBoundary>
       <Router>
