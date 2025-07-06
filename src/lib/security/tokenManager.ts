@@ -1,4 +1,3 @@
-
 // Simple encryption for tokens in localStorage
 class TokenManager {
   private readonly TOKEN_KEY = 'auth_token';
@@ -117,8 +116,19 @@ class TokenManager {
 
   isTokenExpired(): boolean {
     const expiry = this.getExpiry();
-    if (!expiry) return true;
-    return new Date(expiry) <= new Date();
+    const now = new Date();
+    if (!expiry) {
+      console.warn('[tokenManager] No expiry found, treating as expired');
+      return true;
+    }
+    const expiryDate = new Date(expiry);
+    console.info('[tokenManager] Debug expiry check', {
+      expiryRaw: expiry,
+      expiryDate: expiryDate.toISOString(),
+      now: now.toISOString(),
+      expired: expiryDate <= now,
+    });
+    return expiryDate <= now;
   }
 }
 
