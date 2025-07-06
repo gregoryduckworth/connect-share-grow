@@ -1,4 +1,3 @@
-
 // Base types for reuse
 export interface Identifiable {
   id: string;
@@ -283,6 +282,7 @@ export interface PendingAdminRoleChange {
   requestedAt: Date;
   newRole: User["role"];
   status: "pending" | "approved" | "rejected";
+  communityName?: string;
 }
 
 export interface Moderator {
