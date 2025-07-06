@@ -68,7 +68,7 @@ export default function ReportModal({
       content: context.originalContent || "",
       postId: context.type === "post" ? context.postId : undefined,
       replyId: context.type === "reply" ? context.replyId : undefined,
-      communityId: context.communityId,
+      communityId: context.communityId || "", // Ensure it's always a string
     };
     
     try {

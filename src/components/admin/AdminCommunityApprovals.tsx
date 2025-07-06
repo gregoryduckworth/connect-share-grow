@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Check, X, Shield, Eye } from "lucide-react";
+import { Check, X, Eye } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import CommunityDetailsDialog from "./CommunityDetailsDialog";
 import CommunityApprovalDialog from "./CommunityApprovalDialog";

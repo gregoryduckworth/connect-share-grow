@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -54,7 +55,6 @@ const RoleChangeAlert: React.FC<RoleChangeAlertProps> = ({
                   <UserProfileLink
                     userId={change.user.id}
                     userName={change.user.name}
-                    currentUserId={change.user.id}
                   />
                 </span>
                 <Badge className={badgeClass}>
@@ -68,7 +68,6 @@ const RoleChangeAlert: React.FC<RoleChangeAlertProps> = ({
                     .toLowerCase()
                     .replace(/\s+/g, "-")}`}
                   userName={change.requestedBy}
-                  currentUserId={change.user.id}
                 />{" "}
                 • {change.requestedAt.toLocaleString()}
               </div>

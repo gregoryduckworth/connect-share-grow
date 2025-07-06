@@ -1,5 +1,5 @@
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, Mail } from 'lucide-react';
 import { t } from '@/lib/i18n';
@@ -10,7 +10,7 @@ interface PostingRestrictionProps {
 }
 
 const PostingRestriction = ({ children, action = "post" }: PostingRestrictionProps) => {
-  const { user, canPost } = useAuth();
+  const { user } = useAuth();
 
   if (!user) {
     return (

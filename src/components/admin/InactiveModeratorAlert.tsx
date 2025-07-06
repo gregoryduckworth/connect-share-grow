@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Clock, UserMinus, UserPlus } from "lucide-react";
+import { AlertTriangle, Clock, UserMinus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface InactiveModerator {
