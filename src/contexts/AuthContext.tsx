@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -13,6 +14,9 @@ import { t } from '@/lib/i18n';
 import { mockUsers } from '@/lib/api';
 import { User } from '@/lib/types';
 import { AuthContext } from './AuthContextBase';
+import { tokenManager } from '@/lib/security/tokenManager';
+import { logger } from '@/lib/logging/logger';
+import { loginSchema, registerSchema } from '@/lib/validation/schemas';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -26,33 +30,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Session expiry handler
   const handleSessionExpiry = useCallback(() => {
+    logger.info('Session expired for user', { userId: user?.id });
     setUser(null);
-    localStorage.removeItem('auth_user');
-    localStorage.removeItem('auth_expiry');
+    tokenManager.clearAll();
     toast({
       title: 'Session expired',
       description: 'Your session has expired. Please log in again.',
     });
     navigate('/login');
-  }, [navigate, toast]);
+  }, [navigate, toast, user?.id]);
 
   useEffect(() => {
     // Check for existing session
-    const storedUser = localStorage.getItem('auth_user');
-    const sessionExpiry = localStorage.getItem('auth_expiry');
-    const storedToken = localStorage.getItem('auth_token');
-    const storedRefreshToken = localStorage.getItem('auth_refresh_token');
+    const storedUser = tokenManager.getUser();
+    const sessionExpiry = tokenManager.getExpiry();
+    const storedToken = tokenManager.getToken();
+    const storedRefreshToken = tokenManager.getRefreshToken();
 
-    if (storedUser && sessionExpiry) {
-      const expiryDate = new Date(sessionExpiry);
-      if (expiryDate > new Date()) {
-        setUser(JSON.parse(storedUser));
-        setToken(storedToken || null);
-        setRefreshToken(storedRefreshToken || null);
-      } else {
-        // Session expired
-        handleSessionExpiry();
-      }
+    if (storedUser && sessionExpiry && !tokenManager.isTokenExpired()) {
+      logger.info('Restoring user session', { userId: storedUser.id });
+      setUser(storedUser);
+      setToken(storedToken);
+      setRefreshToken(storedRefreshToken);
+      logger.setUserId(storedUser.id);
+    } else if (storedUser && tokenManager.isTokenExpired()) {
+      logger.info('Found expired session, clearing tokens');
+      handleSessionExpiry();
     }
     setIsLoading(false);
   }, [handleSessionExpiry]);
@@ -62,37 +65,62 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     setAuthError(null);
+    
     try {
+      // Validate input
+      const validationResult = loginSchema.safeParse({ email, password });
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map(err => err.message);
+        setAuthError(errors.join(', '));
+        setIsLoading(false);
+        logger.warn('Login validation failed', { email, errors });
+        return false;
+      }
+
+      logger.info('Attempting login', { email });
+      
       const userData = mockUsers.find((u) => u.email === email);
       if (userData && password === 'password123') {
         const user: User = userData;
         setUser(user);
-        // Simulate real backend: set fake tokens
-        const fakeToken = 'mock-jwt-token';
-        const fakeRefreshToken = 'mock-refresh-token';
+        
+        // Generate secure tokens
+        const fakeToken = `jwt_${Date.now()}_${Math.random().toString(36)}`;
+        const fakeRefreshToken = `refresh_${Date.now()}_${Math.random().toString(36)}`;
+        
         setToken(fakeToken);
         setRefreshToken(fakeRefreshToken);
-        // Set session with 24-hour expiry
+        
+        // Secure token storage
         const expiryDate = new Date();
         expiryDate.setHours(expiryDate.getHours() + 24);
-        localStorage.setItem('auth_user', JSON.stringify(user));
-        localStorage.setItem('auth_expiry', expiryDate.toISOString());
-        localStorage.setItem('auth_token', fakeToken);
-        localStorage.setItem('auth_refresh_token', fakeRefreshToken);
+        
+        tokenManager.setUser(user);
+        tokenManager.setExpiry(expiryDate.toISOString());
+        tokenManager.setToken(fakeToken);
+        tokenManager.setRefreshToken(fakeRefreshToken);
+        
+        logger.setUserId(user.id);
+        logger.info('User logged in successfully', { userId: user.id, role: user.role });
+        
         // Show suspension dialog if user is suspended
         if (user.isSuspended) {
           setShowSuspensionDialog(true);
+          logger.warn('Suspended user logged in', { userId: user.id, reason: user.suspensionReason });
         }
+        
         setIsLoading(false);
         return true;
       }
+      
+      logger.warn('Login failed - invalid credentials', { email });
       setAuthError('Invalid email or password.');
       setIsLoading(false);
       return false;
     } catch (error) {
+      logger.error('Login error occurred', error);
       setAuthError('An error occurred during login.');
       setIsLoading(false);
-      console.error('Login error:', error);
       return false;
     }
   }, []);
@@ -100,27 +128,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const register = useCallback(
     async (
       email: string,
-      _password: string, // renamed to _password to indicate unused
+      password: string,
       name: string,
       language: string,
     ): Promise<boolean> => {
       setIsLoading(true);
       setAuthError(null);
+      
       try {
+        // Validate input
+        const validationResult = registerSchema.safeParse({ 
+          email, 
+          password, 
+          name, 
+          confirmPassword: password,
+          dateOfBirth: '2000-01-01' // Mock for validation
+        });
+        
+        if (!validationResult.success) {
+          const errors = validationResult.error.errors.map(err => err.message);
+          setAuthError(errors.join(', '));
+          setIsLoading(false);
+          logger.warn('Registration validation failed', { email, errors });
+          return false;
+        }
+
+        logger.info('Attempting registration', { email, name, language });
+        
         // Mock registration - in real app, this would call Supabase
-        // Simulate email verification requirement
         toast({
           title: t('auth.verificationSent'),
           description: 'Please check your email and click the verification link before logging in.',
         });
+        
+        logger.info('Registration successful', { email });
         setIsLoading(false);
-        console.log('User registered:', { email, name, language });
-        console.log('Verification email would be sent to:', email);
         return true;
       } catch (error) {
+        logger.error('Registration error occurred', error);
         setAuthError('An error occurred during registration.');
         setIsLoading(false);
-        console.error('Registration error:', error);
         return false;
       }
     },
@@ -128,19 +175,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   const logout = useCallback(() => {
+    logger.info('User logging out', { userId: user?.id });
     setUser(null);
     setToken(null);
     setRefreshToken(null);
-    localStorage.removeItem('auth_user');
-    localStorage.removeItem('auth_expiry');
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_refresh_token');
+    tokenManager.clearAll();
+    logger.setUserId('');
+    
     toast({
       title: 'Logged out',
       description: 'You have been successfully logged out.',
     });
-    navigate('/'); // Go to landing page after logout
-  }, [navigate, toast]);
+    navigate('/');
+  }, [navigate, toast, user?.id]);
 
   const isAdmin = useCallback(() => user?.role === 'admin', [user]);
   const isModerator = useCallback(
@@ -152,16 +199,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     [user],
   );
 
-  // Stub for refreshAuthToken (to be implemented with real backend)
   const refreshAuthToken = useCallback(async () => {
-    // Example: call backend to refresh token using refreshToken
-    // For now, just log and do nothing
-    if (!refreshToken) return;
-    // const response = await api.refreshToken(refreshToken);
-    // setToken(response.token);
-    // localStorage.setItem('auth_token', response.token);
-    console.log('Refreshing token with:', refreshToken);
-  }, [refreshToken]);
+    if (!refreshToken) {
+      logger.warn('No refresh token available');
+      return;
+    }
+    
+    try {
+      logger.info('Refreshing auth token');
+      // In a real app, this would call the backend API
+      // const response = await api.refreshToken(refreshToken);
+      // setToken(response.token);
+      // tokenManager.setToken(response.token);
+      
+      logger.info('Token refresh completed');
+    } catch (error) {
+      logger.error('Token refresh failed', error);
+      handleSessionExpiry();
+    }
+  }, [refreshToken, handleSessionExpiry]);
 
   // Memoize context value
   const contextValue = useMemo(

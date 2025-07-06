@@ -4,6 +4,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { useAuth } from "@/contexts/useAuth";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import MainLayout from "@/components/layout/MainLayout";
+import ErrorBoundary from "@/components/common/ErrorBoundary";
 
 // Pages
 import LandingPage from "@/pages/LandingPage";
@@ -45,70 +46,72 @@ function App() {
     return <LandingPage />;
   };
   return (
-    <Router>
-      <AuthProvider>
-        <div className="App">
-          <Routes>
-            {/* Root route: Landing for logged-out, Main app for logged-in */}
-            <Route path="/" element={<RootRoute />}>
-              {/* Main app routes for logged-in users */}
-              <Route index element={<Index />} />
-              <Route path="home" element={<Index />} />
-              <Route path="communities" element={<CommunitiesPage />} />
+    <ErrorBoundary>
+      <Router>
+        <AuthProvider>
+          <div className="App">
+            <Routes>
+              {/* Root route: Landing for logged-out, Main app for logged-in */}
+              <Route path="/" element={<RootRoute />}>
+                {/* Main app routes for logged-in users */}
+                <Route index element={<Index />} />
+                <Route path="home" element={<Index />} />
+                <Route path="communities" element={<CommunitiesPage />} />
+                <Route
+                  path="community/:communitySlug"
+                  element={<CommunityDetailPage />}
+                />
+                <Route
+                  path="community/:communitySlug/post/:postId"
+                  element={<PostDetailPage />}
+                />
+                <Route
+                  path="community/:communitySlug/moderate"
+                  element={
+                    <ProtectedRoute requireModerator={true}>
+                      <ModeratePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="hot-topics" element={<HotTopicsPage />} />
+                <Route path="chat" element={<ChatPage />} />
+                <Route path="connections" element={<ConnectionsPage />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="settings" element={<SettingsPage />} />
+              </Route>
+
+              {/* Public Auth Routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+              {/* Protected Admin Routes */}
               <Route
-                path="community/:communitySlug"
-                element={<CommunityDetailPage />}
-              />
-              <Route
-                path="community/:communitySlug/post/:postId"
-                element={<PostDetailPage />}
-              />
-              <Route
-                path="community/:communitySlug/moderate"
+                path="/admin"
                 element={
-                  <ProtectedRoute requireModerator={true}>
-                    <ModeratePage />
+                  <ProtectedRoute requireAdmin={true}>
+                    <MainLayout />
                   </ProtectedRoute>
                 }
-              />
-              <Route path="hot-topics" element={<HotTopicsPage />} />
-              <Route path="chat" element={<ChatPage />} />
-              <Route path="connections" element={<ConnectionsPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="settings" element={<SettingsPage />} />
-            </Route>
+              >
+                <Route index element={<AdminDashboard />} />
+                <Route path="users" element={<AdminUsersPage />} />
+                <Route path="communities" element={<AdminCommunitiesPage />} />
+                <Route path="reports" element={<AdminReportsPage />} />
+                <Route path="roles" element={<AdminRolesPage />} />
+                <Route path="analytics" element={<AdminAnalyticsPage />} />
+                <Route path="logs" element={<AdminLogsPage />} />
+                <Route path="settings" element={<AdminSettingsPage />} />
+              </Route>
 
-            {/* Public Auth Routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-
-            {/* Protected Admin Routes */}
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute requireAdmin={true}>
-                  <MainLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<AdminDashboard />} />
-              <Route path="users" element={<AdminUsersPage />} />
-              <Route path="communities" element={<AdminCommunitiesPage />} />
-              <Route path="reports" element={<AdminReportsPage />} />
-              <Route path="roles" element={<AdminRolesPage />} />
-              <Route path="analytics" element={<AdminAnalyticsPage />} />
-              <Route path="logs" element={<AdminLogsPage />} />
-              <Route path="settings" element={<AdminSettingsPage />} />
-            </Route>
-
-            {/* 404 Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Toaster />
-        </div>
-      </AuthProvider>
-    </Router>
+              {/* 404 Route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+          </div>
+        </AuthProvider>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

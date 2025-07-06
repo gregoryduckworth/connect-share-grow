@@ -15,6 +15,8 @@ import { Eye, EyeOff, Mail, Lock, Shield } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/useAuth";
+import { loginSchema, LoginFormData } from "@/lib/validation/schemas";
+import { logger } from "@/lib/logging/logger";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -23,7 +25,7 @@ const LoginPage = () => {
   const { login, user } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [loginForm, setLoginForm] = useState<LoginFormData>({ email: "", password: "" });
   const [errors, setErrors] = useState<string[]>([]);
   const from = location.state?.from?.pathname || "/";
 
@@ -31,23 +33,20 @@ const LoginPage = () => {
     e.preventDefault();
     setErrors([]);
     setIsLoading(true);
-    if (!loginForm.email || !loginForm.password) {
-      setErrors(["Please fill in all fields"]);
-      setIsLoading(false);
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(loginForm.email)) {
-      setErrors(["Please enter a valid email address"]);
-      setIsLoading(false);
-      return;
-    }
-    if (loginForm.password.length < 6) {
-      setErrors(["Password must be at least 6 characters long"]);
-      setIsLoading(false);
-      return;
-    }
+    
+    logger.info('Login form submitted', { email: loginForm.email });
+    
     try {
+      // Validate form data
+      const validationResult = loginSchema.safeParse(loginForm);
+      if (!validationResult.success) {
+        const validationErrors = validationResult.error.errors.map(err => err.message);
+        setErrors(validationErrors);
+        setIsLoading(false);
+        logger.warn('Login form validation failed', { errors: validationErrors });
+        return;
+      }
+
       const success = await login(loginForm.email, loginForm.password);
       if (success) {
         toast({
@@ -63,6 +62,7 @@ const LoginPage = () => {
         setErrors(["Invalid email or password"]);
       }
     } catch (error) {
+      logger.error('Login submission error', error);
       setErrors(["An error occurred during login. Please try again."]);
     } finally {
       setIsLoading(false);
