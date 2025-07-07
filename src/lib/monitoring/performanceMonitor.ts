@@ -111,7 +111,11 @@ class PerformanceMonitor {
       // First Input Delay
       const fidObserver = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
-          const fid = entry.processingStart - entry.startTime;
+          // Cast to the appropriate type for first-input entries
+          const firstInputEntry = entry as PerformanceEntry & {
+            processingStart: number;
+          };
+          const fid = firstInputEntry.processingStart - entry.startTime;
           logger.info('FID measured', {
             value: fid,
             threshold: fid > 300 ? 'poor' : fid > 100 ? 'needs improvement' : 'good'

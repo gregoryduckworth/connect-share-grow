@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { logger } from '@/lib/logging/logger';
 
 type SetValue<T> = T | ((val: T) => T);

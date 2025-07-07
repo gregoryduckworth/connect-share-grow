@@ -10,13 +10,14 @@ export function useOptimizedQuery<T>(
   return useQuery({
     queryKey,
     queryFn: async () => {
-      const timer = performanceMonitor.startTimer(`query-${queryKey.join('-')}`);
+      const timerName = `query-${queryKey.join('-')}`;
+      performanceMonitor.startTimer(timerName);
       try {
         const result = await queryFn();
-        timer.end();
+        performanceMonitor.endTimer(timerName);
         return result;
       } catch (error) {
-        timer.end();
+        performanceMonitor.endTimer(timerName);
         throw error;
       }
     },

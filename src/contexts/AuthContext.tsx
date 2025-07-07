@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -186,7 +187,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   const register = useCallback(
-    async (email: string, password: string, name: string, language: string): Promise<boolean> => {
+    async (email: string, password: string, name: string): Promise<boolean> => {
       const result = await handleAsyncError(
         async () => {
           // Sanitize inputs
@@ -244,16 +245,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     navigate('/');
   }, [navigate, toast, user?.id]);
 
-  const isAdmin = useCallback(() => user?.role === 'admin', [user]);
-  const isModerator = useCallback(
-    () => user?.role === 'moderator' || user?.role === 'admin',
-    [user],
-  );
-  const canPost = useCallback(
-    () => Boolean(user && user.isEmailVerified && !user.isSuspended),
-    [user],
-  );
-
   const refreshAuthToken = useCallback(async () => {
     if (!refreshToken) {
       logger.warn('No refresh token available');
@@ -304,23 +295,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       login,
       register,
       logout,
-      refreshAuthToken: async () => {}, // Placeholder for now
+      refreshAuthToken,
       isAdmin: () => user?.role === 'admin',
       isModerator: () => user?.role === 'moderator' || user?.role === 'admin',
       canPost: () => Boolean(user && user.isEmailVerified && !user.isSuspended),
-      updateUserProfile: async (updatedUser: User): Promise<void> => {
-        try {
-          setUser(updatedUser);
-          tokenManager.setUser(updatedUser);
-
-          toast({
-            title: 'Profile Updated',
-            description: 'Your profile has been successfully updated.',
-          });
-        } catch (error) {
-          handleError(error, 'profile update');
-        }
-      },
+      updateUserProfile,
     }),
     [
       user,
@@ -332,8 +311,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       login,
       register,
       logout,
-      toast,
-      handleError,
+      refreshAuthToken,
+      updateUserProfile,
     ],
   );
 
