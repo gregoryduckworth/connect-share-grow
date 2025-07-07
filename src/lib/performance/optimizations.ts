@@ -53,7 +53,7 @@ export const analyzeBundleSize = () => {
   if (!BUILD_CONFIG.IS_DEVELOPMENT) return;
 
   const scripts = Array.from(document.querySelectorAll('script[src]'));
-  const totalSize = scripts.reduce((acc, script) => {
+  const totalSize = scripts.reduce((acc) => {
     // Estimate - in real implementation you'd get actual sizes
     return acc + 100; // Placeholder
   }, 0);

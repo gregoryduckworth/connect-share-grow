@@ -24,20 +24,22 @@ export function useFormValidation<T extends Record<string, any>>({
 
   const validateField = useCallback((name: keyof T, value: any) => {
     try {
-      // Validate single field
-      const fieldSchema = schema.shape[name as string];
-      if (fieldSchema) {
-        fieldSchema.parse(value);
+      // For field validation, we validate the entire object but only show errors for this field
+      const result = validateWithSchema(schema, { ...values, [name]: value });
+      if (result.success) {
         setErrors(prev => ({ ...prev, [name]: '' }));
         return true;
+      } else {
+        // If validation fails, we'll handle it in the catch block or set a generic error
+        setErrors(prev => ({ ...prev, [name]: 'Invalid value' }));
+        return false;
       }
     } catch (error: any) {
       const errorMessage = error.errors?.[0]?.message || 'Invalid value';
       setErrors(prev => ({ ...prev, [name]: errorMessage }));
       return false;
     }
-    return true;
-  }, [schema]);
+  }, [schema, values]);
 
   const validateAll = useCallback((): ValidationResult<T> => {
     const result = validateWithSchema(schema, values);

@@ -17,7 +17,12 @@ export interface HealthCheckResult {
 }
 
 export const performHealthCheck = async (): Promise<HealthCheckResult> => {
-  const checks = [];
+  const checks: Array<{
+    name: string;
+    status: 'pass' | 'warn' | 'fail';
+    message?: string;
+    details?: any;
+  }> = [];
   let overallStatus: 'healthy' | 'warning' | 'critical' = 'healthy';
 
   // Environment validation
@@ -62,7 +67,7 @@ export const performHealthCheck = async (): Promise<HealthCheckResult> => {
   // API connectivity check (placeholder)
   checks.push({
     name: 'API Connectivity',
-    status: 'pass',
+    status: 'pass' as const,
     message: 'API endpoints accessible',
   });
 
@@ -73,7 +78,7 @@ export const performHealthCheck = async (): Promise<HealthCheckResult> => {
     
     checks.push({
       name: 'Memory Usage',
-      status: memoryUsage > 0.8 ? 'warn' : 'pass',
+      status: (memoryUsage > 0.8 ? 'warn' : 'pass') as const,
       message: `Memory usage at ${Math.round(memoryUsage * 100)}%`,
       details: {
         used: Math.round(memInfo.usedJSHeapSize / 1048576),
