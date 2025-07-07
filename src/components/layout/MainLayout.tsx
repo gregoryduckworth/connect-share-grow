@@ -1,22 +1,24 @@
+
 import { Outlet, useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import Sidebar from "./Sidebar";
 import UserMenu from "./UserMenu";
 import NotificationBell from "./NotificationBell";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, memo, useMemo } from "react";
 import { useAuth } from "@/contexts/useAuth";
 
-const MainLayout = () => {
+const MainLayout = memo(() => {
   const { user } = useAuth();
-
   const location = useLocation();
   const mainRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     mainRef.current?.scrollTo(0, 0);
   }, [location.pathname]);
 
-  const header = (
+  // Memoize header to prevent unnecessary re-renders
+  const header = useMemo(() => (
     <header className="h-16 border-b flex items-center justify-between px-4 md:px-6 flex-shrink-0">
       <div className="flex items-center gap-2">
         <SidebarTrigger />
@@ -27,7 +29,7 @@ const MainLayout = () => {
         {user && <UserMenu user={user} />}
       </div>
     </header>
-  );
+  ), [user]);
 
   return (
     <ThemeProvider>
@@ -46,6 +48,8 @@ const MainLayout = () => {
       </SidebarProvider>
     </ThemeProvider>
   );
-};
+});
+
+MainLayout.displayName = 'MainLayout';
 
 export default MainLayout;

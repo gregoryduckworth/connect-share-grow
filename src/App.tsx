@@ -3,39 +3,17 @@ import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { QueryProvider } from "@/contexts/QueryProvider";
 import { useAuth } from "@/contexts/useAuth";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import MainLayout from "@/components/layout/MainLayout";
 import ErrorBoundary from "@/components/common/ErrorBoundary";
+import SuspenseWrapper from "@/components/common/SuspenseWrapper";
 import { initializeGlobalErrorHandler } from "@/lib/errors/globalErrorHandler";
 import { performanceMonitor } from "@/lib/monitoring/performanceMonitor";
 
-// Pages
-import LandingPage from "@/pages/LandingPage";
-import Index from "@/pages/Index";
-import CommunitiesPage from "@/pages/CommunitiesPage";
-import CommunityDetailPage from "@/pages/CommunityDetailPage";
-import PostDetailPage from "@/pages/PostDetailPage";
-import ModeratePage from "@/pages/ModeratePage";
-import ProfilePage from "@/pages/ProfilePage";
-import ChatPage from "@/pages/ChatPage";
-import HotTopicsPage from "@/pages/HotTopicsPage";
-import SettingsPage from "@/pages/SettingsPage";
-import LoginPage from "@/pages/LoginPage";
-import RegisterPage from "@/pages/RegisterPage";
-import NotFound from "@/pages/NotFound";
-import ConnectionsPage from "@/pages/ConnectionsPage";
-import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
-
-// Admin Pages
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import AdminUsersPage from "@/pages/admin/AdminUsersPage";
-import AdminCommunitiesPage from "@/pages/admin/AdminCommunitiesPage";
-import AdminReportsPage from "@/pages/admin/AdminReportsPage";
-import AdminRolesPage from "@/pages/admin/AdminRolesPage";
-import AdminAnalyticsPage from "@/pages/admin/AdminAnalyticsPage";
-import AdminLogsPage from "@/pages/admin/AdminLogsPage";
-import AdminSettingsPage from "@/pages/admin/AdminSettingsPage";
+// Lazy-loaded pages for code splitting
+import * as LazyPages from "@/components/routing/LazyRoutes";
 
 import "./App.css";
 
@@ -53,75 +31,171 @@ function App() {
     if (user) {
       return <MainLayout />;
     }
-    return <LandingPage />;
+    return (
+      <SuspenseWrapper componentName="LandingPage">
+        <LazyPages.LandingPage />
+      </SuspenseWrapper>
+    );
   };
   
   return (
     <ErrorBoundary>
-      <Router>
-        <AuthProvider>
-          <div className="App">
-            <Routes>
-              {/* Root route: Landing for logged-out, Main app for logged-in */}
-              <Route path="/" element={<RootRoute />}>
-                {/* Main app routes for logged-in users */}
-                <Route index element={<Index />} />
-                <Route path="home" element={<Index />} />
-                <Route path="communities" element={<CommunitiesPage />} />
+      <QueryProvider>
+        <Router>
+          <AuthProvider>
+            <div className="App">
+              <Routes>
+                {/* Root route: Landing for logged-out, Main app for logged-in */}
+                <Route path="/" element={<RootRoute />}>
+                  {/* Main app routes for logged-in users */}
+                  <Route index element={
+                    <SuspenseWrapper componentName="Index">
+                      <LazyPages.Index />
+                    </SuspenseWrapper>
+                  } />
+                  <Route path="home" element={
+                    <SuspenseWrapper componentName="Index">
+                      <LazyPages.Index />
+                    </SuspenseWrapper>
+                  } />
+                  <Route path="communities" element={
+                    <SuspenseWrapper componentName="CommunitiesPage">
+                      <LazyPages.CommunitiesPage />
+                    </SuspenseWrapper>
+                  } />
+                  <Route
+                    path="community/:communitySlug"
+                    element={
+                      <SuspenseWrapper componentName="CommunityDetailPage">
+                        <LazyPages.CommunityDetailPage />
+                      </SuspenseWrapper>
+                    }
+                  />
+                  <Route
+                    path="community/:communitySlug/post/:postId"
+                    element={
+                      <SuspenseWrapper componentName="PostDetailPage">
+                        <LazyPages.PostDetailPage />
+                      </SuspenseWrapper>
+                    }
+                  />
+                  <Route
+                    path="community/:communitySlug/moderate"
+                    element={
+                      <ProtectedRoute requireModerator={true}>
+                        <SuspenseWrapper componentName="ModeratePage">
+                          <LazyPages.ModeratePage />
+                        </SuspenseWrapper>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="hot-topics" element={
+                    <SuspenseWrapper componentName="HotTopicsPage">
+                      <LazyPages.HotTopicsPage />
+                    </SuspenseWrapper>
+                  } />
+                  <Route path="chat" element={
+                    <SuspenseWrapper componentName="ChatPage">
+                      <LazyPages.ChatPage />
+                    </SuspenseWrapper>
+                  } />
+                  <Route path="connections" element={
+                    <SuspenseWrapper componentName="ConnectionsPage">
+                      <LazyPages.ConnectionsPage />
+                    </SuspenseWrapper>
+                  } />
+                  <Route path="profile" element={
+                    <SuspenseWrapper componentName="ProfilePage">
+                      <LazyPages.ProfilePage />
+                    </SuspenseWrapper>
+                  } />
+                  <Route path="settings" element={
+                    <SuspenseWrapper componentName="SettingsPage">
+                      <LazyPages.SettingsPage />
+                    </SuspenseWrapper>
+                  } />
+                </Route>
+
+                {/* Public Auth Routes */}
+                <Route path="/login" element={
+                  <SuspenseWrapper componentName="LoginPage">
+                    <LazyPages.LoginPage />
+                  </SuspenseWrapper>
+                } />
+                <Route path="/register" element={
+                  <SuspenseWrapper componentName="RegisterPage">
+                    <LazyPages.RegisterPage />
+                  </SuspenseWrapper>
+                } />
+                <Route path="/forgot-password" element={
+                  <SuspenseWrapper componentName="ForgotPasswordPage">
+                    <LazyPages.ForgotPasswordPage />
+                  </SuspenseWrapper>
+                } />
+
+                {/* Protected Admin Routes */}
                 <Route
-                  path="community/:communitySlug"
-                  element={<CommunityDetailPage />}
-                />
-                <Route
-                  path="community/:communitySlug/post/:postId"
-                  element={<PostDetailPage />}
-                />
-                <Route
-                  path="community/:communitySlug/moderate"
+                  path="/admin"
                   element={
-                    <ProtectedRoute requireModerator={true}>
-                      <ModeratePage />
+                    <ProtectedRoute requireAdmin={true}>
+                      <MainLayout />
                     </ProtectedRoute>
                   }
-                />
-                <Route path="hot-topics" element={<HotTopicsPage />} />
-                <Route path="chat" element={<ChatPage />} />
-                <Route path="connections" element={<ConnectionsPage />} />
-                <Route path="profile" element={<ProfilePage />} />
-                <Route path="settings" element={<SettingsPage />} />
-              </Route>
+                >
+                  <Route index element={
+                    <SuspenseWrapper componentName="AdminDashboard">
+                      <LazyPages.AdminDashboard />
+                    </SuspenseWrapper>
+                  } />
+                  <Route path="users" element={
+                    <SuspenseWrapper componentName="AdminUsersPage">
+                      <LazyPages.AdminUsersPage />
+                    </SuspenseWrapper>
+                  } />
+                  <Route path="communities" element={
+                    <SuspenseWrapper componentName="AdminCommunitiesPage">
+                      <LazyPages.AdminCommunitiesPage />
+                    </SuspenseWrapper>
+                  } />
+                  <Route path="reports" element={
+                    <SuspenseWrapper componentName="AdminReportsPage">
+                      <LazyPages.AdminReportsPage />
+                    </SuspenseWrapper>
+                  } />
+                  <Route path="roles" element={
+                    <SuspenseWrapper componentName="AdminRolesPage">
+                      <LazyPages.AdminRolesPage />
+                    </SuspenseWrapper>
+                  } />
+                  <Route path="analytics" element={
+                    <SuspenseWrapper componentName="AdminAnalyticsPage">
+                      <LazyPages.AdminAnalyticsPage />
+                    </SuspenseWrapper>
+                  } />
+                  <Route path="logs" element={
+                    <SuspenseWrapper componentName="AdminLogsPage">
+                      <LazyPages.AdminLogsPage />
+                    </SuspenseWrapper>
+                  } />
+                  <Route path="settings" element={
+                    <SuspenseWrapper componentName="AdminSettingsPage">
+                      <LazyPages.AdminSettingsPage />
+                    </SuspenseWrapper>
+                  } />
+                </Route>
 
-              {/* Public Auth Routes */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-
-              {/* Protected Admin Routes */}
-              <Route
-                path="/admin"
-                element={
-                  <ProtectedRoute requireAdmin={true}>
-                    <MainLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<AdminDashboard />} />
-                <Route path="users" element={<AdminUsersPage />} />
-                <Route path="communities" element={<AdminCommunitiesPage />} />
-                <Route path="reports" element={<AdminReportsPage />} />
-                <Route path="roles" element={<AdminRolesPage />} />
-                <Route path="analytics" element={<AdminAnalyticsPage />} />
-                <Route path="logs" element={<AdminLogsPage />} />
-                <Route path="settings" element={<AdminSettingsPage />} />
-              </Route>
-
-              {/* 404 Route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <Toaster />
-          </div>
-        </AuthProvider>
-      </Router>
+                {/* 404 Route */}
+                <Route path="*" element={
+                  <SuspenseWrapper componentName="NotFound">
+                    <LazyPages.NotFound />
+                  </SuspenseWrapper>
+                } />
+              </Routes>
+              <Toaster />
+            </div>
+          </AuthProvider>
+        </Router>
+      </QueryProvider>
     </ErrorBoundary>
   );
 }
