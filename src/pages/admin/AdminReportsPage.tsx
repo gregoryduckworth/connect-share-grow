@@ -27,6 +27,7 @@ import {
 import ReportDetailsDialog from "@/components/admin/ReportDetailsDialog";
 import { ADMIN_REPORTS_DATA } from "@/lib/backend/data/admin-reports";
 import { ReportBase } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
 
 const AdminReportsPage = () => {
   const [reports, setReports] = useState<ReportBase[]>([]);
@@ -37,7 +38,6 @@ const AdminReportsPage = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Simulate fetching reports from an API
     const processedReports = ADMIN_REPORTS_DATA.map(report => ({
       ...report,
       status: report.status as "pending" | "reviewed" | "resolved"
@@ -64,7 +64,7 @@ const AdminReportsPage = () => {
 
     logAdminAction({
       action: "report_resolved",
-      details: `Resolved report ${report.id}`,
+      details: `Resolved report ${report.id}: ${report.reason}`,
       targetId: report.id,
       targetType: "report",
     });
@@ -78,6 +78,7 @@ const AdminReportsPage = () => {
   };
 
   const handleDeleteReport = (id: string) => {
+    const report = reports.find(r => r.id === id);
     const updatedReports = reports.filter((report) => report.id !== id);
     setReports(updatedReports);
 
@@ -88,7 +89,7 @@ const AdminReportsPage = () => {
 
     logAdminAction({
       action: "report_deleted",
-      details: `Deleted report ${id}`,
+      details: `Deleted report ${id}: ${report?.reason || 'Unknown reason'}`,
       targetId: id,
       targetType: "report",
     });
@@ -107,58 +108,81 @@ const AdminReportsPage = () => {
     }
   };
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "pending":
+        return <Badge variant="destructive">Pending</Badge>;
+      case "reviewed":
+        return <Badge variant="outline" className="border-blue-500 text-blue-600">Reviewed</Badge>;
+      case "resolved":
+        return <Badge variant="outline" className="border-green-500 text-green-600">Resolved</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h2 className="text-2xl font-semibold">Manage Reports</h2>
+        <h1 className="text-3xl font-bold text-social-primary mb-2">
+          Manage Reports
+        </h1>
         <div className="relative w-full sm:w-64">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search reports..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <div className="absolute inset-0 pointer-events-none rounded-lg border border-purple-200 bg-gradient-to-r from-purple-100/40 to-blue-100/20" />
+          <div className="flex items-center gap-2 relative z-10 p-1 rounded-lg bg-white/90 border border-purple-200 w-full focus-within:border-purple-500 focus-within:shadow-lg focus-within:shadow-purple-200/40 transition-colors h-12">
+            <Search className="ml-3 text-social-primary h-5 w-5" />
+            <Input
+              placeholder="Search reports..."
+              className="pl-2 py-3 border-0 bg-transparent focus:ring-0 focus:outline-none shadow-none min-w-0 flex-1 text-base h-full"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              type="text"
+              autoComplete="off"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="border rounded-md">
+      <div className="border rounded-lg bg-white/50 backdrop-blur-sm">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Content</TableHead>
-              <TableHead className="hidden md:table-cell">Reason</TableHead>
-              <TableHead className="hidden md:table-cell">Reported By</TableHead>
-              <TableHead className="hidden md:table-cell">Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+            <TableRow className="border-b border-purple-100">
+              <TableHead className="font-semibold text-social-primary">Content</TableHead>
+              <TableHead className="hidden md:table-cell font-semibold text-social-primary">Reason</TableHead>
+              <TableHead className="hidden md:table-cell font-semibold text-social-primary">Reported By</TableHead>
+              <TableHead className="hidden md:table-cell font-semibold text-social-primary">Date</TableHead>
+              <TableHead className="font-semibold text-social-primary">Status</TableHead>
+              <TableHead className="text-right font-semibold text-social-primary">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredReports.map((report) => (
-              <TableRow key={report.id}>
-                <TableCell>{report.contentPreview}</TableCell>
-                <TableCell className="hidden md:table-cell">{report.reason}</TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {report.originalContent?.author || "N/A"}
+              <TableRow key={report.id} className="hover:bg-purple-50/50 transition-colors">
+                <TableCell className="max-w-xs">
+                  <div className="truncate" title={report.contentPreview}>
+                    {report.contentPreview}
+                  </div>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
+                  <Badge variant="outline" className="border-orange-400 text-orange-600">
+                    {report.reason}
+                  </Badge>
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {report.originalContent?.author || report.reportedBy}
+                </TableCell>
+                <TableCell className="hidden md:table-cell text-sm text-gray-600">
                   {formatDate(report.createdAt)}
                 </TableCell>
                 <TableCell>
-                  {report.status === "pending" ? (
-                    <span className="text-yellow-500">Pending</span>
-                  ) : report.status === "reviewed" ? (
-                    <span className="text-blue-500">Reviewed</span>
-                  ) : (
-                    <span className="text-green-500">Resolved</span>
-                  )}
+                  {getStatusBadge(report.status)}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button
                       variant="outline"
                       size="sm"
+                      className="border-purple-200 text-purple-600 hover:bg-purple-50"
                       onClick={() => setSelectedReport(report)}
                     >
                       <Eye className="h-4 w-4 mr-2" />
@@ -168,7 +192,7 @@ const AdminReportsPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="border-green-500 text-green-500 hover:bg-green-50"
+                        className="border-green-500 text-green-600 hover:bg-green-50"
                         onClick={() => handleResolveReport(report)}
                       >
                         <Check className="h-4 w-4 mr-2" />
@@ -178,7 +202,7 @@ const AdminReportsPage = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-red-500 text-red-500 hover:bg-red-50"
+                      className="border-red-500 text-red-600 hover:bg-red-50"
                       onClick={() => openDeleteDialog(report.id)}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
@@ -193,7 +217,9 @@ const AdminReportsPage = () => {
 
         {filteredReports.length === 0 && (
           <div className="text-center p-8">
-            <p className="text-social-muted">No reports found.</p>
+            <p className="text-gray-500">
+              {searchQuery ? "No reports found matching your search." : "No reports found."}
+            </p>
           </div>
         )}
       </div>
@@ -209,7 +235,7 @@ const AdminReportsPage = () => {
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-red-500 text-red-50"
+              className="bg-red-500 hover:bg-red-600 text-white"
               onClick={confirmDelete}
             >
               Delete
