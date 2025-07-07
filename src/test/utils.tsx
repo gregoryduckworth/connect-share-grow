@@ -1,6 +1,7 @@
 
 import React, { ReactElement } from 'react'
-import { render, RenderOptions, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, RenderOptions } from '@testing-library/react'
+import { screen, fireEvent, waitFor } from '@testing-library/dom'
 import { QueryProvider } from '@/contexts/QueryProvider'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
