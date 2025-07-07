@@ -11,6 +11,15 @@ import ErrorBoundary from "@/components/common/ErrorBoundary";
 import SuspenseWrapper from "@/components/common/SuspenseWrapper";
 import { initializeGlobalErrorHandler } from "@/lib/errors/globalErrorHandler";
 import { performanceMonitor } from "@/lib/monitoring/performanceMonitor";
+import { BUILD_CONFIG, validateEnvironment, getEnvironmentInfo } from "@/lib/config/buildConfig";
+import { setupSecurityHeaders, validateSecurityHeaders } from "@/lib/security/securityHeaders";
+import { 
+  preloadCriticalResources, 
+  setupImageLazyLoading,
+  checkPerformanceBudget,
+  monitorMemoryUsage 
+} from "@/lib/performance/optimizations";
+import { logger } from "@/lib/logging/logger";
 
 // Lazy-loaded pages for code splitting
 import * as LazyPages from "@/components/routing/LazyRoutes";
@@ -18,10 +27,43 @@ import * as LazyPages from "@/components/routing/LazyRoutes";
 import "./App.css";
 
 function App() {
-  // Initialize monitoring and error handling
+  // Initialize all production systems
   useEffect(() => {
+    // Log environment info
+    logger.info('Application starting', getEnvironmentInfo());
+
+    // Validate environment configuration
+    const envValidation = validateEnvironment();
+    if (!envValidation.isValid) {
+      logger.warn('Environment validation issues', envValidation.issues);
+    }
+
+    // Initialize monitoring and error handling
     initializeGlobalErrorHandler();
-    performanceMonitor.measureWebVitals();
+    
+    if (BUILD_CONFIG.ENABLE_PERFORMANCE_MONITORING) {
+      performanceMonitor.measureWebVitals();
+      
+      // Monitor performance periodically
+      const performanceInterval = setInterval(() => {
+        monitorMemoryUsage();
+        checkPerformanceBudget();
+      }, 30000); // Every 30 seconds
+
+      return () => clearInterval(performanceInterval);
+    }
+
+    // Setup security
+    if (BUILD_CONFIG.ENABLE_CSP) {
+      setupSecurityHeaders();
+      setTimeout(validateSecurityHeaders, 1000);
+    }
+
+    // Performance optimizations
+    preloadCriticalResources();
+    setupImageLazyLoading();
+
+    logger.info('Application initialization complete');
   }, []);
 
   // Custom component to handle root route logic
