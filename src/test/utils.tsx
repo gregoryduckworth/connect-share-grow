@@ -1,7 +1,5 @@
-
 import React, { ReactElement } from 'react'
 import { render, RenderOptions } from '@testing-library/react'
-import { QueryClient } from '@tanstack/react-query'
 import { QueryProvider } from '@/contexts/QueryProvider'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
