@@ -67,7 +67,7 @@ export const performHealthCheck = async (): Promise<HealthCheckResult> => {
   // API connectivity check (placeholder)
   checks.push({
     name: 'API Connectivity',
-    status: 'pass' as const,
+    status: 'pass',
     message: 'API endpoints accessible',
   });
 
@@ -75,10 +75,11 @@ export const performHealthCheck = async (): Promise<HealthCheckResult> => {
   if ('memory' in performance) {
     const memInfo = (performance as any).memory;
     const memoryUsage = memInfo.usedJSHeapSize / memInfo.jsHeapSizeLimit;
+    const memoryStatus: 'pass' | 'warn' = memoryUsage > 0.8 ? 'warn' : 'pass';
     
     checks.push({
       name: 'Memory Usage',
-      status: (memoryUsage > 0.8 ? 'warn' : 'pass') as const,
+      status: memoryStatus,
       message: `Memory usage at ${Math.round(memoryUsage * 100)}%`,
       details: {
         used: Math.round(memInfo.usedJSHeapSize / 1048576),
