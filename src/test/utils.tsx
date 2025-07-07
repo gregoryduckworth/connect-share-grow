@@ -1,6 +1,7 @@
 
 import React, { ReactElement } from 'react'
 import { render, RenderOptions } from '@testing-library/react'
+import { screen, fireEvent, waitFor } from '@testing-library/react'
 import { QueryProvider } from '@/contexts/QueryProvider'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
@@ -27,4 +28,4 @@ const customRender = (
 
 export * from '@testing-library/react'
 export { customRender as render }
-export { screen, fireEvent, waitFor } from '@testing-library/react'
+export { screen, fireEvent, waitFor }
