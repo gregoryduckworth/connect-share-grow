@@ -1,4 +1,3 @@
-
 import { describe, it, expect, beforeEach } from 'vitest'
 import { auditService } from '../auditService'
 
@@ -56,7 +55,6 @@ describe('AuditService', () => {
   it('should filter logs by time range', () => {
     const now = new Date()
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
-    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000)
 
     auditService.logUserAction('user_login', 'Recent login')
     
