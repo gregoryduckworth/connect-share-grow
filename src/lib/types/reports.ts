@@ -1,16 +1,16 @@
-import { Identifiable } from "./base";
+import { Identifiable } from './base';
 
-// Report types - unified interface
-export interface ReportBase extends Identifiable {
-  contentType: "post" | "reply" | "user";
+export interface Report extends Identifiable {
+  contentType: 'post' | 'reply' | 'user';
   contentId: string;
   contentPreview: string;
   reportedBy: string;
   createdAt: Date;
   reason: string;
-  status: "pending" | "reviewed" | "resolved";
+  status: 'pending' | 'reviewed' | 'resolved' | 'in progress';
   content: string;
   communityId: string;
+  assignedTo?: string; // user id
   originalContent?: {
     title?: string;
     community?: string;
@@ -20,9 +20,6 @@ export interface ReportBase extends Identifiable {
   };
   originalLink?: string;
 }
-
-// Keep Report as alias for backward compatibility
-export type Report = ReportBase;
 
 export interface FlaggedReport extends Report {
   reportedByName: string;
