@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, Eye, Check, Trash2 } from "lucide-react";
+import { Search, Eye, Check, Trash2, RotateCcw } from "lucide-react";
 import { logAdminAction } from "@/lib/admin-logger";
 import { formatDate } from "@/lib/utils";
 import {
@@ -24,6 +24,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import ReportDetailsDialog from "@/components/admin/ReportDetailsDialog";
 import { ADMIN_REPORTS_DATA } from "@/lib/backend/data/admin-reports";
 import { ReportBase } from "@/lib/types";
@@ -35,6 +45,9 @@ const AdminReportsPage = () => {
   const [selectedReport, setSelectedReport] = useState<ReportBase | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [reportToDelete, setReportToDelete] = useState<string | null>(null);
+  const [isUnresolveDialogOpen, setIsUnresolveDialogOpen] = useState(false);
+  const [reportToUnresolve, setReportToUnresolve] = useState<string | null>(null);
+  const [unresolveReason, setUnresolveReason] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -70,6 +83,39 @@ const AdminReportsPage = () => {
     });
   };
 
+  const handleUnresolveReport = () => {
+    if (!reportToUnresolve || !unresolveReason.trim()) {
+      toast({
+        title: "Reason Required",
+        description: "Please provide a reason for unresolving this report.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const report = reports.find(r => r.id === reportToUnresolve);
+    const updatedReports = reports.map((r) =>
+      r.id === reportToUnresolve ? { ...r, status: "pending" as const } : r
+    );
+    setReports(updatedReports);
+
+    toast({
+      title: "Report Unresolved",
+      description: `The report has been marked as pending. Reason: ${unresolveReason}`,
+    });
+
+    logAdminAction({
+      action: "report_unresolved",
+      details: `Unresolved report ${reportToUnresolve}: ${report?.reason || 'Unknown reason'}. Reason: ${unresolveReason}`,
+      targetId: reportToUnresolve,
+      targetType: "report",
+    });
+
+    setIsUnresolveDialogOpen(false);
+    setReportToUnresolve(null);
+    setUnresolveReason("");
+  };
+
   const handleResolveById = (reportId: string) => {
     const report = reports.find(r => r.id === reportId);
     if (report) {
@@ -98,6 +144,11 @@ const AdminReportsPage = () => {
   const openDeleteDialog = (reportId: string) => {
     setReportToDelete(reportId);
     setIsDeleteDialogOpen(true);
+  };
+
+  const openUnresolveDialog = (reportId: string) => {
+    setReportToUnresolve(reportId);
+    setIsUnresolveDialogOpen(true);
   };
 
   const confirmDelete = () => {
@@ -199,6 +250,17 @@ const AdminReportsPage = () => {
                         Resolve
                       </Button>
                     )}
+                    {report.status === "resolved" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                        onClick={() => openUnresolveDialog(report.id)}
+                      >
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Unresolve
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
@@ -243,6 +305,48 @@ const AdminReportsPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={isUnresolveDialogOpen} onOpenChange={setIsUnresolveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unresolve Report</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for unresolving this report. This will change its status back to pending.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="unresolve-reason">Reason for unresolving</Label>
+              <Textarea
+                id="unresolve-reason"
+                placeholder="Explain why this report needs to be unresolved..."
+                value={unresolveReason}
+                onChange={(e) => setUnresolveReason(e.target.value)}
+                className="mt-2"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsUnresolveDialogOpen(false);
+                setReportToUnresolve(null);
+                setUnresolveReason("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUnresolveReport}
+              className="bg-orange-500 hover:bg-orange-600"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Unresolve Report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ReportDetailsDialog
         report={selectedReport}

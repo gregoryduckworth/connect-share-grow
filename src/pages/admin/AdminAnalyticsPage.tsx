@@ -20,6 +20,7 @@ const AdminAnalyticsPage = () => {
   const [sortBy, setSortBy] = useState<string>("members");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [communitySearch, setCommunitySearch] = useState<string>("");
 
   useEffect(() => {
     const loadData = async () => {
@@ -49,10 +50,16 @@ const AdminAnalyticsPage = () => {
   });
 
   const filteredCommunities = sortedCommunities.filter(community => {
-    if (filterCategory === "all") return true;
-    if (filterCategory === "high-activity") return (community.activity || 0) > 70;
-    if (filterCategory === "low-activity") return (community.activity || 0) < 50;
-    return true;
+    // Apply category filter
+    let matchesCategory = true;
+    if (filterCategory === "high-activity") matchesCategory = (community.activity || 0) > 70;
+    if (filterCategory === "low-activity") matchesCategory = (community.activity || 0) < 50;
+    
+    // Apply search filter
+    const matchesSearch = communitySearch === "" || 
+      community.name.toLowerCase().includes(communitySearch.toLowerCase());
+    
+    return matchesCategory && matchesSearch;
   });
 
   const topCommunities = filteredCommunities.slice(0, 10);
@@ -88,6 +95,8 @@ const AdminAnalyticsPage = () => {
         onSortByChange={setSortBy}
         sortOrder={sortOrder}
         onSortToggle={handleSortToggle}
+        communitySearch={communitySearch}
+        onCommunitySearchChange={setCommunitySearch}
       />
 
       <Tabs defaultValue="overview" className="space-y-4">
