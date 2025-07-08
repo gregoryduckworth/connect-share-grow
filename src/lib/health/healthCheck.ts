@@ -1,116 +1,169 @@
 
 import { BUILD_CONFIG, validateEnvironment } from '@/lib/config/buildConfig';
-import { validateSecurityHeaders } from '@/lib/security/securityHeaders';
-import { checkPerformanceBudget } from '@/lib/performance/optimizations';
+import { environment } from '@/lib/config/environment';
 import { logger } from '@/lib/logging/logger';
 
 export interface HealthCheckResult {
-  status: 'healthy' | 'warning' | 'critical';
+  status: 'healthy' | 'unhealthy' | 'degraded';
   timestamp: string;
   version: string;
-  checks: Array<{
-    name: string;
-    status: 'pass' | 'warn' | 'fail';
-    message?: string;
-    details?: any;
-  }>;
+  environment: string;
+  checks: {
+    [key: string]: {
+      status: 'pass' | 'fail' | 'warn';
+      message?: string;
+      duration?: number;
+    };
+  };
 }
 
-export const performHealthCheck = async (): Promise<HealthCheckResult> => {
-  const checks: Array<{
-    name: string;
-    status: 'pass' | 'warn' | 'fail';
-    message?: string;
-    details?: any;
-  }> = [];
-  let overallStatus: 'healthy' | 'warning' | 'critical' = 'healthy';
+export class HealthCheckService {
+  private checks: Map<string, () => Promise<{ status: 'pass' | 'fail' | 'warn'; message?: string }>> = new Map();
 
-  // Environment validation
-  const envValidation = validateEnvironment();
-  checks.push({
-    name: 'Environment Configuration',
-    status: envValidation.isValid ? 'pass' : 'warn',
-    message: envValidation.isValid ? 'Configuration valid' : 'Configuration issues detected',
-    details: envValidation.issues,
-  });
-
-  if (!envValidation.isValid) {
-    overallStatus = 'warning';
+  constructor() {
+    this.registerDefaultChecks();
   }
 
-  // Security headers check
-  const securityValidation = validateSecurityHeaders();
-  checks.push({
-    name: 'Security Headers',
-    status: securityValidation.passed ? 'pass' : 'warn',
-    message: securityValidation.passed ? 'Security headers configured' : 'Security headers missing',
-    details: securityValidation.results,
-  });
-
-  if (!securityValidation.passed) {
-    overallStatus = 'warning';
-  }
-
-  // Performance budget check
-  const performanceCheck = checkPerformanceBudget();
-  checks.push({
-    name: 'Performance Budget',
-    status: performanceCheck.passed ? 'pass' : 'warn',
-    message: performanceCheck.passed ? 'Within performance budget' : 'Performance budget exceeded',
-    details: performanceCheck.violations,
-  });
-
-  if (!performanceCheck.passed) {
-    overallStatus = 'warning';
-  }
-
-  // API connectivity check (placeholder)
-  checks.push({
-    name: 'API Connectivity',
-    status: 'pass',
-    message: 'API endpoints accessible',
-  });
-
-  // Memory usage check
-  if ('memory' in performance) {
-    const memInfo = (performance as any).memory;
-    const memoryUsage = memInfo.usedJSHeapSize / memInfo.jsHeapSizeLimit;
-    const memoryStatus: 'pass' | 'warn' = memoryUsage > 0.8 ? 'warn' : 'pass';
-    
-    checks.push({
-      name: 'Memory Usage',
-      status: memoryStatus,
-      message: `Memory usage at ${Math.round(memoryUsage * 100)}%`,
-      details: {
-        used: Math.round(memInfo.usedJSHeapSize / 1048576),
-        limit: Math.round(memInfo.jsHeapSizeLimit / 1048576),
-      },
+  private registerDefaultChecks() {
+    // Environment validation check
+    this.addCheck('environment', async () => {
+      const validation = validateEnvironment();
+      return {
+        status: validation.isValid ? 'pass' : 'fail',
+        message: validation.isValid ? 'Environment configuration is valid' : validation.errors.join(', '),
+      };
     });
 
-    if (memoryUsage > 0.9) {
-      overallStatus = 'critical';
-    } else if (memoryUsage > 0.8) {
-      overallStatus = 'warning';
-    }
+    // Local storage check
+    this.addCheck('localStorage', async () => {
+      try {
+        const testKey = 'health_check_test';
+        const testValue = 'test';
+        localStorage.setItem(testKey, testValue);
+        const retrieved = localStorage.getItem(testKey);
+        localStorage.removeItem(testKey);
+        
+        return {
+          status: retrieved === testValue ? 'pass' : 'fail',
+          message: retrieved === testValue ? 'Local storage is working' : 'Local storage failed',
+        };
+      } catch (error) {
+        return {
+          status: 'fail',
+          message: `Local storage error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        };
+      }
+    });
+
+    // Memory usage check (if available)
+    this.addCheck('memory', async () => {
+      if ('memory' in performance) {
+        const memInfo = (performance as any).memory;
+        const usedMB = Math.round(memInfo.usedJSHeapSize / 1048576);
+        const limitMB = Math.round(memInfo.jsHeapSizeLimit / 1048576);
+        const usagePercent = (usedMB / limitMB) * 100;
+
+        const status = usagePercent > 80 ? 'warn' : usagePercent > 95 ? 'fail' : 'pass';
+        
+        return {
+          status,
+          message: `Memory usage: ${usedMB}MB / ${limitMB}MB (${usagePercent.toFixed(1)}%)`,
+        };
+      }
+      
+      return {
+        status: 'warn',
+        message: 'Memory information not available',
+      };
+    });
+
+    // Performance check
+    this.addCheck('performance', async () => {
+      const start = performance.now();
+      
+      // Simulate some work
+      await new Promise(resolve => setTimeout(resolve, 1));
+      
+      const duration = performance.now() - start;
+      const status = duration > 100 ? 'warn' : duration > 500 ? 'fail' : 'pass';
+      
+      return {
+        status,
+        message: `Performance check completed in ${duration.toFixed(2)}ms`,
+      };
+    });
   }
 
-  const result: HealthCheckResult = {
-    status: overallStatus,
-    timestamp: new Date().toISOString(),
-    version: BUILD_CONFIG.VERSION,
-    checks,
-  };
+  addCheck(name: string, checkFn: () => Promise<{ status: 'pass' | 'fail' | 'warn'; message?: string }>) {
+    this.checks.set(name, checkFn);
+  }
 
-  logger.info('Health check completed', { 
-    status: overallStatus, 
-    passedChecks: checks.filter(c => c.status === 'pass').length,
-    totalChecks: checks.length 
-  });
+  removeCheck(name: string) {
+    this.checks.delete(name);
+  }
 
-  return result;
-};
+  async runHealthCheck(): Promise<HealthCheckResult> {
+    const startTime = Date.now();
+    const checks: HealthCheckResult['checks'] = {};
+    let overallStatus: HealthCheckResult['status'] = 'healthy';
 
-// Expose health check endpoint for monitoring
-if (typeof window !== 'undefined') {
-  (window as any).__healthCheck = performHealthCheck;
+    // Run all checks
+    for (const [name, checkFn] of this.checks) {
+      const checkStart = performance.now();
+      
+      try {
+        const result = await checkFn();
+        const duration = performance.now() - checkStart;
+        
+        checks[name] = {
+          ...result,
+          duration: Math.round(duration * 100) / 100, // Round to 2 decimal places
+        };
+
+        // Update overall status
+        if (result.status === 'fail') {
+          overallStatus = 'unhealthy';
+        } else if (result.status === 'warn' && overallStatus === 'healthy') {
+          overallStatus = 'degraded';
+        }
+      } catch (error) {
+        checks[name] = {
+          status: 'fail',
+          message: `Check failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          duration: performance.now() - checkStart,
+        };
+        overallStatus = 'unhealthy';
+      }
+    }
+
+    const result: HealthCheckResult = {
+      status: overallStatus,
+      timestamp: new Date().toISOString(),
+      version: BUILD_CONFIG.VERSION,
+      environment: environment.APP_ENV,
+      checks,
+    };
+
+    // Log health check results
+    const duration = Date.now() - startTime;
+    logger.info('Health check completed', {
+      status: overallStatus,
+      duration,
+      failedChecks: Object.entries(checks)
+        .filter(([, check]) => check.status === 'fail')
+        .map(([name]) => name),
+    });
+
+    return result;
+  }
+
+  async getHealthStatus(): Promise<'healthy' | 'unhealthy' | 'degraded'> {
+    const result = await this.runHealthCheck();
+    return result.status;
+  }
 }
+
+export const healthCheckService = new HealthCheckService();
+
+// Export a simple health check function for easy use
+export const performHealthCheck = () => healthCheckService.runHealthCheck();

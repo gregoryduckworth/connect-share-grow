@@ -1,3 +1,6 @@
+
+import { User } from '@/lib/types';
+
 // Simple encryption for tokens in localStorage
 class TokenManager {
   private readonly TOKEN_KEY = 'auth_token';
@@ -65,7 +68,7 @@ class TokenManager {
     }
   }
 
-  setUser(user: any): void {
+  setUser(user: User): void {
     try {
       localStorage.setItem(this.USER_KEY, this.encrypt(JSON.stringify(user)));
     } catch (error) {
@@ -73,7 +76,7 @@ class TokenManager {
     }
   }
 
-  getUser(): any | null {
+  getUser(): User | null {
     try {
       const encrypted = localStorage.getItem(this.USER_KEY);
       if (!encrypted) return null;
