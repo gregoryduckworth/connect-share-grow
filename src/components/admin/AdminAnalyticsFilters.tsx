@@ -1,8 +1,23 @@
-
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Calendar, Filter, ArrowUpDown, Search } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import * as React from 'react';
+import { Calendar, Filter, ArrowUpDown } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { communityService } from '@/lib/backend/services/communityService';
+import type { Community } from '@/lib/types';
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandItem,
+  CommandEmpty,
+} from '@/components/ui/command';
 
 interface AdminAnalyticsFiltersProps {
   timeRange: string;
@@ -11,7 +26,7 @@ interface AdminAnalyticsFiltersProps {
   onFilterCategoryChange: (value: string) => void;
   sortBy: string;
   onSortByChange: (value: string) => void;
-  sortOrder: "asc" | "desc";
+  sortOrder: 'asc' | 'desc';
   onSortToggle: () => void;
   communitySearch: string;
   onCommunitySearchChange: (value: string) => void;
@@ -29,11 +44,37 @@ const AdminAnalyticsFilters = ({
   communitySearch,
   onCommunitySearchChange,
 }: AdminAnalyticsFiltersProps) => {
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [inputFocused, setInputFocused] = useState(false);
+  const searchWrapperRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    communityService.getCommunities().then(setCommunities);
+  }, []);
+
+  // Filter communities for autocomplete
+  const filteredCommunities = communitySearch
+    ? communities.filter((c) => c.name.toLowerCase().includes(communitySearch.toLowerCase()))
+    : communities;
+
+  const showDropdown =
+    inputFocused && communitySearch.length >= 1 && filteredCommunities.length > 0;
+
+  // Handle blur to close dropdown only if focus leaves the wrapper
+  function handleBlur(e: React.FocusEvent) {
+    setTimeout(() => {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(document.activeElement)) {
+        setInputFocused(false);
+      }
+    }, 0);
+  }
+
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
       <div className="flex flex-wrap gap-3">
         <Select value={timeRange} onValueChange={onTimeRangeChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[140px] h-12">
             <Calendar className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Time Range" />
           </SelectTrigger>
@@ -46,7 +87,7 @@ const AdminAnalyticsFilters = ({
         </Select>
 
         <Select value={filterCategory} onValueChange={onFilterCategoryChange}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-[160px] h-12">
             <Filter className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Filter" />
           </SelectTrigger>
@@ -58,7 +99,7 @@ const AdminAnalyticsFilters = ({
         </Select>
 
         <Select value={sortBy} onValueChange={onSortByChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[140px] h-12">
             <ArrowUpDown className="h-4 w-4 mr-2" />
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
@@ -69,29 +110,41 @@ const AdminAnalyticsFilters = ({
           </SelectContent>
         </Select>
 
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onSortToggle}
-          className="px-3"
-        >
-          {sortOrder === "desc" ? "↓" : "↑"}
+        <Button variant="outline" size="sm" onClick={onSortToggle} className="px-3 h-12">
+          {sortOrder === 'desc' ? '↓' : '↑'}
         </Button>
       </div>
-
-      <div className="relative w-full sm:w-64">
-        <div className="absolute inset-0 pointer-events-none rounded-lg border border-purple-200 bg-gradient-to-r from-purple-100/40 to-blue-100/20" />
-        <div className="flex items-center gap-2 relative z-10 p-1 rounded-lg bg-white/90 border border-purple-200 w-full focus-within:border-purple-500 focus-within:shadow-lg focus-within:shadow-purple-200/40 transition-colors h-12">
-          <Search className="ml-3 text-social-primary h-5 w-5" />
-          <Input
+      <div className={`w-full sm:w-[260px] relative`} ref={searchWrapperRef}>
+        <Command className="w-full border border-purple-200 bg-white transition-all rounded-lg">
+          <CommandInput
             placeholder="Search communities..."
-            className="pl-2 py-3 border-0 bg-transparent focus:ring-0 focus:outline-none shadow-none min-w-0 flex-1 text-base h-full"
             value={communitySearch}
-            onChange={(e) => onCommunitySearchChange(e.target.value)}
-            type="text"
-            autoComplete="off"
+            onValueChange={onCommunitySearchChange}
+            onFocus={() => setInputFocused(true)}
+            onBlur={handleBlur}
+            className="h-12 text-base rounded-lg"
           />
-        </div>
+          {showDropdown && (
+            <CommandList className="absolute left-0 top-full mt-0 z-20 w-full bg-white border border-purple-200 shadow-md max-h-60 overflow-y-auto rounded-lg p-1">
+              {filteredCommunities.length === 0 && (
+                <CommandEmpty>No communities found.</CommandEmpty>
+              )}
+              {filteredCommunities.map((community) => (
+                <CommandItem
+                  key={community.slug}
+                  value={community.name}
+                  onSelect={() => {
+                    onCommunitySearchChange(community.name);
+                    setInputFocused(false);
+                  }}
+                  className="cursor-pointer rounded-md px-3 py-2 text-base data-[selected=true]:bg-gray-100 data-[selected=true]:text-black"
+                >
+                  {community.name}
+                </CommandItem>
+              ))}
+            </CommandList>
+          )}
+        </Command>
       </div>
     </div>
   );
