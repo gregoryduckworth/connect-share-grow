@@ -1,5 +1,5 @@
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { validateToken, SessionManager, LoginRateLimiter, sanitizeInput, generateCSRFToken } from '../authSecurity';
 
 // Mock localStorage

@@ -35,7 +35,7 @@ function App() {
     // Validate environment configuration
     const envValidation = validateEnvironment();
     if (!envValidation.isValid) {
-      logger.warn('Environment validation issues', envValidation.issues);
+      logger.warn('Environment validation issues', envValidation.errors);
     }
 
     // Initialize monitoring and error handling
