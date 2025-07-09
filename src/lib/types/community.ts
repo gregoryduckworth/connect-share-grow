@@ -15,7 +15,6 @@ export interface Community extends CommunityBase {
   createdBy?: string;
   requestedAt?: Date;
   status?: 'active' | 'pending' | 'suspended';
-  moderators?: string[];
 }
 
 export interface CommunityModerator extends Identifiable, Named {

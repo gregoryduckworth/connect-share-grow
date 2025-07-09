@@ -13,7 +13,7 @@ export const USER_COMMUNITY_MEMBERSHIPS: UserCommunityMembership[] = [
   {
     userId: 'demo-admin-0001',
     communitySlug: 'photography-enthusiasts',
-    role: 'member',
+    role: 'moderator',
     joinedAt: new Date('2024-01-01T00:00:00Z'),
   },
   {

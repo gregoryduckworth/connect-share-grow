@@ -15,7 +15,6 @@ export const communityService = {
   getCommunityDetail: async (communitySlug: string): Promise<CommunityDetail | null> => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     const community = COMMUNITIES_DATA.find((c) => c.slug === communitySlug);
-
     if (!community) return null;
 
     // Get all memberships for this community
@@ -41,7 +40,7 @@ export const communityService = {
       tags: community.tags,
       isMember: false, // Should be set per-user at runtime
       isModerator: false, // Should be set per-user at runtime
-      moderators,
+      moderators, // Always computed from join table
       rules: [
         'Be respectful to all community members',
         'Stay on topic and relevant to the community',
@@ -52,13 +51,13 @@ export const communityService = {
     };
   },
 
-  // New: Get all memberships for a community
+  // Get all memberships for a community
   getCommunityMemberships: async (communitySlug: string): Promise<UserCommunityMembership[]> => {
     await new Promise((resolve) => setTimeout(resolve, 200));
     return USER_COMMUNITY_MEMBERSHIPS.filter((m) => m.communitySlug === communitySlug);
   },
 
-  // New: Get all users in a community (with role and join date)
+  // Get all users in a community (with role and join date)
   getCommunityMembers: async (communitySlug: string) => {
     await new Promise((resolve) => setTimeout(resolve, 200));
     const memberships = USER_COMMUNITY_MEMBERSHIPS.filter((m) => m.communitySlug === communitySlug);
@@ -66,6 +65,20 @@ export const communityService = {
       .map((m) => {
         const user = USERS_DATA.find((u) => u.id === m.userId);
         return user ? { ...user, role: m.role, joinedAt: m.joinedAt } : undefined;
+      })
+      .filter(Boolean);
+  },
+
+  // New: Get all moderators for a community (computed from join table)
+  getCommunityModerators: async (communitySlug: string) => {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    const memberships = USER_COMMUNITY_MEMBERSHIPS.filter(
+      (m) => m.communitySlug === communitySlug && m.role === 'moderator',
+    );
+    return memberships
+      .map((m) => {
+        const user = USERS_DATA.find((u) => u.id === m.userId);
+        return user ? { ...user, joinedAsModAt: m.joinedAt } : undefined;
       })
       .filter(Boolean);
   },

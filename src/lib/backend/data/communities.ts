@@ -14,7 +14,6 @@ export const COMMUNITIES_DATA: Community[] = [
     lastActivity: new Date('2024-01-25T14:30:00Z'),
     createdBy: USERS_DATA[0].id,
     status: 'active',
-    moderators: [USERS_DATA[1].id],
   },
   {
     slug: 'tech-discussions',
@@ -28,7 +27,6 @@ export const COMMUNITIES_DATA: Community[] = [
     lastActivity: new Date('2024-01-24T16:20:00Z'),
     createdBy: USERS_DATA[1].id,
     status: 'active',
-    moderators: [USERS_DATA[1].id, USERS_DATA[2].id],
   },
   {
     slug: 'fitness-wellness',
@@ -42,7 +40,6 @@ export const COMMUNITIES_DATA: Community[] = [
     lastActivity: new Date('2024-01-23T12:45:00Z'),
     createdBy: USERS_DATA[2].id,
     status: 'active',
-    moderators: [USERS_DATA[2].id],
   },
   {
     slug: 'entrepreneurs-united',
@@ -56,6 +53,5 @@ export const COMMUNITIES_DATA: Community[] = [
     lastActivity: new Date('2024-01-21T09:30:00Z'),
     createdBy: USERS_DATA[3].id,
     status: 'active',
-    moderators: [USERS_DATA[3].id],
   },
 ];

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Search, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import {
 import CommunityCard from '@/components/community/CommunityCard';
 import { mockPendingModeratorRoleChanges } from '@/lib/api';
 import type { Community, Report, PendingAdminRoleChange } from '@/lib/types';
+import type { UserCommunityMembership } from '@/lib/backend/data/userCommunityMemberships';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/useAuth';
 
@@ -23,22 +24,33 @@ const CommunitiesPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const communitiesPerPage = 6;
   const [myCommunities, setMyCommunities] = useState<Community[]>([]);
-
+  const [userMemberships, setUserMemberships] = useState<UserCommunityMembership[]>([]);
   useEffect(() => {
     if (!user) return;
     api.getUserCommunities(user.id).then((data) => {
       setMyCommunities(data as Community[]);
     });
+    // Fetch user memberships (join table)
+    api.getUserCommunityMemberships(user.id).then((memberships: UserCommunityMembership[]) => {
+      setUserMemberships(memberships);
+    });
   }, [user]);
 
-  // Extend Community type locally to include isModerator
+  // Compute isModerator for each community using the join table
   type CommunityWithModerator = Community & { isModerator: boolean };
-
-  // Add isModerator property dynamically based on user id and community.moderators
-  const communitiesWithModerator: CommunityWithModerator[] = myCommunities.map((community) => ({
-    ...community,
-    isModerator: user ? (community.moderators?.includes(user.id) ?? false) : false,
-  }));
+  const communitiesWithModerator: CommunityWithModerator[] = useMemo(
+    () =>
+      myCommunities.map((community) => {
+        const membership = userMemberships.find(
+          (m) => m.communitySlug === community.slug && m.role === 'moderator',
+        );
+        return {
+          ...community,
+          isModerator: Boolean(membership),
+        };
+      }),
+    [myCommunities, userMemberships],
+  );
 
   const filteredCommunities = communitiesWithModerator.filter(
     (community: CommunityWithModerator) =>
@@ -65,9 +77,9 @@ const CommunitiesPage = () => {
   // Fetch moderation actions for all communities the user moderates
   useEffect(() => {
     // Only for communities the user moderates
-    const moderatedCommunities = myCommunities.filter((c: Community) => c.moderators);
+    const moderatedCommunities = communitiesWithModerator.filter((c) => c.isModerator);
     Promise.all(
-      moderatedCommunities.map((community: Community) =>
+      moderatedCommunities.map((community: CommunityWithModerator) =>
         Promise.all([api.getReports(), Promise.resolve(mockPendingModeratorRoleChanges)]).then(
           ([reports, roleChanges]: [Report[], PendingAdminRoleChange[]]) => {
             const reportCount = reports.filter(
@@ -95,7 +107,7 @@ const CommunitiesPage = () => {
       });
       setModActionCount(counts);
     });
-  }, [myCommunities]);
+  }, [communitiesWithModerator]);
 
   return (
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen" data-testid="communities-page">
@@ -163,6 +175,7 @@ const CommunitiesPage = () => {
             memberCount={community.memberCount}
             tags={community.tags}
             isModerator={community.isModerator}
+            isJoined={true}
             onJoinLeave={() => {
               /* implement leave logic here if needed */
             }}

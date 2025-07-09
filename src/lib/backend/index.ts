@@ -17,6 +17,7 @@ export const api = {
   createUser: userService.createUser,
   updateUser: userService.updateUser,
   getUserCommunities: userService.getUserCommunities,
+  getUserCommunityMemberships: userService.getUserCommunityMemberships, // <-- add this
   removeUserCommunityMembership: userService.removeUserCommunityMembership,
 
   // Post methods
