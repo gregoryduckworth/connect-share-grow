@@ -1,5 +1,4 @@
-
-import { Named, Identifiable } from "./base";
+import { Named, Identifiable } from './base';
 
 // Community types
 export interface CommunityBase extends Named {
@@ -12,11 +11,10 @@ export interface Community extends CommunityBase {
   memberCount: number;
   postCount: number;
   category: string;
-  isJoined: boolean;
   lastActivity: Date;
   createdBy?: string;
   requestedAt?: Date;
-  status?: "active" | "pending" | "suspended";
+  status?: 'active' | 'pending' | 'suspended';
   moderators?: string[];
 }
 

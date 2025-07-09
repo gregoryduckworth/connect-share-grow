@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { Search, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import CreateCommunityDialog from "@/components/community/CreateCommunityDialog";
-import { useToast } from "@/components/ui/use-toast";
+import { useState, useEffect } from 'react';
+import { Search, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import CreateCommunityDialog from '@/components/community/CreateCommunityDialog';
+import { useToast } from '@/components/ui/use-toast';
 import {
   Pagination,
   PaginationContent,
@@ -11,16 +11,17 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
-import CommunityCard from "@/components/community/CommunityCard";
+} from '@/components/ui/pagination';
+import CommunityCard from '@/components/community/CommunityCard';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { api } from "@/lib/api";
+} from '@/components/ui/select';
+import { api } from '@/lib/api';
+import { useAuth } from '@/contexts/useAuth';
 
 interface Community {
   slug: string;
@@ -34,14 +35,14 @@ interface Community {
 
 const CommunitiesPage = () => {
   const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState("");
+  const { user } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const perPageOptions = [12, 24, 36, 48];
-  const [communitiesPerPage, setCommunitiesPerPage] = useState(
-    perPageOptions[0]
-  );
-  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
+  const [communitiesPerPage, setCommunitiesPerPage] = useState(perPageOptions[0]);
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [allCommunities, setAllCommunities] = useState<Community[]>([]);
+  const [userCommunities, setUserCommunities] = useState<string[]>([]); // store slugs
 
   useEffect(() => {
     api.getCommunities().then((data) => {
@@ -49,27 +50,33 @@ const CommunitiesPage = () => {
         data.map((community) => ({
           ...community,
           isModerator: false,
-        }))
+          isJoined: false, // default, will be updated below
+        })),
       );
     });
-  }, []);
+    if (user) {
+      api.getUserCommunities(user.id).then((data) => {
+        setUserCommunities(data.map((c) => c.slug));
+      });
+    }
+  }, [user]);
+
+  // Compute isJoined for each community
+  const communitiesWithJoin = allCommunities.map((community) => ({
+    ...community,
+    isJoined: userCommunities.includes(community.slug),
+  }));
 
   // Sort and filter communities
-  const filteredCommunities = allCommunities
+  const filteredCommunities = communitiesWithJoin
     .filter(
       (community) =>
         community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        community.description
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        community.tags.some((tag) =>
-          tag.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+        community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        community.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())),
     )
     .sort((a, b) =>
-      sortOrder === "desc"
-        ? b.memberCount - a.memberCount
-        : a.memberCount - b.memberCount
+      sortOrder === 'desc' ? b.memberCount - a.memberCount : a.memberCount - b.memberCount,
     );
 
   const getCurrentPageCommunities = (communities: Community[]) => {
@@ -93,13 +100,13 @@ const CommunitiesPage = () => {
                 ? community.memberCount - 1
                 : community.memberCount + 1,
             }
-          : community
-      )
+          : community,
+      ),
     );
 
     const community = allCommunities.find((c) => c.slug === communityId);
     toast({
-      title: community?.isJoined ? "Left community" : "Joined community",
+      title: community?.isJoined ? 'Left community' : 'Joined community',
       description: community?.isJoined
         ? `You have left ${community.name}`
         : `Welcome to ${community?.name}!`,
@@ -107,10 +114,7 @@ const CommunitiesPage = () => {
   };
 
   return (
-    <div
-      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
-      data-testid="communities-page"
-    >
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen" data-testid="communities-page">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-4">
         <div>
           <h1
@@ -119,10 +123,7 @@ const CommunitiesPage = () => {
           >
             All Communities
           </h1>
-          <p
-            className="text-social-muted"
-            data-testid="communities-description"
-          >
+          <p className="text-social-muted" data-testid="communities-description">
             Communities for you to connect, share, and grow together.
           </p>
         </div>
@@ -154,7 +155,7 @@ const CommunitiesPage = () => {
                 setCurrentPage(1); // Reset to first page when searching
               }}
               className="pl-2 py-3 border-0 bg-transparent focus:ring-0 focus:outline-none shadow-none min-w-0 flex-1"
-              style={{ boxShadow: "none" }}
+              style={{ boxShadow: 'none' }}
               data-testid="communities-search-input"
             />
             <div className="flex items-center gap-2 min-w-[200px] sm:min-w-[260px] md:min-w-[320px] lg:min-w-[340px]">
@@ -164,10 +165,7 @@ const CommunitiesPage = () => {
               >
                 Sort by
               </label>
-              <Select
-                value={sortOrder}
-                onValueChange={(val: "desc" | "asc") => setSortOrder(val)}
-              >
+              <Select value={sortOrder} onValueChange={(val: 'desc' | 'asc') => setSortOrder(val)}>
                 <SelectTrigger
                   id="sortOrder"
                   className="w-full bg-white/90 border-0 shadow-none px-2"
@@ -193,10 +191,10 @@ const CommunitiesPage = () => {
         className={`grid gap-6 mb-6 
           ${
             communitiesPerPage >= 36
-              ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+              ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4'
               : communitiesPerPage >= 24
-              ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-              : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+                ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+                : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3'
           }
         `}
         data-testid="communities-grid"
@@ -219,9 +217,7 @@ const CommunitiesPage = () => {
 
       {filteredCommunities.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-social-muted">
-            No communities found matching your search.
-          </p>
+          <p className="text-social-muted">No communities found matching your search.</p>
         </div>
       )}
 
@@ -235,46 +231,36 @@ const CommunitiesPage = () => {
                   <PaginationPrevious
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     className={
-                      currentPage === 1
-                        ? "pointer-events-none opacity-50"
-                        : "cursor-pointer"
+                      currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
                     }
                     aria-label="Previous page"
                   />
                 </PaginationItem>
-                {Array.from(
-                  { length: getTotalPages(filteredCommunities) },
-                  (_, i) => i + 1
-                ).map((page) => (
-                  <PaginationItem key={page}>
-                    <PaginationLink
-                      onClick={() => setCurrentPage(page)}
-                      isActive={currentPage === page}
-                      className={`cursor-pointer ${
-                        currentPage === page
-                          ? "bg-accent text-primary font-bold"
-                          : ""
-                      }`}
-                      aria-label={`Go to page ${page}`}
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
+                {Array.from({ length: getTotalPages(filteredCommunities) }, (_, i) => i + 1).map(
+                  (page) => (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        onClick={() => setCurrentPage(page)}
+                        isActive={currentPage === page}
+                        className={`cursor-pointer ${
+                          currentPage === page ? 'bg-accent text-primary font-bold' : ''
+                        }`}
+                        aria-label={`Go to page ${page}`}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ),
+                )}
                 <PaginationItem>
                   <PaginationNext
                     onClick={() =>
-                      setCurrentPage(
-                        Math.min(
-                          getTotalPages(filteredCommunities),
-                          currentPage + 1
-                        )
-                      )
+                      setCurrentPage(Math.min(getTotalPages(filteredCommunities), currentPage + 1))
                     }
                     className={
                       currentPage === getTotalPages(filteredCommunities)
-                        ? "pointer-events-none opacity-50"
-                        : "cursor-pointer"
+                        ? 'pointer-events-none opacity-50'
+                        : 'cursor-pointer'
                     }
                     aria-label="Next page"
                   />

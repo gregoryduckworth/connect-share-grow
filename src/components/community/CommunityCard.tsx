@@ -1,14 +1,8 @@
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { formatNumber } from "@/lib/utils";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { formatNumber } from '@/lib/utils';
 
 interface CommunityCardProps {
   id: string;
@@ -68,12 +62,12 @@ const CommunityCard = ({
             variant="outline"
             className={`text-xs whitespace-nowrap ${
               growthRate >= 0
-                ? "bg-green-50 text-green-700 border-green-200"
-                : "bg-red-50 text-red-700 border-red-200"
+                ? 'bg-green-50 text-green-700 border-green-200'
+                : 'bg-red-50 text-red-700 border-red-200'
             }`}
             data-testid="community-card-growth"
           >
-            {growthRate >= 0 ? "+" : ""}
+            {growthRate >= 0 ? '+' : ''}
             {growthRate}%
           </Badge>
         )}
@@ -89,11 +83,7 @@ const CommunityCard = ({
       {category && (
         <div className="flex items-center justify-between text-xs sm:text-sm mb-2">
           <span className="text-muted-foreground">Category</span>
-          <Badge
-            variant="secondary"
-            className="text-xs"
-            data-testid="community-card-category"
-          >
+          <Badge variant="secondary" className="text-xs" data-testid="community-card-category">
             {category}
           </Badge>
         </div>
@@ -116,26 +106,14 @@ const CommunityCard = ({
         </div>
       )}
       <div className="flex gap-2 mt-auto w-full">
-        {onJoinLeave ? (
-          <Button
-            onClick={() => onJoinLeave(id)}
-            variant={isJoined ? "outline" : "default"}
-            className="flex-1 min-w-0 h-10"
-            data-testid={
-              isJoined ? "leave-community-button" : "join-community-button"
-            }
-          >
-            {isJoined ? "Leave" : "Join"}
-          </Button>
-        ) : (
-          <Button
-            className="w-full text-xs sm:text-sm"
-            asChild
-            data-testid="join-community-link"
-          >
-            <Link to={`/community/${id}`}>Join Community</Link>
-          </Button>
-        )}
+        <Button
+          onClick={() => onJoinLeave && onJoinLeave(id)}
+          variant={isJoined ? 'outline' : 'default'}
+          className="flex-1 min-w-0 h-10"
+          data-testid={isJoined ? 'leave-community-button' : 'join-community-button'}
+        >
+          {isJoined ? 'Leave' : <Link to={`/community/${id}`}>Join Community</Link>}
+        </Button>
         {isModerator && (
           <div className="relative">
             <Button

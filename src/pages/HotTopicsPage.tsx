@@ -1,91 +1,105 @@
-import { useState, useEffect } from "react";
-import { Search, TrendingUp, Users, MessageSquare } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link } from "react-router-dom";
-import CommunityCard from "@/components/community/CommunityCard";
-import InfoCard from "@/components/ui/InfoCard";
-import UserProfileLink from "@/components/user/UserProfileLink";
-import { api } from "@/lib/api";
-import { USERS_DATA } from "@/lib/backend/data/users";
-import { TrendingPostUI, TrendingCommunityUI } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
+import { useState, useEffect } from 'react';
+import { Search, TrendingUp, Users, MessageSquare } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Link } from 'react-router-dom';
+import CommunityCard from '@/components/community/CommunityCard';
+import InfoCard from '@/components/ui/InfoCard';
+import UserProfileLink from '@/components/user/UserProfileLink';
+import { api } from '@/lib/api';
+import { USERS_DATA } from '@/lib/backend/data/users';
+import { TrendingPostUI, TrendingCommunityUI } from '@/lib/types';
+import { formatDate } from '@/lib/utils';
+import { useAuth } from '@/contexts/useAuth';
+
+interface TrendingCommunityWithJoin extends TrendingCommunityUI {
+  isJoined: boolean;
+}
 
 const HotTopicsPage = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const { user } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
   const [trendingPosts, setTrendingPosts] = useState<TrendingPostUI[]>([]);
-  const [trendingCommunities, setTrendingCommunities] = useState<
-    TrendingCommunityUI[]
-  >([]);
+  const [trendingCommunities, setTrendingCommunities] = useState<TrendingCommunityWithJoin[]>([]);
+  const [userCommunities, setUserCommunities] = useState<string[]>([]);
 
   useEffect(() => {
-    Promise.all([api.getHotPosts(), api.getCommunities()]).then(
-      ([posts, communities]) => {
-        // Build a set of valid community slugs
-        const validCommunitySlugSet = new Set(communities.map((c) => c.slug));
-        setTrendingCommunities(
-          communities.map((c) => ({
-            id: c.slug,
-            name: c.name,
-            description: c.description,
-            memberCount: c.memberCount,
-            growthRate: Math.round(Math.random() * 20 * 10) / 10,
-            category: c.category,
-          }))
-        );
-        setTrendingPosts(
-          posts
-            .filter((p) => validCommunitySlugSet.has(p.communityId))
-            .map((p) => {
-              const community = communities.find(
-                (c) => c.slug === p.communityId
-              );
-              const user = USERS_DATA.find((u) => u.id === p.author);
-              return {
-                id: p.id,
-                title: p.title,
-                author: p.author,
-                userName: user?.name || undefined,
-                communitySlug: p.communityId,
-                communityName: community ? community.name : p.communityId,
-                likes: p.likes,
-                replies: p.replies,
-                createdAt: p.createdAt,
-                excerpt:
-                  p.content.slice(0, 120) +
-                  (p.content.length > 120 ? "..." : ""),
-              };
-            })
-        );
-      }
+    Promise.all([api.getHotPosts(), api.getCommunities()]).then(([posts, communities]) => {
+      // Build a set of valid community slugs
+      const validCommunitySlugSet = new Set(communities.map((c) => c.slug));
+      setTrendingCommunities(
+        communities.map((c) => ({
+          id: c.slug,
+          name: c.name,
+          description: c.description,
+          memberCount: c.memberCount,
+          growthRate: Math.round(Math.random() * 20 * 10) / 10,
+          category: c.category,
+          isJoined: false,
+        })),
+      );
+      setTrendingPosts(
+        posts
+          .filter((p) => validCommunitySlugSet.has(p.communityId))
+          .map((p) => {
+            const community = communities.find((c) => c.slug === p.communityId);
+            const user = USERS_DATA.find((u) => u.id === p.author);
+            return {
+              id: p.id,
+              title: p.title,
+              author: p.author,
+              userName: user?.name || undefined,
+              communitySlug: p.communityId,
+              communityName: community ? community.name : p.communityId,
+              likes: p.likes,
+              replies: p.replies,
+              createdAt: p.createdAt,
+              excerpt: p.content.slice(0, 120) + (p.content.length > 120 ? '...' : ''),
+            };
+          }),
+      );
+    });
+    if (user) {
+      api.getUserCommunities(user.id).then((data) => {
+        setUserCommunities(data.map((c) => c.slug));
+      });
+    }
+  }, [user]);
+
+  // Add join/leave logic for trending communities
+  const trendingCommunitiesWithJoin = trendingCommunities.map((community) => ({
+    ...community,
+    isJoined: userCommunities.includes(community.id),
+  }));
+
+  const handleJoinLeave = (communityId: string) => {
+    setTrendingCommunities((prev) =>
+      prev.map((community) =>
+        community.id === communityId ? { ...community, isJoined: !community.isJoined } : community,
+      ),
     );
-  }, []);
+    // Optionally, update backend/join table here
+  };
 
   const filteredPosts = trendingPosts.filter(
     (post) =>
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.communitySlug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.author.toLowerCase().includes(searchQuery.toLowerCase())
+      post.author.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const filteredCommunities = trendingCommunities.filter(
+  const filteredCommunities = trendingCommunitiesWithJoin.filter(
     (community) =>
       community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      community.category.toLowerCase().includes(searchQuery.toLowerCase())
+      community.category.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
-    <div
-      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
-      data-testid="hot-topics-page"
-    >
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen" data-testid="hot-topics-page">
       <div className="mb-6" data-testid="hot-topics-header">
-        <h1
-          className="text-3xl font-bold text-social-primary mb-2"
-          data-testid="hot-topics-title"
-        >
+        <h1 className="text-3xl font-bold text-social-primary mb-2" data-testid="hot-topics-title">
           Hot Topics
         </h1>
         <p
@@ -112,7 +126,7 @@ const HotTopicsPage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-2 py-3 border-0 bg-transparent focus:ring-0 focus:outline-none shadow-none min-w-0 flex-1"
-              style={{ boxShadow: "none" }}
+              style={{ boxShadow: 'none' }}
               data-testid="hot-topics-search-input"
             />
           </div>
@@ -125,10 +139,7 @@ const HotTopicsPage = () => {
             <TrendingUp className="h-4 w-4 mr-2" />
             Trending Posts
           </TabsTrigger>
-          <TabsTrigger
-            value="communities"
-            data-testid="tab-growing-communities"
-          >
+          <TabsTrigger value="communities" data-testid="tab-growing-communities">
             <Users className="h-4 w-4 mr-2" />
             Growing Communities
           </TabsTrigger>
@@ -168,12 +179,12 @@ const HotTopicsPage = () => {
                 contentTop={
                   <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
                     <span className="break-words">
-                      by{" "}
+                      by{' '}
                       <UserProfileLink
                         userId={post.author}
                         userName={post.userName}
                         data-testid={`post-author-link-${post.id}`}
-                      />{" "}
+                      />{' '}
                       • in {post.communityName} • {formatDate(post.createdAt)}
                     </span>
                   </div>
@@ -199,14 +210,9 @@ const HotTopicsPage = () => {
             ))}
           </div>
           {filteredPosts.length === 0 && (
-            <div
-              className="text-center py-12"
-              data-testid="trending-posts-empty-state"
-            >
+            <div className="text-center py-12" data-testid="trending-posts-empty-state">
               <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">
-                No trending posts found matching your search.
-              </p>
+              <p className="text-muted-foreground">No trending posts found matching your search.</p>
             </div>
           )}
         </TabsContent>
@@ -225,15 +231,14 @@ const HotTopicsPage = () => {
                 memberCount={community.memberCount}
                 growthRate={community.growthRate}
                 category={community.category}
+                isJoined={community.isJoined}
+                onJoinLeave={handleJoinLeave}
                 data-testid={`growing-community-card-${community.id}`}
               />
             ))}
           </div>
           {filteredCommunities.length === 0 && (
-            <div
-              className="text-center py-12"
-              data-testid="growing-communities-empty-state"
-            >
+            <div className="text-center py-12" data-testid="growing-communities-empty-state">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
                 No growing communities found matching your search.

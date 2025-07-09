@@ -1,15 +1,12 @@
-import { userService } from "./services/userService";
-import { postService } from "./services/postService";
-import { communityService } from "./services/communityService";
-import { reportService } from "./services/reportService";
-import { notificationService } from "./services/notificationService";
-import {
-  adminService,
-  mockPendingModeratorRoleChanges,
-} from "./services/adminService";
+import { userService } from './services/userService';
+import { postService } from './services/postService';
+import { communityService } from './services/communityService';
+import { reportService } from './services/reportService';
+import { notificationService } from './services/notificationService';
+import { adminService, mockPendingModeratorRoleChanges } from './services/adminService';
 
 // Re-export mock data for backward compatibility
-export { USERS_DATA as mockUsers } from "./data/users";
+export { USERS_DATA as mockUsers } from './data/users';
 
 // Unified API interface
 export const api = {
@@ -19,6 +16,8 @@ export const api = {
   getUserByEmail: userService.getUserByEmail,
   createUser: userService.createUser,
   updateUser: userService.updateUser,
+  getUserCommunities: userService.getUserCommunities,
+  removeUserCommunityMembership: userService.removeUserCommunityMembership,
 
   // Post methods
   getPosts: postService.getPosts,
