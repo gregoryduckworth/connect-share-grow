@@ -26,6 +26,9 @@ export const api = {
   getHotPosts: postService.getHotPosts,
   getCommunityPosts: postService.getCommunityPosts,
   createPost: postService.createPost,
+  likePost: postService.likePost,
+  unlikePost: postService.unlikePost,
+  getUserLikedPosts: postService.getUserLikedPosts, // <-- exposed for use in the UI
 
   // Community methods
   getCommunities: communityService.getCommunities,

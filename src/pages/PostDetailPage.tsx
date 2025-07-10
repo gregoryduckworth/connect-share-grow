@@ -80,15 +80,35 @@ const PostDetailPage = () => {
     }
   }, [postId]);
 
-  const handleLikePost = () => {
-    setPost((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        isLiked: !prev.isLiked,
-        likes: prev.isLiked ? prev.likes - 1 : prev.likes + 1,
-      };
-    });
+  const handleLikePost = async () => {
+    if (!user || !postId) return;
+    try {
+      if (post?.isLiked) {
+        await api.unlikePost(user.id, postId);
+      } else {
+        await api.likePost(user.id, postId);
+      }
+      // Refresh post data from backend
+      const postData = await api.getPostDetail(postId, user.id);
+      if (postData) {
+        // Attach nested replies for this post
+        const replies = buildReplyTree(
+          REPLIES_DATA.filter((r) => r.postId === postId)
+        );
+        const userObj = USERS_DATA.find((u) => u.id === postData.author);
+        setPost({
+          ...postData,
+          userName: userObj?.name || undefined,
+          replies: mapUserNamesToReplies(replies),
+        });
+      }
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update like. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleLikeReply = (replyId: string) => {

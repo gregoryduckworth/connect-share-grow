@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, TrendingUp, Users, MessageSquare } from 'lucide-react';
+import { Search, TrendingUp, Users, MessageSquare, Heart } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,24 +12,35 @@ import { USERS_DATA } from '@/lib/backend/data/users';
 import { TrendingPostUI, TrendingCommunityUI } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 import { useAuth } from '@/contexts/useAuth';
+import { useToast } from '@/components/ui/use-toast';
 
 interface TrendingCommunityWithJoin extends TrendingCommunityUI {
   isJoined: boolean;
 }
 
+// Add isLiked to trending post UI type
+interface TrendingPostWithLike extends TrendingPostUI {
+  isLiked: boolean;
+}
+
 const HotTopicsPage = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
-  const [trendingPosts, setTrendingPosts] = useState<TrendingPostUI[]>([]);
+  const [trendingPosts, setTrendingPosts] = useState<TrendingPostWithLike[]>([]);
   const [trendingCommunities, setTrendingCommunities] = useState<TrendingCommunityWithJoin[]>([]);
   const [userCommunities, setUserCommunities] = useState<string[]>([]);
 
   useEffect(() => {
-    Promise.all([api.getHotPosts(), api.getCommunities()]).then(([posts, communities]) => {
+    Promise.all([
+      api.getHotPosts(),
+      api.getCommunities(),
+      user ? api.getUserLikedPosts(user.id) : Promise.resolve([] as string[])
+    ]).then(([posts, communities, likedPosts]: [any[], any[], string[]]) => {
       // Build a set of valid community slugs
-      const validCommunitySlugSet = new Set(communities.map((c) => c.slug));
+      const validCommunitySlugSet = new Set(communities.map((c: { slug: string }) => c.slug));
       setTrendingCommunities(
-        communities.map((c) => ({
+        communities.map((c: { slug: string; name: string; description: string; memberCount: number; category: string }) => ({
           id: c.slug,
           name: c.name,
           description: c.description,
@@ -41,20 +52,21 @@ const HotTopicsPage = () => {
       );
       setTrendingPosts(
         posts
-          .filter((p) => validCommunitySlugSet.has(p.communityId))
-          .map((p) => {
-            const community = communities.find((c) => c.slug === p.communityId);
-            const user = USERS_DATA.find((u) => u.id === p.author);
+          .filter((p: { communityId: string }) => validCommunitySlugSet.has(p.communityId))
+          .map((p: { id: string; title: string; author: string; communityId: string; likes: number; replies: number; createdAt: Date; content: string }) => {
+            const community = communities.find((c: { slug: string }) => c.slug === p.communityId);
+            const userObj = USERS_DATA.find((u: { id: string }) => u.id === p.author);
             return {
               id: p.id,
               title: p.title,
               author: p.author,
-              userName: user?.name || undefined,
+              userName: userObj?.name || undefined,
               communitySlug: p.communityId,
               communityName: community ? community.name : p.communityId,
               likes: p.likes,
               replies: p.replies,
               createdAt: p.createdAt,
+              isLiked: likedPosts.includes(p.id),
               excerpt: p.content.slice(0, 120) + (p.content.length > 120 ? '...' : ''),
             };
           }),
@@ -80,6 +92,56 @@ const HotTopicsPage = () => {
       ),
     );
     // Optionally, update backend/join table here
+  };
+
+  // Add like/unlike logic for trending posts
+  const handleLikePost = async (postId: string, isLiked: boolean) => {
+    if (!user) {
+      toast({
+        title: 'Sign in required',
+        description: 'You must be signed in to like posts.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    try {
+      if (isLiked) {
+        await api.unlikePost(user.id, postId);
+      } else {
+        await api.likePost(user.id, postId);
+      }
+      // Refresh trending posts and liked posts
+      const [posts, communities, likedPosts] = await Promise.all([
+        api.getHotPosts(),
+        api.getCommunities(),
+        api.getUserLikedPosts(user.id)
+      ]);
+      setTrendingPosts(
+        posts.map((p: { id: string; title: string; author: string; communityId: string; likes: number; replies: number; createdAt: Date; content: string }) => {
+          const community = communities.find((c: { slug: string }) => c.slug === p.communityId);
+          const userObj = USERS_DATA.find((u: { id: string }) => u.id === p.author);
+          return {
+            id: p.id,
+            title: p.title,
+            author: p.author,
+            userName: userObj?.name || undefined,
+            communitySlug: p.communityId,
+            communityName: community ? community.name : p.communityId,
+            likes: p.likes,
+            replies: p.replies,
+            createdAt: p.createdAt,
+            isLiked: likedPosts.includes(p.id),
+            excerpt: p.content.slice(0, 120) + (p.content.length > 120 ? '...' : ''),
+          };
+        })
+      );
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update like. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const filteredPosts = trendingPosts.filter(
@@ -167,7 +229,15 @@ const HotTopicsPage = () => {
                 headerRight={
                   <div className="flex flex-col items-end gap-2 min-w-[60px]">
                     <div className="flex items-center gap-1 text-xs">
-                      <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+                      <Button
+                        variant={post.isLiked ? 'ghost' : 'outline'}
+                        size="icon"
+                        onClick={() => handleLikePost(post.id, post.isLiked)}
+                        className={`p-1 h-6 w-6 ${post.isLiked ? 'text-red-500' : 'text-social-muted'}`}
+                        data-testid={`like-post-btn-${post.id}`}
+                      >
+                        <Heart className={`h-4 w-4 ${post.isLiked ? 'fill-current' : ''}`} />
+                      </Button>
                       <span>{post.likes}</span>
                     </div>
                     <div className="flex items-center gap-1 text-xs">
