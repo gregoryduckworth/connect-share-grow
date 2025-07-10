@@ -20,7 +20,8 @@ import { User as UserType } from '@/lib/types';
 import { USERS_DATA } from '@/lib/backend/data/users';
 import { UserRelationship } from '@/lib/backend/data/userRelationships';
 import { ChatMessage } from '@/lib/backend/data/chatMessages';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useChatThread } from '@/contexts/ChatThreadContext';
 
 interface Chat {
   id: string;
@@ -47,6 +48,8 @@ const ChatPage = () => {
   const [groupName, setGroupName] = useState('');
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { selectedThreadId, setSelectedThreadId } = useChatThread();
 
   const [friends, setFriends] = useState<Friend[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
@@ -91,6 +94,8 @@ const ChatPage = () => {
           const sender = USERS_DATA.find((u) => u.id === lastMsg.senderId);
           lastMessage = `${sender ? sender.name : lastMsg.senderId}: ${lastMsg.content}`;
         }
+        // Calculate unread count for this user
+        const unreadCount = threadMessages.filter((msg) => !msg.readBy.includes(user.id)).length;
         return {
           id: t.id,
           name,
@@ -98,7 +103,7 @@ const ChatPage = () => {
           participants: t.participantIds, // Use user IDs
           lastMessage,
           timestamp: t.createdAt,
-          unreadCount: 0, // Could be calculated from messages
+          unreadCount,
         };
       });
       setChats(chatList);
@@ -188,22 +193,66 @@ const ChatPage = () => {
 
   const selectedChatData = chats.find((chat) => chat.id === selectedChat);
 
-  // Auto-select chat thread if threadId is in the URL
+  // Auto-select chat thread from context (never from URL)
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const threadId = params.get('threadId');
-    if (threadId && chats.some((c) => c.id === threadId)) {
-      setSelectedChat(threadId);
+    if (selectedThreadId && chats.some((c) => c.id === selectedThreadId)) {
+      setSelectedChat(selectedThreadId);
+      setSelectedThreadId(null); // Clear after use so future navigations work
     }
-  }, [location.search, chats]);
+  }, [selectedThreadId, chats, setSelectedThreadId]);
+
+  // Mark messages as read when a chat is selected
+  useEffect(() => {
+    if (!selectedChat || !user) return;
+    // Mark all messages in this thread as read for the user
+    const threadMessages: ChatMessage[] = api.getChatMessages(selectedChat);
+    threadMessages.forEach((msg) => {
+      if (!msg.readBy.includes(user.id)) {
+        api.markChatMessageRead(msg.id, user.id);
+      }
+    });
+    // Refresh chat list to update unread counts
+    Promise.resolve(api.getChatThreads(user.id)).then((threads) => {
+      setChats((prevChats) => {
+        return threads.map((t) => {
+          const isGroup = t.isGroup;
+          const otherParticipantIds = t.participantIds.filter((id: string) => id !== user.id);
+          const name = isGroup
+            ? t.name || 'Group Chat'
+            : prevChats.find((c) => c.id === t.id)?.name || 'Unknown';
+          const threadMessages: ChatMessage[] = api.getChatMessages(t.id);
+          const lastMsg =
+            threadMessages.length > 0 ? threadMessages[threadMessages.length - 1] : null;
+          let lastMessage = '';
+          if (lastMsg) {
+            const sender = USERS_DATA.find((u) => u.id === lastMsg.senderId);
+            lastMessage = `${sender ? sender.name : lastMsg.senderId}: ${lastMsg.content}`;
+          }
+          const unreadCount = threadMessages.filter((msg) => !msg.readBy.includes(user.id)).length;
+          return {
+            id: t.id,
+            name,
+            type: isGroup ? 'group' : 'individual',
+            participants: t.participantIds,
+            lastMessage,
+            timestamp: t.createdAt,
+            unreadCount,
+          };
+        });
+      });
+    });
+  }, [selectedChat, user]);
 
   return (
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen" data-testid="chat-page">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-8rem)]">
         {/* Chat List */}
         {showChatList && (
-          <div className="lg:col-span-1" data-testid="chat-list-container">
-            <Card className="h-full border border-border" data-testid="chat-list-card">
+          <div className="lg:col-span-1 h-full flex flex-col" data-testid="chat-list-container">
+            <Card
+              className="h-full flex flex-col border border-border"
+              data-testid="chat-list-card"
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle data-testid="chat-list-title">Messages</CardTitle>
@@ -318,9 +367,9 @@ const ChatPage = () => {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-0">
+              <CardContent className="flex-1 p-0">
                 <div
-                  className="space-y-1 max-h-[60vh] overflow-y-auto py-6"
+                  className="space-y-1 flex-1 max-h-[95%] overflow-y-auto"
                   role="listbox"
                   aria-label="Chat list"
                   data-testid="chat-list"
@@ -328,13 +377,14 @@ const ChatPage = () => {
                   {filteredChats.map((chat) => (
                     <div
                       key={chat.id}
-                      className={`p-3 cursor-pointer flex items-center gap-3 border-2 transition-shadow bg-white max-w-[95%] mx-auto
+                      className={`mt-1 mb-1 p-3 cursor-pointer flex items-center gap-3 border-2 transition-shadow bg-white max-w-[95%] mx-auto
                         ${
                           selectedChat === chat.id
                             ? 'border-purple-400 bg-purple-50 scale-[1.03] rounded-lg shadow-xl'
                             : 'border-transparent bg-white rounded-lg hover:shadow-md hover:scale-[1.01] hover:border-purple-200 hover:bg-purple-50'
                         }
                       `}
+                      style={{ justifyContent: 'flex-start', alignItems: 'flex-start' }}
                       onClick={() => setSelectedChat(chat.id)}
                       aria-selected={selectedChat === chat.id}
                       aria-label={`Open chat with ${chat.name}`}

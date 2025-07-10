@@ -14,6 +14,7 @@ import { useDialog } from '@/hooks/useDialog';
 import { formatDate } from '@/lib/utils';
 import { InfoBadge } from '@/components/common/InfoBadge';
 import { useNavigate } from 'react-router-dom';
+import { useChatThread } from '@/contexts/ChatThreadContext';
 
 const ConnectionsPage = () => {
   const { user, isLoading } = useAuth();
@@ -23,6 +24,7 @@ const ConnectionsPage = () => {
   const [connections, setConnections] = useState<(Connection & { chatThreadId?: string })[]>([]);
   const [connectionRequests, setConnectionRequests] = useState<ConnectionRequest[]>([]);
   const navigate = useNavigate();
+  const { setSelectedThreadId } = useChatThread();
 
   useEffect(() => {
     if (!user?.id) return;
@@ -163,7 +165,8 @@ const ConnectionsPage = () => {
                       className="flex-1 text-xs sm:text-sm"
                       data-testid={`message-btn-${connection.id}`}
                       onClick={() => {
-                        navigate(`/chat?threadId=${connection.chatThreadId}`);
+                        setSelectedThreadId(connection.chatThreadId!);
+                        navigate('/chat');
                       }}
                     >
                       <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
