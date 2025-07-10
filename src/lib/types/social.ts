@@ -1,17 +1,15 @@
-
 // Social App Types
 export interface Connection {
   id: string;
   name: string;
-  mutualConnections: number;
-  status: "connected" | "pending" | "received";
+  status: 'connected' | 'pending' | 'received';
   lastActive: Date;
   bio?: string;
 }
 
 export interface ConnectionRequest {
-  id: string;
-  name: string;
+  fromUserId: string;
+  toUserId: string;
   message: string;
   date: string;
 }
@@ -20,21 +18,14 @@ export interface ConnectionData {
   userId: string;
   connections: Array<{
     id: string;
-    status: "connected" | "pending" | "received";
-    mutualConnections: number;
+    status: 'connected' | 'pending' | 'received';
     lastActive: Date;
   }>;
 }
 
 export interface Notification {
   id: string;
-  type:
-    | "reply"
-    | "comment"
-    | "mention"
-    | "system"
-    | "connection_request"
-    | "connection_accepted";
+  type: 'reply' | 'comment' | 'mention' | 'system' | 'connection_request' | 'connection_accepted';
   title: string;
   message: string;
   timestamp: Date;

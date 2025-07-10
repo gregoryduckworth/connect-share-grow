@@ -1,5 +1,5 @@
 import { NOTIFICATIONS_DATA } from '../data/notifications';
-import { USER_NOTIFICATIONS, UserNotification } from '../data/userNotifications';
+import { USER_NOTIFICATIONS } from '../data/userNotifications';
 import type { Notification } from '@/lib/types';
 
 export const notificationService = {

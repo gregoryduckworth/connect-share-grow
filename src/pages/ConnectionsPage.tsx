@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Users, MessageCircle, Eye } from 'lucide-react';
+import { Search, Users, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,7 +12,6 @@ import { useAuth } from '@/contexts/useAuth';
 import { Connection, ConnectionRequest } from '@/lib/types';
 import { useDialog } from '@/hooks/useDialog';
 import { formatDate } from '@/lib/utils';
-import { InfoBadge } from '@/components/common/InfoBadge';
 import { useNavigate } from 'react-router-dom';
 import { useChatThread } from '@/contexts/ChatThreadContext';
 
@@ -22,7 +21,8 @@ const ConnectionsPage = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const profileDialog = useDialog(false);
   const [connections, setConnections] = useState<(Connection & { chatThreadId?: string })[]>([]);
-  const [connectionRequests, setConnectionRequests] = useState<ConnectionRequest[]>([]);
+  const [incomingRequests, setIncomingRequests] = useState<ConnectionRequest[]>([]);
+  const [outgoingRequests, setOutgoingRequests] = useState<ConnectionRequest[]>([]);
   const navigate = useNavigate();
   const { setSelectedThreadId } = useChatThread();
 
@@ -36,7 +36,6 @@ const ConnectionsPage = () => {
           return {
             id: c.id,
             name: userObj?.name || 'Unknown',
-            mutualConnections: c.mutualConnections,
             status: c.status,
             lastActive: c.lastActive,
             bio: userObj?.bio,
@@ -45,38 +44,14 @@ const ConnectionsPage = () => {
         }),
       );
     });
+    // Load connection requests for the current user from backend service
+    connectionService.getConnectionRequestsForUser(user.id).then((requests) => {
+      setIncomingRequests(requests.filter((r) => r.toUserId === user.id));
+      setOutgoingRequests(requests.filter((r) => r.fromUserId === user.id));
+    });
   }, [user?.id]);
 
-  useEffect(() => {
-    // Load connection requests from localStorage
-    const requests = JSON.parse(localStorage.getItem('connectionRequests') || '[]');
-    setConnectionRequests(requests);
-  }, []);
-
-  // Sync requests if a new one is added (e.g., after sending from dialog)
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === 'connectionRequests') {
-        const requests = JSON.parse(localStorage.getItem('connectionRequests') || '[]');
-        setConnectionRequests(requests);
-      }
-    };
-    window.addEventListener('storage', onStorage);
-    // Also poll every 1s in case of same-tab update
-    const interval = setInterval(() => {
-      const requests = JSON.parse(localStorage.getItem('connectionRequests') || '[]');
-      setConnectionRequests(requests);
-    }, 1000);
-    return () => {
-      window.removeEventListener('storage', onStorage);
-      clearInterval(interval);
-    };
-  }, []);
-
-  const connectedUsers = connections.filter((c) => c.status === 'connected');
-  const pendingRequests = connections.filter((c) => c.status === 'pending');
-
-  const filteredConnections = connectedUsers.filter((connection) =>
+  const filteredConnections = connections.filter((connection) =>
     connection.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
@@ -129,13 +104,13 @@ const ConnectionsPage = () => {
       <Tabs defaultValue="connected" className="w-full" data-testid="connections-tabs">
         <TabsList className="grid w-full grid-cols-3 mb-6" data-testid="connections-tabs-list">
           <TabsTrigger value="connected" className="text-xs sm:text-sm" data-testid="tab-connected">
-            Connected ({connectedUsers.length})
+            Connected ({filteredConnections.length})
           </TabsTrigger>
-          <TabsTrigger value="pending" className="text-xs sm:text-sm" data-testid="tab-pending">
-            Pending ({pendingRequests.length})
+          <TabsTrigger value="incoming" className="text-xs sm:text-sm" data-testid="tab-incoming">
+            Incoming ({incomingRequests.length})
           </TabsTrigger>
-          <TabsTrigger value="requests" className="text-xs sm:text-sm" data-testid="tab-requests">
-            Requests ({connectionRequests.length})
+          <TabsTrigger value="outgoing" className="text-xs sm:text-sm" data-testid="tab-outgoing">
+            Outgoing ({outgoingRequests.length})
           </TabsTrigger>
         </TabsList>
 
@@ -146,11 +121,6 @@ const ConnectionsPage = () => {
                 key={connection.id}
                 title={<UserProfileLink userId={connection.id} userName={connection.name} />}
                 description={connection.bio}
-                headerRight={
-                  <InfoBadge type="connection" className="text-xs whitespace-nowrap">
-                    {connection.mutualConnections} mutual
-                  </InfoBadge>
-                }
                 contentTop={
                   <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
                     <span className="break-words">
@@ -197,78 +167,82 @@ const ConnectionsPage = () => {
           )}
         </TabsContent>
 
-        <TabsContent value="pending" data-testid="tab-content-pending">
+        <TabsContent value="incoming" data-testid="tab-content-incoming">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pendingRequests.map((connection) => (
-              <InfoCard
-                key={connection.id}
-                title={<UserProfileLink userId={connection.id} userName={connection.name} />}
-                description={connection.bio}
-                headerRight={
-                  <InfoBadge type="connection" className="text-xs whitespace-nowrap">
-                    {connection.mutualConnections} mutual
-                  </InfoBadge>
-                }
-                contentTop={
-                  <div className="flex items-center text-xs sm:text-sm text-muted-foreground mb-2">
-                    <span className="break-words">
-                      Last active: {formatDate(connection.lastActive)}
+            {incomingRequests.map((request) => {
+              const fromUser = USERS_DATA.find((u) => u.id === request.fromUserId);
+              return (
+                <InfoCard
+                  key={request.fromUserId + request.toUserId + request.date}
+                  title={
+                    <UserProfileLink
+                      userId={request.fromUserId}
+                      userName={fromUser?.name || 'Unknown'}
+                    />
+                  }
+                  description={request.message}
+                  headerRight={
+                    <span className="text-xs text-muted-foreground">
+                      {formatDate(new Date(request.date))}
                     </span>
-                  </div>
-                }
-                actions={
-                  <Button
-                    onClick={() => handleViewProfile(connection)}
-                    variant="outline"
-                    className="flex-1 text-xs sm:text-sm"
-                    data-testid={`view-profile-btn-${connection.id}`}
-                  >
-                    <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                    View Profile
-                  </Button>
-                }
-                data-testid={`pending-card-${connection.id}`}
-              />
-            ))}
+                  }
+                  actions={
+                    <Button
+                      variant="outline"
+                      className="flex-1 text-xs sm:text-sm"
+                      data-testid={`accept-btn-${request.fromUserId}`}
+                    >
+                      Accept
+                    </Button>
+                  }
+                  data-testid={`incoming-request-card-${request.fromUserId}`}
+                />
+              );
+            })}
           </div>
-
-          {pendingRequests.length === 0 && (
-            <div className="text-center py-12" data-testid="pending-empty-state">
-              <p className="text-muted-foreground">No pending requests.</p>
+          {incomingRequests.length === 0 && (
+            <div className="text-center py-12" data-testid="incoming-empty-state">
+              <p className="text-muted-foreground">No incoming requests.</p>
             </div>
           )}
         </TabsContent>
-
-        <TabsContent value="requests" data-testid="tab-content-requests">
+        <TabsContent value="outgoing" data-testid="tab-content-outgoing">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {connectionRequests.map((request) => (
-              <InfoCard
-                key={request.id + request.date}
-                title={<UserProfileLink userId={request.id} userName={request.name} />}
-                description={request.message}
-                headerRight={
-                  <span className="text-xs text-muted-foreground">
-                    {formatDate(new Date(request.date))}
-                  </span>
-                }
-                actions={
-                  <Button
-                    variant="outline"
-                    className="flex-1 text-xs sm:text-sm"
-                    disabled
-                    data-testid={`pending-btn-${request.id}`}
-                  >
-                    Pending
-                  </Button>
-                }
-                data-testid={`request-card-${request.id}`}
-              />
-            ))}
+            {outgoingRequests.map((request) => {
+              const toUser = USERS_DATA.find((u) => u.id === request.toUserId);
+              return (
+                <InfoCard
+                  key={request.fromUserId + request.toUserId + request.date}
+                  title={
+                    <UserProfileLink
+                      userId={request.toUserId}
+                      userName={toUser?.name || 'Unknown'}
+                    />
+                  }
+                  description={request.message}
+                  headerRight={
+                    <span className="text-xs text-muted-foreground">
+                      {formatDate(new Date(request.date))}
+                    </span>
+                  }
+                  actions={
+                    <Button
+                      variant="outline"
+                      className="flex-1 text-xs sm:text-sm"
+                      disabled
+                      data-testid={`pending-btn-${request.toUserId}`}
+                    >
+                      Pending
+                    </Button>
+                  }
+                  data-testid={`outgoing-request-card-${request.toUserId}`}
+                />
+              );
+            })}
           </div>
-
-          {connectionRequests.length === 0 && (
-            <div className="text-center py-12" data-testid="requests-empty-state">
-              <p className="text-muted-foreground">No connection requests.</p>
+          {outgoingRequests.length === 0 && (
+            <div className="text-center py-12" data-testid="outgoing-empty-state">
+              <p className="text-muted-foreground">No outgoing requests.</p>
             </div>
           )}
         </TabsContent>
