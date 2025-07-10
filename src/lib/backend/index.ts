@@ -36,8 +36,8 @@ export const api = {
   submitReport: reportService.submitReport,
 
   // Notification methods
-  getNotifications: notificationService.getNotifications,
-  markNotificationAsRead: notificationService.markNotificationAsRead,
+  getNotifications: notificationService.getUserNotifications,
+  markNotificationAsRead: notificationService.markUserNotificationAsRead,
 
   // Admin methods
   getAdminRoles: adminService.getAdminRoles,
