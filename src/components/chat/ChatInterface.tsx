@@ -1,62 +1,56 @@
-
-import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send } from "lucide-react";
-import { ChatMessage } from "@/lib/types";
+import { useState, useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Send } from 'lucide-react';
+import { ChatMessage } from '@/lib/types';
+import { api } from '@/lib/api';
+import { USERS_DATA } from '@/lib/backend/data/users';
 
 interface ChatInterfaceProps {
   connectionId?: string;
   connectionName?: string;
   chatId?: string;
   chatName?: string;
-  chatType?: "individual" | "group";
+  chatType?: 'individual' | 'group';
   participants?: string[];
   currentUser?: string;
 }
 
-const ChatInterface = ({ 
-  connectionId, 
-  connectionName, 
+const ChatInterface = ({
+  connectionName,
   chatId,
   chatName,
   chatType,
   participants,
-  currentUser
+  currentUser,
 }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [newMessage, setNewMessage] = useState("");
+  const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const displayName = chatName || connectionName || "Chat";
-  const chatConnectionId = connectionId || chatId || "default";
+  const displayName = chatName || connectionName || 'Chat';
 
   useEffect(() => {
-    // Dummy data for testing
-    const initialMessages: ChatMessage[] = [
-      {
-        id: "1",
-        connectionId: chatConnectionId,
-        senderId: "user1",
-        content: "Hey, how's it going?",
-        sentAt: new Date(),
-        isRead: true,
-      },
-      {
-        id: "2",
-        connectionId: chatConnectionId,
-        senderId: "user2",
-        content: "Not bad, just chilling. You?",
-        sentAt: new Date(),
-        isRead: true,
-      },
-    ];
-    setMessages(initialMessages);
-  }, [chatConnectionId]);
+    if (!chatId || !currentUser) return;
+    // Fetch messages from backend (synchronous)
+    const backendMessages = api.getChatMessages(chatId);
+    setMessages(
+      backendMessages.map((msg: any) => ({
+        id: msg.id,
+        connectionId: msg.threadId ?? '',
+        senderId: msg.senderId,
+        content: msg.content,
+        sentAt: msg.timestamp ?? msg.sentAt ?? new Date(),
+        isRead: Array.isArray(msg.readBy)
+          ? msg.readBy.includes(currentUser)
+          : (msg.isRead ?? false),
+      })),
+    );
+  }, [chatId, currentUser]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -64,18 +58,22 @@ const ChatInterface = ({
   }, [messages]);
 
   const handleSendMessage = () => {
-    if (newMessage.trim() !== "") {
-      const newChatMessage: ChatMessage = {
-        id: String(messages.length + 1),
-        connectionId: chatConnectionId,
-        senderId: currentUser || "currentUser",
-        content: newMessage,
-        sentAt: new Date(),
-        isRead: false,
-      };
-
-      setMessages([...messages, newChatMessage]);
-      setNewMessage("");
+    if (newMessage.trim() !== '' && chatId && currentUser) {
+      api.sendChatMessage(chatId, currentUser, newMessage);
+      const backendMessages = api.getChatMessages(chatId);
+      setMessages(
+        backendMessages.map((msg: any) => ({
+          id: msg.id,
+          connectionId: msg.threadId ?? '',
+          senderId: msg.senderId,
+          content: msg.content,
+          sentAt: msg.timestamp ?? msg.sentAt ?? new Date(),
+          isRead: Array.isArray(msg.readBy)
+            ? msg.readBy.includes(currentUser)
+            : (msg.isRead ?? false),
+        })),
+      );
+      setNewMessage('');
     }
   };
 
@@ -83,10 +81,8 @@ const ChatInterface = ({
     <div className="flex flex-col h-full">
       <div className="border-b p-4">
         <h2 className="text-lg font-semibold">{displayName}</h2>
-        {chatType === "group" && participants && (
-          <p className="text-sm text-gray-500">
-            {participants.length} participants
-          </p>
+        {chatType === 'group' && participants && (
+          <p className="text-sm text-gray-500">{participants.length} participants</p>
         )}
       </div>
       <ScrollArea className="flex-grow p-4">
@@ -95,21 +91,25 @@ const ChatInterface = ({
             <div
               key={message.id}
               className={`flex flex-col ${
-                message.senderId === (currentUser || "currentUser") ? "items-end" : "items-start"
+                message.senderId === (currentUser || 'currentUser') ? 'items-end' : 'items-start'
               }`}
             >
               <div
                 className={`rounded-lg px-3 py-2 text-sm ${
-                  message.senderId === (currentUser || "currentUser")
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-800"
+                  message.senderId === (currentUser || 'currentUser')
+                    ? 'bg-purple-500 text-white'
+                    : 'bg-gray-200 text-gray-800'
                 }`}
               >
                 {message.content}
               </div>
               <div className="text-xs text-gray-500">
-                {message.senderId === (currentUser || "currentUser") ? "You" : "Them"} -{" "}
-                {message.sentAt.toLocaleTimeString()}
+                {(() => {
+                  const sender = USERS_DATA.find((u) => u.id === message.senderId);
+                  const senderName = sender ? sender.name : message.senderId;
+                  const dateVal = (message as any).timestamp ?? (message as any).sentAt;
+                  return `${senderName} - ${dateVal.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                })()}
               </div>
             </div>
           ))}
@@ -123,7 +123,7 @@ const ChatInterface = ({
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
+              if (e.key === 'Enter') {
                 handleSendMessage();
               }
             }}

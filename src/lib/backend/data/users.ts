@@ -3,7 +3,7 @@ import { User } from '@/lib/types';
 export const USERS_DATA: User[] = [
   // Demo Admin User
   {
-    id: 'demo-admin-0001',
+    id: '00000000-0000-0000-0000-000000000001',
     name: 'Demo Admin',
     email: 'admin@example.com',
     role: 'admin',
@@ -18,7 +18,7 @@ export const USERS_DATA: User[] = [
   },
   // Demo Regular User
   {
-    id: 'demo-user-0001',
+    id: '00000000-0000-0000-0000-000000000002',
     name: 'Demo User',
     email: 'user@example.com',
     role: 'user',

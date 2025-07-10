@@ -4,6 +4,7 @@ import { communityService } from './services/communityService';
 import { reportService } from './services/reportService';
 import { notificationService } from './services/notificationService';
 import { adminService, mockPendingModeratorRoleChanges } from './services/adminService';
+import { chatService } from './services/chatService';
 
 // Re-export mock data for backward compatibility
 export { USERS_DATA as mockUsers } from './data/users';
@@ -49,6 +50,15 @@ export const api = {
   getPlatformStats: adminService.getPlatformStats,
   getActivityData: adminService.getActivityData,
   getSizeDistribution: adminService.getSizeDistribution,
+
+  // Chat methods
+  getChatThreads: chatService.getThreadsForUser,
+  getChatMessages: chatService.getMessagesForThread,
+  sendChatMessage: chatService.sendMessage,
+  markChatMessageRead: chatService.markMessageRead,
+  getUserRelationships: chatService.getRelationshipsForUser,
+  addUserRelationship: chatService.addRelationship,
+  updateUserRelationship: chatService.updateRelationship,
 };
 
 // Export specific functions for backward compatibility

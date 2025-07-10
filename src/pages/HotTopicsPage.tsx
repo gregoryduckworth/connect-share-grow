@@ -35,41 +35,60 @@ const HotTopicsPage = () => {
     Promise.all([
       api.getHotPosts(),
       api.getCommunities(),
-      user ? api.getUserLikedPosts(user.id) : Promise.resolve([] as string[])
+      user ? api.getUserLikedPosts(user.id) : Promise.resolve([] as string[]),
     ]).then(([posts, communities, likedPosts]: [any[], any[], string[]]) => {
       // Build a set of valid community slugs
       const validCommunitySlugSet = new Set(communities.map((c: { slug: string }) => c.slug));
       setTrendingCommunities(
-        communities.map((c: { slug: string; name: string; description: string; memberCount: number; category: string }) => ({
-          id: c.slug,
-          name: c.name,
-          description: c.description,
-          memberCount: c.memberCount,
-          growthRate: Math.round(Math.random() * 20 * 10) / 10,
-          category: c.category,
-          isJoined: false,
-        })),
+        communities.map(
+          (c: {
+            slug: string;
+            name: string;
+            description: string;
+            memberCount: number;
+            category: string;
+          }) => ({
+            id: c.slug,
+            name: c.name,
+            description: c.description,
+            memberCount: c.memberCount,
+            growthRate: Math.round(Math.random() * 20 * 10) / 10,
+            category: c.category,
+            isJoined: false,
+          }),
+        ),
       );
       setTrendingPosts(
         posts
           .filter((p: { communityId: string }) => validCommunitySlugSet.has(p.communityId))
-          .map((p: { id: string; title: string; author: string; communityId: string; likes: number; replies: number; createdAt: Date; content: string }) => {
-            const community = communities.find((c: { slug: string }) => c.slug === p.communityId);
-            const userObj = USERS_DATA.find((u: { id: string }) => u.id === p.author);
-            return {
-              id: p.id,
-              title: p.title,
-              author: p.author,
-              userName: userObj?.name || undefined,
-              communitySlug: p.communityId,
-              communityName: community ? community.name : p.communityId,
-              likes: p.likes,
-              replies: p.replies,
-              createdAt: p.createdAt,
-              isLiked: likedPosts.includes(p.id),
-              excerpt: p.content.slice(0, 120) + (p.content.length > 120 ? '...' : ''),
-            };
-          }),
+          .map(
+            (p: {
+              id: string;
+              title: string;
+              author: string;
+              communityId: string;
+              likes: number;
+              replies: number;
+              createdAt: Date;
+              content: string;
+            }) => {
+              const community = communities.find((c: { slug: string }) => c.slug === p.communityId);
+              const userObj = USERS_DATA.find((u: { id: string }) => u.id === p.author);
+              return {
+                id: p.id,
+                title: p.title,
+                author: p.author,
+                userName: userObj?.name || undefined,
+                communitySlug: p.communityId,
+                communityName: community ? community.name : p.communityId,
+                likes: p.likes,
+                replies: p.replies,
+                createdAt: p.createdAt,
+                isLiked: likedPosts.includes(p.id),
+                excerpt: p.content.slice(0, 120) + (p.content.length > 120 ? '...' : ''),
+              };
+            },
+          ),
       );
     });
     if (user) {
@@ -114,26 +133,37 @@ const HotTopicsPage = () => {
       const [posts, communities, likedPosts] = await Promise.all([
         api.getHotPosts(),
         api.getCommunities(),
-        api.getUserLikedPosts(user.id)
+        api.getUserLikedPosts(user.id),
       ]);
       setTrendingPosts(
-        posts.map((p: { id: string; title: string; author: string; communityId: string; likes: number; replies: number; createdAt: Date; content: string }) => {
-          const community = communities.find((c: { slug: string }) => c.slug === p.communityId);
-          const userObj = USERS_DATA.find((u: { id: string }) => u.id === p.author);
-          return {
-            id: p.id,
-            title: p.title,
-            author: p.author,
-            userName: userObj?.name || undefined,
-            communitySlug: p.communityId,
-            communityName: community ? community.name : p.communityId,
-            likes: p.likes,
-            replies: p.replies,
-            createdAt: p.createdAt,
-            isLiked: likedPosts.includes(p.id),
-            excerpt: p.content.slice(0, 120) + (p.content.length > 120 ? '...' : ''),
-          };
-        })
+        posts.map(
+          (p: {
+            id: string;
+            title: string;
+            author: string;
+            communityId: string;
+            likes: number;
+            replies: number;
+            createdAt: Date;
+            content: string;
+          }) => {
+            const community = communities.find((c: { slug: string }) => c.slug === p.communityId);
+            const userObj = USERS_DATA.find((u: { id: string }) => u.id === p.author);
+            return {
+              id: p.id,
+              title: p.title,
+              author: p.author,
+              userName: userObj?.name || undefined,
+              communitySlug: p.communityId,
+              communityName: community ? community.name : p.communityId,
+              likes: p.likes,
+              replies: p.replies,
+              createdAt: p.createdAt,
+              isLiked: likedPosts.includes(p.id),
+              excerpt: p.content.slice(0, 120) + (p.content.length > 120 ? '...' : ''),
+            };
+          },
+        ),
       );
     } catch (err) {
       toast({

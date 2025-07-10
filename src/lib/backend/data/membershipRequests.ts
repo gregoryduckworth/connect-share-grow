@@ -9,7 +9,7 @@ export interface MembershipRequest {
 
 export const MEMBERSHIP_REQUESTS: MembershipRequest[] = [
   {
-    userId: 'demo-user-0001',
+    userId: '00000000-0000-0000-0000-000000000001',
     communitySlug: 'tech-discussions',
     status: 'pending',
     requestedAt: new Date('2024-02-01T10:00:00Z'),

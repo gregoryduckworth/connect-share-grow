@@ -1,20 +1,11 @@
-import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { api } from "@/lib/api";
-import { PostDetailData, PostDetailReply } from "@/lib/types";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import AppAvatar from "@/components/common/AppAvatar";
-import {
-  Heart,
-  MessageSquare,
-  Pin,
-  Lock,
-  User,
-  Home,
-  ChevronRight,
-  Unlock,
-} from "lucide-react";
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { api } from '@/lib/api';
+import { PostDetailData, PostDetailReply } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import AppAvatar from '@/components/common/AppAvatar';
+import { Heart, MessageSquare, Pin, Lock, User, Home, ChevronRight, Unlock } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -22,38 +13,35 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { useToast } from "@/components/ui/use-toast";
-import ReportModal from "@/components/ui/ReportModal";
-import UserProfileLink from "@/components/user/UserProfileLink";
-import UserProfileDialog from "@/components/user/UserProfileDialog";
-import { useAuth } from "@/contexts/useAuth";
-import { REPLIES_DATA } from "@/lib/backend/data/replies";
-import { USERS_DATA } from "@/lib/backend/data/users";
-import PostReply from "@/components/post/PostReply";
-import ReplyForm from "@/components/post/ReplyForm";
+} from '@/components/ui/breadcrumb';
+import { useToast } from '@/components/ui/use-toast';
+import ReportModal from '@/components/ui/ReportModal';
+import UserProfileLink from '@/components/user/UserProfileLink';
+import UserProfileDialog from '@/components/user/UserProfileDialog';
+import { useAuth } from '@/contexts/useAuth';
+import { REPLIES_DATA } from '@/lib/backend/data/replies';
+import { USERS_DATA } from '@/lib/backend/data/users';
+import PostReply from '@/components/post/PostReply';
+import ReplyForm from '@/components/post/ReplyForm';
 import {
   formatDate,
   buildReplyTree,
   mapUserNamesToReplies,
   lockReplyRecursive,
   unlockReplyRecursive,
-} from "@/lib/utils";
-import { useReportModal } from "@/hooks/useReportModal";
-import { InfoBadge } from "@/components/common/InfoBadge";
+} from '@/lib/utils';
+import { useReportModal } from '@/hooks/useReportModal';
+import { InfoBadge } from '@/components/common/InfoBadge';
 
 const PostDetailPage = () => {
   const { postId } = useParams();
   const { toast } = useToast();
   const { user, isModerator: checkIsModerator } = useAuth();
-  const [newReply, setNewReply] = useState("");
+  const [newReply, setNewReply] = useState('');
   const [replyToId, setReplyToId] = useState<string | null>(null);
-  const [replyContent, setReplyContent] = useState<{ [key: string]: string }>(
-    {}
-  );
+  const [replyContent, setReplyContent] = useState<{ [key: string]: string }>({});
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const { reportModalOpen, reportContext, openReportModal, closeReportModal } =
-    useReportModal();
+  const { reportModalOpen, reportContext, openReportModal, closeReportModal } = useReportModal();
 
   const [post, setPost] = useState<PostDetailData | null>(null);
   const isModerator = checkIsModerator();
@@ -62,9 +50,7 @@ const PostDetailPage = () => {
     if (postId) {
       api.getPostDetail(postId).then((postData) => {
         // Attach nested replies for this post
-        const replies = buildReplyTree(
-          REPLIES_DATA.filter((r) => r.postId === postId)
-        );
+        const replies = buildReplyTree(REPLIES_DATA.filter((r) => r.postId === postId));
         // Map userName into post and replies
         const user = USERS_DATA.find((u) => u.id === postData?.author);
         setPost(
@@ -74,7 +60,7 @@ const PostDetailPage = () => {
                 userName: user?.name || undefined,
                 replies: mapUserNamesToReplies(replies),
               }
-            : null
+            : null,
         );
       });
     }
@@ -92,9 +78,7 @@ const PostDetailPage = () => {
       const postData = await api.getPostDetail(postId, user.id);
       if (postData) {
         // Attach nested replies for this post
-        const replies = buildReplyTree(
-          REPLIES_DATA.filter((r) => r.postId === postId)
-        );
+        const replies = buildReplyTree(REPLIES_DATA.filter((r) => r.postId === postId));
         const userObj = USERS_DATA.find((u) => u.id === postData.author);
         setPost({
           ...postData,
@@ -136,7 +120,7 @@ const PostDetailPage = () => {
             ...prev,
             replies: updateReplies(prev.replies),
           }
-        : prev
+        : prev,
     );
   };
 
@@ -145,7 +129,7 @@ const PostDetailPage = () => {
     if (!content.trim()) return;
     const newReplyObj: PostDetailReply = {
       id: `reply-${Date.now()}`,
-      author: user?.id ?? "",
+      author: user?.id ?? '',
       content: content,
       timestamp: new Date(),
       likes: 0,
@@ -154,9 +138,7 @@ const PostDetailPage = () => {
       replies: [],
     };
     if (parentId) {
-      const addReplyToParent = (
-        replies: PostDetailReply[]
-      ): PostDetailReply[] => {
+      const addReplyToParent = (replies: PostDetailReply[]): PostDetailReply[] => {
         return replies.map((reply) => {
           if (reply.id === parentId) {
             return {
@@ -180,9 +162,9 @@ const PostDetailPage = () => {
               replies: addReplyToParent(prev.replies),
               comments: prev.comments + 1,
             }
-          : prev
+          : prev,
       );
-      setReplyContent((prev) => ({ ...prev, [parentId]: "" }));
+      setReplyContent((prev) => ({ ...prev, [parentId]: '' }));
       setReplyToId(null);
     } else {
       setPost((prev) =>
@@ -192,13 +174,13 @@ const PostDetailPage = () => {
               replies: [...prev.replies, newReplyObj],
               comments: prev.comments + 1,
             }
-          : prev
+          : prev,
       );
-      setNewReply("");
+      setNewReply('');
     }
     toast({
-      title: "Reply posted",
-      description: "Your reply has been added to the discussion.",
+      title: 'Reply posted',
+      description: 'Your reply has been added to the discussion.',
     });
   };
 
@@ -210,7 +192,7 @@ const PostDetailPage = () => {
             ...prev,
             replies: lockReplyRecursive(prev.replies, replyId),
           }
-        : prev
+        : prev,
     );
   };
   const handleUnlockReply = (replyId: string) => {
@@ -220,7 +202,7 @@ const PostDetailPage = () => {
             ...prev,
             replies: unlockReplyRecursive(prev.replies, replyId),
           }
-        : prev
+        : prev,
     );
   };
 
@@ -247,10 +229,7 @@ const PostDetailPage = () => {
   }
 
   return (
-    <div
-      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
-      data-testid="post-detail-page"
-    >
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen" data-testid="post-detail-page">
       {/* Breadcrumbs */}
       <div className="mb-6" data-testid="post-detail-breadcrumbs">
         <Breadcrumb>
@@ -268,9 +247,7 @@ const PostDetailPage = () => {
             </BreadcrumbSeparator>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to={`/community/${post.communityId}`}>
-                  {post.communityName}
-                </Link>
+                <Link to={`/community/${post.communityId}`}>{post.communityName}</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>
@@ -287,7 +264,7 @@ const PostDetailPage = () => {
         {/* Main Post */}
         <Card
           className={`mb-6 w-full ${
-            post.isPinned ? "border-social-primary bg-social-accent/10" : ""
+            post.isPinned ? 'border-social-primary bg-social-accent/10' : ''
           }`}
           data-testid="post-detail-card"
         >
@@ -305,28 +282,15 @@ const PostDetailPage = () => {
                       {post.title}
                     </h1>
                     {post.isPinned && (
-                      <Pin
-                        className="h-5 w-5 text-social-primary"
-                        data-testid="post-pinned-icon"
-                      />
+                      <Pin className="h-5 w-5 text-social-primary" data-testid="post-pinned-icon" />
                     )}
                     {post.isLocked && (
-                      <Lock
-                        className="h-5 w-5 text-red-500"
-                        data-testid="post-locked-icon"
-                      />
+                      <Lock className="h-5 w-5 text-red-500" data-testid="post-locked-icon" />
                     )}
                   </div>
-                  <p
-                    className="text-sm text-social-muted"
-                    data-testid="post-author"
-                  >
-                    by{" "}
-                    <UserProfileLink
-                      userId={post.author}
-                      userName={post.userName}
-                    />{" "}
-                    • {formatDate(post.timestamp)}
+                  <p className="text-sm text-social-muted" data-testid="post-author">
+                    by <UserProfileLink userId={post.author} userName={post.userName} /> •{' '}
+                    {formatDate(post.timestamp)}
                   </p>
                 </div>
               </div>
@@ -335,16 +299,12 @@ const PostDetailPage = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() =>
-                      setPost(
-                        (prev) => prev && { ...prev, isPinned: !prev.isPinned }
-                      )
-                    }
+                    onClick={() => setPost((prev) => prev && { ...prev, isPinned: !prev.isPinned })}
                     className="text-xs"
                     data-testid="pin-post-btn"
                   >
                     <Pin className="h-3 w-3 mr-1" />
-                    {post.isPinned ? "Unpin" : "Pin"}
+                    {post.isPinned ? 'Unpin' : 'Pin'}
                   </Button>
                 )}
                 {isModerator && post.isLocked ? (
@@ -358,7 +318,7 @@ const PostDetailPage = () => {
                             ...prev,
                             isLocked: false,
                             lockReason: undefined,
-                          }
+                          },
                       )
                     }
                     className="text-xs border-green-400 text-green-500 hover:bg-green-50"
@@ -377,8 +337,8 @@ const PostDetailPage = () => {
                           prev && {
                             ...prev,
                             isLocked: true,
-                            lockReason: "Locked by moderator",
-                          }
+                            lockReason: 'Locked by moderator',
+                          },
                       )
                     }
                     className="text-xs border-red-400 text-red-500 hover:bg-red-50"
@@ -394,7 +354,7 @@ const PostDetailPage = () => {
                   className="text-xs text-gray-400 hover:text-red-500"
                   onClick={() =>
                     openReportModal({
-                      type: "post",
+                      type: 'post',
                       postId: post.id,
                       communityId: post.communityId,
                       originalContent: post.content,
@@ -430,11 +390,7 @@ const PostDetailPage = () => {
 
             <div className="flex flex-wrap gap-2 mb-4" data-testid="post-tags">
               {post.tags.map((tag, index) => (
-                <InfoBadge
-                  key={index}
-                  type="tag"
-                  data-testid={`post-tag-${tag}`}
-                >
+                <InfoBadge key={index} type="tag" data-testid={`post-tag-${tag}`}>
                   {tag}
                 </InfoBadge>
               ))}
@@ -446,14 +402,12 @@ const PostDetailPage = () => {
                 size="sm"
                 onClick={handleLikePost}
                 className={`flex items-center gap-2 ${
-                  post.isLiked ? "text-red-500" : "text-social-muted"
+                  post.isLiked ? 'text-red-500' : 'text-social-muted'
                 }`}
                 disabled={post.isLocked}
                 data-testid="like-post-btn"
               >
-                <Heart
-                  className={`h-4 w-4 ${post.isLiked ? "fill-current" : ""}`}
-                />
+                <Heart className={`h-4 w-4 ${post.isLiked ? 'fill-current' : ''}`} />
                 {post.likes}
               </Button>
 
@@ -541,11 +495,11 @@ const PostDetailPage = () => {
           open={reportModalOpen}
           onClose={closeReportModal}
           context={reportContext}
-          reportedBy={user?.id ?? ""}
+          reportedBy={user?.id ?? ''}
           onSubmitted={() =>
             toast({
-              title: "Report submitted",
-              description: "Thank you for helping us keep the community safe.",
+              title: 'Report submitted',
+              description: 'Thank you for helping us keep the community safe.',
             })
           }
           data-testid="report-modal"

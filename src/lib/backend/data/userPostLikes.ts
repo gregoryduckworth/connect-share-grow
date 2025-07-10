@@ -7,7 +7,7 @@ export interface UserPostLike {
 
 export const USER_POST_LIKES: UserPostLike[] = [
   {
-    userId: 'demo-user-0001',
+    userId: '00000000-0000-0000-0000-000000000001',
     postId: 'p1a2b3c4-d5e6-f789-0123-456789abcdef',
     likedAt: new Date('2024-01-25T15:00:00Z'),
   },

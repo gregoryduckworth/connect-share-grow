@@ -25,7 +25,7 @@ export const USER_COMMUNITY_MEMBERSHIPS: UserCommunityMembership[] = [
 
   // Demo User is a member of one community
   {
-    userId: 'demo-user-0001',
+    userId: '00000000-0000-0000-0000-000000000001',
     communitySlug: 'photography-enthusiasts',
     role: 'member',
     joinedAt: new Date('2024-01-01T00:00:00Z'),

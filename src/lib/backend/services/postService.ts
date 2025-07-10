@@ -1,14 +1,9 @@
-import { POSTS_DATA } from "../data/posts";
-import { REPLIES_DATA } from "../data/replies";
-import { USERS_DATA } from "../data/users";
-import { COMMUNITIES_DATA } from "../data/communities";
-import { USER_POST_LIKES, UserPostLike } from "../data/userPostLikes";
-import type {
-  Post,
-  PostDetailData,
-  PostDetailReply,
-  CommunityPost,
-} from "@/lib/types";
+import { POSTS_DATA } from '../data/posts';
+import { REPLIES_DATA } from '../data/replies';
+import { USERS_DATA } from '../data/users';
+import { COMMUNITIES_DATA } from '../data/communities';
+import { USER_POST_LIKES, UserPostLike } from '../data/userPostLikes';
+import type { Post, PostDetailData, PostDetailReply, CommunityPost } from '@/lib/types';
 
 const getUserNameById = (userId: string): string => {
   const user = USERS_DATA.find((u) => u.id === userId);
@@ -17,19 +12,16 @@ const getUserNameById = (userId: string): string => {
 
 const getCommunityNameBySlug = (slug: string): string => {
   const community = COMMUNITIES_DATA.find((c) => c.slug === slug);
-  return community ? community.name : "Unknown Community";
+  return community ? community.name : 'Unknown Community';
 };
 
 export const postService = {
   getPosts: async (userId?: string): Promise<Post[]> => {
     await new Promise((resolve) => setTimeout(resolve, 500));
     return POSTS_DATA.map((post) => {
-      const likeCount = USER_POST_LIKES.filter((l) => l.postId === post.id)
-        .length;
+      const likeCount = USER_POST_LIKES.filter((l) => l.postId === post.id).length;
       const isLiked = userId
-        ? USER_POST_LIKES.some(
-            (l) => l.postId === post.id && l.userId === userId
-          )
+        ? USER_POST_LIKES.some((l) => l.postId === post.id && l.userId === userId)
         : false;
       return {
         ...post,
@@ -40,31 +32,25 @@ export const postService = {
     });
   },
 
-  getPostDetail: async (
-    postId: string,
-    userId?: string
-  ): Promise<PostDetailData | undefined> => {
+  getPostDetail: async (postId: string, userId?: string): Promise<PostDetailData | undefined> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
     const post = POSTS_DATA.find((post) => post.id === postId);
     if (!post) return undefined;
-    const likeCount = USER_POST_LIKES.filter((l) => l.postId === post.id)
-      .length;
+    const likeCount = USER_POST_LIKES.filter((l) => l.postId === post.id).length;
     const isLiked = userId
-      ? USER_POST_LIKES.some(
-          (l) => l.postId === post.id && l.userId === userId
-        )
+      ? USER_POST_LIKES.some((l) => l.postId === post.id && l.userId === userId)
       : false;
-    const replies: PostDetailReply[] = REPLIES_DATA.filter(
-      (reply) => reply.postId === postId
-    ).map((reply) => ({
-      id: reply.id,
-      author: reply.author,
-      content: reply.content,
-      timestamp: reply.createdAt,
-      likes: reply.likes,
-      isLiked: false,
-      replies: [],
-    }));
+    const replies: PostDetailReply[] = REPLIES_DATA.filter((reply) => reply.postId === postId).map(
+      (reply) => ({
+        id: reply.id,
+        author: reply.author,
+        content: reply.content,
+        timestamp: reply.createdAt,
+        likes: reply.likes,
+        isLiked: false,
+        replies: [],
+      }),
+    );
     return {
       id: post.id,
       title: post.title,
@@ -91,25 +77,19 @@ export const postService = {
 
   getUserLikedPosts: async (userId: string): Promise<string[]> => {
     await new Promise((resolve) => setTimeout(resolve, 200));
-    return USER_POST_LIKES.filter((l) => l.userId === userId).map(
-      (l) => l.postId
-    );
+    return USER_POST_LIKES.filter((l) => l.userId === userId).map((l) => l.postId);
   },
 
   likePost: async (userId: string, postId: string): Promise<void> => {
     await new Promise((resolve) => setTimeout(resolve, 200));
-    if (
-      !USER_POST_LIKES.some((l) => l.userId === userId && l.postId === postId)
-    ) {
+    if (!USER_POST_LIKES.some((l) => l.userId === userId && l.postId === postId)) {
       USER_POST_LIKES.push({ userId, postId, likedAt: new Date() });
     }
   },
 
   unlikePost: async (userId: string, postId: string): Promise<void> => {
     await new Promise((resolve) => setTimeout(resolve, 200));
-    const idx = USER_POST_LIKES.findIndex(
-      (l) => l.userId === userId && l.postId === postId
-    );
+    const idx = USER_POST_LIKES.findIndex((l) => l.userId === userId && l.postId === postId);
     if (idx !== -1) {
       USER_POST_LIKES.splice(idx, 1);
     }
@@ -124,27 +104,23 @@ export const postService = {
     }));
   },
 
-  getCommunityPosts: async (
-    communitySlug: string
-  ): Promise<CommunityPost[]> => {
+  getCommunityPosts: async (communitySlug: string): Promise<CommunityPost[]> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
-    return POSTS_DATA.filter((post) => post.communityId === communitySlug).map(
-      (post) => ({
-        id: post.id,
-        name: getCommunityNameBySlug(post.communityId),
-        title: post.title,
-        content: post.content,
-        author: post.author,
-        timestamp: post.createdAt,
-        likes: post.likes,
-        comments: post.replies,
-        isLiked: post.isLiked,
-        isPinned: false,
-        isLocked: false,
-        commentsLocked: false,
-        tags: [],
-      })
-    );
+    return POSTS_DATA.filter((post) => post.communityId === communitySlug).map((post) => ({
+      id: post.id,
+      name: getCommunityNameBySlug(post.communityId),
+      title: post.title,
+      content: post.content,
+      author: post.author,
+      timestamp: post.createdAt,
+      likes: post.likes,
+      comments: post.replies,
+      isLiked: post.isLiked,
+      isPinned: false,
+      isLocked: false,
+      commentsLocked: false,
+      tags: [],
+    }));
   },
 
   createPost: async (
@@ -153,7 +129,7 @@ export const postService = {
       title: string;
       content: string;
       tags?: string[];
-    }
+    },
   ): Promise<Post> => {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -161,7 +137,7 @@ export const postService = {
       id: `p${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       title: postData.title,
       content: postData.content,
-      author: "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      author: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
       communityId: communitySlug,
       createdAt: new Date(),
       likes: 0,
