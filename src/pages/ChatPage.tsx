@@ -20,6 +20,7 @@ import { User as UserType } from '@/lib/types';
 import { USERS_DATA } from '@/lib/backend/data/users';
 import { UserRelationship } from '@/lib/backend/data/userRelationships';
 import { ChatMessage } from '@/lib/backend/data/chatMessages';
+import { useLocation } from 'react-router-dom';
 
 interface Chat {
   id: string;
@@ -45,6 +46,7 @@ const ChatPage = () => {
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
   const [groupName, setGroupName] = useState('');
   const { user } = useAuth();
+  const location = useLocation();
 
   const [friends, setFriends] = useState<Friend[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
@@ -185,6 +187,15 @@ const ChatPage = () => {
   };
 
   const selectedChatData = chats.find((chat) => chat.id === selectedChat);
+
+  // Auto-select chat thread if threadId is in the URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const threadId = params.get('threadId');
+    if (threadId && chats.some((c) => c.id === threadId)) {
+      setSelectedChat(threadId);
+    }
+  }, [location.search, chats]);
 
   return (
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen" data-testid="chat-page">

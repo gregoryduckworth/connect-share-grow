@@ -1,16 +1,41 @@
-import { CONNECTIONS_DATA } from "../data/connections";
+import { CONNECTIONS_DATA } from '../data/connections';
+import { CHAT_THREADS } from '../data/chatThreads';
 
 export const connectionService = {
   getConnectionsForUser: async (userId: string) => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     const userConnections = CONNECTIONS_DATA.find((c) => c.userId === userId);
-    return userConnections ? userConnections.connections : [];
+    if (!userConnections) return [];
+    return userConnections.connections.map((c) => {
+      // Find or create a direct chat thread for this connection
+      let thread = CHAT_THREADS.find(
+        (t) =>
+          !t.isGroup &&
+          t.participantIds.includes(userId) &&
+          t.participantIds.includes(c.id) &&
+          t.participantIds.length === 2,
+      );
+      if (!thread) {
+        // Optionally, create a new thread if not found (mock only)
+        thread = {
+          id: `thread-${userId}-${c.id}`,
+          participantIds: [userId, c.id],
+          isGroup: false,
+          createdAt: new Date(),
+        };
+        CHAT_THREADS.push(thread);
+      }
+      return {
+        ...c,
+        chatThreadId: thread.id,
+      };
+    });
   },
 
   addConnection: async (
     userId: string,
     connectionId: string,
-    status: "connected" | "pending" | "received" = "pending"
+    status: 'connected' | 'pending' | 'received' = 'pending',
   ) => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     let userConnections = CONNECTIONS_DATA.find((c) => c.userId === userId);
@@ -30,7 +55,7 @@ export const connectionService = {
   updateConnectionStatus: async (
     userId: string,
     connectionId: string,
-    status: "connected" | "pending" | "received"
+    status: 'connected' | 'pending' | 'received',
   ) => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     const userConnections = CONNECTIONS_DATA.find((c) => c.userId === userId);
@@ -45,9 +70,7 @@ export const connectionService = {
     await new Promise((resolve) => setTimeout(resolve, 300));
     const userConnections = CONNECTIONS_DATA.find((c) => c.userId === userId);
     if (!userConnections) return false;
-    userConnections.connections = userConnections.connections.filter(
-      (c) => c.id !== connectionId
-    );
+    userConnections.connections = userConnections.connections.filter((c) => c.id !== connectionId);
     return true;
   },
 };
