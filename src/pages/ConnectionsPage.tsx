@@ -60,6 +60,22 @@ const ConnectionsPage = () => {
     profileDialog.open();
   };
 
+  // Accept or decline a connection request
+  const handleAcceptRequest = async (request: ConnectionRequest) => {
+    await connectionService.addConnection(user.id, request.fromUserId, 'connected');
+    await connectionService.addConnection(request.fromUserId, user.id, 'connected');
+    // Remove the request from the mock data (in a real app, backend would handle this)
+    setIncomingRequests((prev) =>
+      prev.filter((r) => !(r.fromUserId === request.fromUserId && r.toUserId === request.toUserId)),
+    );
+  };
+  const handleDeclineRequest = async (request: ConnectionRequest) => {
+    // Remove the request from the mock data (in a real app, backend would handle this)
+    setIncomingRequests((prev) =>
+      prev.filter((r) => !(r.fromUserId === request.fromUserId && r.toUserId === request.toUserId)),
+    );
+  };
+
   if (isLoading) {
     return <div className="p-8 text-center">Loading...</div>;
   }
@@ -187,13 +203,23 @@ const ConnectionsPage = () => {
                     </span>
                   }
                   actions={
-                    <Button
-                      variant="outline"
-                      className="flex-1 text-xs sm:text-sm"
-                      data-testid={`accept-btn-${request.fromUserId}`}
-                    >
-                      Accept
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        className="flex-1 text-xs sm:text-sm"
+                        data-testid={`accept-btn-${request.fromUserId}`}
+                        onClick={() => handleAcceptRequest(request)}
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1 text-xs sm:text-sm"
+                        data-testid={`decline-btn-${request.fromUserId}`}
+                        onClick={() => handleDeclineRequest(request)}
+                      >
+                        Decline
+                      </Button>
+                    </div>
                   }
                   data-testid={`incoming-request-card-${request.fromUserId}`}
                 />

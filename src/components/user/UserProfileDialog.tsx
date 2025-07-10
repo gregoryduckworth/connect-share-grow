@@ -1,24 +1,17 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/useAuth";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { AvatarFallback } from "@/components/ui/avatar";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { MapPin, Calendar, UserPlus } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { Textarea } from "@/components/ui/textarea";
-import { userService } from "@/lib/backend/services/userService";
-import type { User } from "@/lib/types";
-import AppAvatar from "@/components/common/AppAvatar";
-import { useDialog } from "@/hooks/useDialog";
-import { formatDate } from "@/lib/utils"; // Import formatDate
-import { InfoBadge } from "@/components/common/InfoBadge";
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/useAuth';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { AvatarFallback } from '@/components/ui/avatar';
+import { MapPin, Calendar, UserPlus } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { Textarea } from '@/components/ui/textarea';
+import { userService } from '@/lib/backend/services/userService';
+import { connectionService } from '@/lib/backend/services/connectionService';
+import type { User, ConnectionRequest } from '@/lib/types';
+import AppAvatar from '@/components/common/AppAvatar';
+import { useDialog } from '@/hooks/useDialog';
+import { formatDate } from '@/lib/utils'; // Import formatDate
 
 export interface UserProfileDialogProps {
   userId: string;
@@ -35,12 +28,44 @@ const UserProfileDialog = ({
 }: UserProfileDialogProps) => {
   const { user: currentUser } = useAuth();
   const { toast } = useToast();
-  const [connectionPending, setConnectionPending] = useState(false);
+  const [_connectionPending, setConnectionPending] = useState(false);
   const requestDialog = useDialog(false);
-  const [requestMessage, setRequestMessage] = useState("");
-  const [requestError, setRequestError] = useState("");
+  const [requestMessage, setRequestMessage] = useState('');
+  const [requestError, setRequestError] = useState('');
   const [user, setUser] = useState<User | undefined>(undefined);
   const [loading, setLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<
+    'connected' | 'pending' | 'incoming' | 'none'
+  >('none');
+
+  // Helper to refresh status from backend
+  const refreshConnectionStatus = async () => {
+    if (!currentUser?.id || !userId || currentUser.id === userId) {
+      setConnectionStatus('none');
+      return;
+    }
+    // Check for incoming request first
+    const requests: { fromUserId: string; toUserId: string }[] =
+      await connectionService.getConnectionRequestsForUser(currentUser.id);
+    if (requests.some((r) => r.fromUserId === userId && r.toUserId === currentUser.id)) {
+      setConnectionStatus('incoming');
+      return;
+    }
+    // Then check for established connection
+    const connections: { id: string }[] = await connectionService.getConnectionsForUser(
+      currentUser.id,
+    );
+    if (connections.some((c) => c.id === userId)) {
+      setConnectionStatus('connected');
+      return;
+    }
+    // Then check for outgoing request
+    if (requests.some((r) => r.toUserId === userId && r.fromUserId === currentUser.id)) {
+      setConnectionStatus('pending');
+      return;
+    }
+    setConnectionStatus('none');
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -48,36 +73,70 @@ const UserProfileDialog = ({
       setUser(u);
       setLoading(false);
     });
-  }, [userId]);
+    refreshConnectionStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, currentUser?.id]);
 
-  const handleSendConnectionRequest = () => {
+  const handleSendConnectionRequest = async () => {
     requestDialog.open();
   };
 
-  const handleRequestSubmit = () => {
+  const handleRequestSubmit = async () => {
     if (!requestMessage.trim()) {
-      setRequestError("A message is required to send a connection request.");
+      setRequestError('A message is required to send a connection request.');
       return;
     }
     // Save to localStorage (append to array)
-    const requests = JSON.parse(
-      localStorage.getItem("connectionRequests") || "[]"
-    );
+    const requests = JSON.parse(localStorage.getItem('connectionRequests') || '[]');
     requests.push({
       id: user?.id,
       name: user?.name,
       message: requestMessage,
       date: new Date().toISOString(),
+      fromUserId: currentUser?.id,
+      toUserId: userId,
     });
-    localStorage.setItem("connectionRequests", JSON.stringify(requests));
-    setConnectionPending(true);
+    localStorage.setItem('connectionRequests', JSON.stringify(requests));
+    setRequestMessage('');
+    setRequestError('');
     requestDialog.close();
-    setRequestMessage("");
-    setRequestError("");
     toast({
-      title: "Connection request sent",
+      title: 'Connection request sent',
       description: `Connection request sent to ${user?.name}`,
     });
+    await refreshConnectionStatus();
+  };
+
+  const handleAcceptIncomingRequest = async () => {
+    if (!currentUser?.id || !userId) return;
+    await connectionService.addConnection(currentUser.id, userId, 'connected');
+    await connectionService.addConnection(userId, currentUser.id, 'connected');
+    // Remove the request from the mock data (in a real app, backend would handle this)
+    const requests = JSON.parse(localStorage.getItem('connectionRequests') || '[]');
+    const updatedRequests = requests.filter(
+      (r: ConnectionRequest) => !(r.fromUserId === userId && r.toUserId === currentUser.id),
+    );
+    localStorage.setItem('connectionRequests', JSON.stringify(updatedRequests));
+    toast({
+      title: 'Connection accepted',
+      description: `You are now connected with ${user?.name}`,
+    });
+    await refreshConnectionStatus();
+  };
+
+  const handleDeclineIncomingRequest = async () => {
+    if (!currentUser?.id || !userId) return;
+    // Remove the request from the mock data (in a real app, backend would handle this)
+    const requests = JSON.parse(localStorage.getItem('connectionRequests') || '[]');
+    const updatedRequests = requests.filter(
+      (r: ConnectionRequest) => !(r.fromUserId === userId && r.toUserId === currentUser.id),
+    );
+    localStorage.setItem('connectionRequests', JSON.stringify(updatedRequests));
+    toast({
+      title: 'Request declined',
+      description: `You declined the connection request from ${user?.name}`,
+    });
+    await refreshConnectionStatus();
   };
 
   if (loading) {
@@ -106,27 +165,6 @@ const UserProfileDialog = ({
     );
   }
 
-  const isOwnProfile = userId === currentUser?.id;
-
-  // Fallbacks for missing fields (use type assertion to unknown, then index signature)
-  const userUnknown = user as unknown as Record<string, unknown>;
-  const postCount =
-    typeof userUnknown.postCount === "number" ? userUnknown.postCount : 0;
-  const connectionCount =
-    typeof userUnknown.connectionCount === "number"
-      ? userUnknown.connectionCount
-      : 0;
-  const communityCount =
-    typeof userUnknown.communityCount === "number"
-      ? userUnknown.communityCount
-      : 0;
-  const interests = Array.isArray(userUnknown.interests)
-    ? (userUnknown.interests as string[])
-    : [];
-  const recentActivity = Array.isArray(userUnknown.recentActivity)
-    ? (userUnknown.recentActivity as string[])
-    : [];
-
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -141,9 +179,9 @@ const UserProfileDialog = ({
               <AppAvatar size="h-20 w-20">
                 <AvatarFallback className="text-lg">
                   {user.name
-                    .split(" ")
+                    .split(' ')
                     .map((n) => n[0])
-                    .join("")}
+                    .join('')}
                 </AvatarFallback>
               </AppAvatar>
 
@@ -164,91 +202,44 @@ const UserProfileDialog = ({
                   </div>
                 </div>
 
-                {!isOwnProfile && (
+                {userId !== currentUser?.id && (
                   <div className="flex gap-2">
                     {showConnectionButton && (
                       <>
-                        {!connectionPending && (
-                          <Button
-                            onClick={handleSendConnectionRequest}
-                            size="sm"
-                          >
+                        {connectionStatus === 'connected' && (
+                          <Button variant="outline" size="sm" disabled>
+                            Connected
+                          </Button>
+                        )}
+                        {connectionStatus === 'pending' && (
+                          <Button variant="outline" size="sm" disabled>
+                            Pending
+                          </Button>
+                        )}
+                        {connectionStatus === 'incoming' && (
+                          <>
+                            <Button onClick={handleAcceptIncomingRequest} size="sm">
+                              Accept
+                            </Button>
+                            <Button
+                              onClick={handleDeclineIncomingRequest}
+                              size="sm"
+                              variant="outline"
+                            >
+                              Decline
+                            </Button>
+                          </>
+                        )}
+                        {connectionStatus === 'none' && (
+                          <Button onClick={handleSendConnectionRequest} size="sm">
                             <UserPlus className="h-4 w-4 mr-2" />
                             Connect
                           </Button>
                         )}
-
-                        {connectionPending && (
-                          <Button variant="outline" size="sm" disabled>
-                            Request Sent
-                          </Button>
-                        )}
-
-                        {/* Only show 'Connected' button if you have a way to check connection, otherwise remove this block */}
-                        {/* {isConnected && (
-                          <Button variant="outline" size="sm" disabled>
-                            Connected
-                          </Button>
-                        )} */}
                       </>
                     )}
                   </div>
                 )}
-              </div>
-            </div>
-
-            {/* Stats */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-social-primary">
-                      {postCount}
-                    </div>
-                    <div className="text-sm text-gray-500">Posts</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-social-primary">
-                      {connectionCount}
-                    </div>
-                    <div className="text-sm text-gray-500">Connections</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-social-primary">
-                      {communityCount}
-                    </div>
-                    <div className="text-sm text-gray-500">Communities</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Interests */}
-            <div>
-              <h3 className="font-semibold mb-3">Interests</h3>
-              <div className="flex flex-wrap gap-2">
-                {interests.map((interest, index) => (
-                  <InfoBadge key={index} type="tag">
-                    {interest}
-                  </InfoBadge>
-                ))}
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Recent Activity */}
-            <div>
-              <h3 className="font-semibold mb-3">Recent Activity</h3>
-              <div className="space-y-2">
-                {recentActivity.map((activity, index) => (
-                  <div
-                    key={index}
-                    className="text-sm text-gray-600 py-2 border-l-2 border-gray-200 pl-3"
-                  >
-                    {activity}
-                  </div>
-                ))}
               </div>
             </div>
           </div>
@@ -263,23 +254,21 @@ const UserProfileDialog = ({
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Please include a message with your connection request to{" "}
+              Please include a message with your connection request to{' '}
               <span className="font-semibold">{user.name}</span>.
             </p>
             <Textarea
               value={requestMessage}
               onChange={(e) => {
                 setRequestMessage(e.target.value);
-                setRequestError("");
+                setRequestError('');
               }}
               placeholder="Write a message..."
               rows={4}
               className="w-full"
               autoFocus
             />
-            {requestError && (
-              <div className="text-red-500 text-xs">{requestError}</div>
-            )}
+            {requestError && <div className="text-red-500 text-xs">{requestError}</div>}
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => requestDialog.close()}>
                 Cancel
