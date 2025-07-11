@@ -1,5 +1,5 @@
-import { REPORTS_DATA } from "../data/reports";
-import type { ReportBase as Report } from "@/lib/types";
+import { REPORTS_DATA } from '../data/reports';
+import type { Report } from '@/lib/types';
 
 export const reportService = {
   getReports: async (): Promise<Report[]> => {
@@ -9,11 +9,11 @@ export const reportService = {
 
   getFlaggedReports: async (): Promise<Report[]> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
-    return REPORTS_DATA.filter((report) => report.status === "pending");
+    return REPORTS_DATA.filter((report) => report.status === 'pending');
   },
 
   submitReport: async (
-    reportData: Omit<Report, "id" | "createdAt" | "status">
+    reportData: Omit<Report, 'id' | 'createdAt' | 'status'>,
   ): Promise<Report> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
     const newReport: Report = {
@@ -24,7 +24,7 @@ export const reportService = {
       reportedBy: reportData.reportedBy,
       createdAt: new Date(),
       reason: reportData.reason,
-      status: "pending",
+      status: 'pending',
       content: reportData.content,
       communityId: reportData.communityId,
       originalContent: reportData.originalContent,
