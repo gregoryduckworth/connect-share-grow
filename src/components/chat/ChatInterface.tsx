@@ -3,9 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send } from 'lucide-react';
-import { ChatMessage } from '@/lib/types';
+import { ChatMessage as BackendChatMessage } from '@/lib/backend/data/chatMessages';
+import { User } from '@/lib/types/user';
 import { api } from '@/lib/api';
 import { USERS_DATA } from '@/lib/backend/data/users';
+import { ChatMessage as AppChatMessage } from '@/lib/types/social';
 
 interface ChatInterfaceProps {
   connectionId?: string;
@@ -25,7 +27,7 @@ const ChatInterface = ({
   participants,
   currentUser,
 }: ChatInterfaceProps) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<AppChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -34,17 +36,15 @@ const ChatInterface = ({
   useEffect(() => {
     if (!chatId || !currentUser) return;
     // Fetch messages from backend (synchronous)
-    const backendMessages = api.getChatMessages(chatId);
+    const backendMessages: BackendChatMessage[] = api.getChatMessages(chatId);
     setMessages(
-      backendMessages.map((msg: any) => ({
+      backendMessages.map((msg) => ({
         id: msg.id,
         connectionId: msg.threadId ?? '',
         senderId: msg.senderId,
         content: msg.content,
-        sentAt: msg.timestamp ?? msg.sentAt ?? new Date(),
-        isRead: Array.isArray(msg.readBy)
-          ? msg.readBy.includes(currentUser)
-          : (msg.isRead ?? false),
+        sentAt: msg.timestamp ?? new Date(),
+        isRead: Array.isArray(msg.readBy) ? msg.readBy.includes(currentUser) : false,
       })),
     );
   }, [chatId, currentUser]);
@@ -60,17 +60,15 @@ const ChatInterface = ({
   const handleSendMessage = () => {
     if (newMessage.trim() !== '' && chatId && currentUser) {
       api.sendChatMessage(chatId, currentUser, newMessage);
-      const backendMessages = api.getChatMessages(chatId);
+      const backendMessages: BackendChatMessage[] = api.getChatMessages(chatId);
       setMessages(
-        backendMessages.map((msg: any) => ({
+        backendMessages.map((msg) => ({
           id: msg.id,
           connectionId: msg.threadId ?? '',
           senderId: msg.senderId,
           content: msg.content,
-          sentAt: msg.timestamp ?? msg.sentAt ?? new Date(),
-          isRead: Array.isArray(msg.readBy)
-            ? msg.readBy.includes(currentUser)
-            : (msg.isRead ?? false),
+          sentAt: msg.timestamp ?? new Date(),
+          isRead: Array.isArray(msg.readBy) ? msg.readBy.includes(currentUser) : false,
         })),
       );
       setNewMessage('');
@@ -105,9 +103,9 @@ const ChatInterface = ({
               </div>
               <div className="text-xs text-gray-500">
                 {(() => {
-                  const sender = USERS_DATA.find((u) => u.id === message.senderId);
+                  const sender = USERS_DATA.find((u: User) => u.id === message.senderId);
                   const senderName = sender ? sender.name : message.senderId;
-                  const dateVal = (message as any).timestamp ?? (message as any).sentAt;
+                  const dateVal = message.sentAt;
                   return `${senderName} - ${dateVal.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
                 })()}
               </div>
