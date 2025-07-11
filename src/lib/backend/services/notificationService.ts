@@ -7,7 +7,6 @@ export const notificationService = {
   getUserNotifications: async (
     userId: string,
   ): Promise<Array<Notification & { readAt?: Date }>> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
     const userNotifs = USER_NOTIFICATIONS.filter((n) => n.userId === userId);
     return userNotifs
       .map((un) => {
@@ -19,7 +18,6 @@ export const notificationService = {
 
   // Mark a notification as read for a user
   markUserNotificationAsRead: async (userId: string, notificationId: string): Promise<void> => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
     const userNotif = USER_NOTIFICATIONS.find(
       (n) => n.userId === userId && n.notificationId === notificationId,
     );

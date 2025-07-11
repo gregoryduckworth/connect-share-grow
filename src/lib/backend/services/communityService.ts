@@ -8,12 +8,10 @@ import type { Community, CommunityDetail } from '@/lib/types';
 
 export const communityService = {
   getCommunities: async (): Promise<Community[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
     return COMMUNITIES_DATA;
   },
 
   getCommunityDetail: async (communitySlug: string): Promise<CommunityDetail | null> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
     const community = COMMUNITIES_DATA.find((c) => c.slug === communitySlug);
     if (!community) return null;
 
@@ -53,13 +51,11 @@ export const communityService = {
 
   // Get all memberships for a community
   getCommunityMemberships: async (communitySlug: string): Promise<UserCommunityMembership[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
     return USER_COMMUNITY_MEMBERSHIPS.filter((m) => m.communitySlug === communitySlug);
   },
 
   // Get all users in a community (with role and join date)
   getCommunityMembers: async (communitySlug: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
     const memberships = USER_COMMUNITY_MEMBERSHIPS.filter((m) => m.communitySlug === communitySlug);
     return memberships
       .map((m) => {
@@ -71,7 +67,6 @@ export const communityService = {
 
   // New: Get all moderators for a community (computed from join table)
   getCommunityModerators: async (communitySlug: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
     const memberships = USER_COMMUNITY_MEMBERSHIPS.filter(
       (m) => m.communitySlug === communitySlug && m.role === 'moderator',
     );

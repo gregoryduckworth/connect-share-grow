@@ -46,7 +46,7 @@ const CommunityPost = ({
 
   const truncateContent = (content: string, maxLength: number = 150) => {
     if (content.length <= maxLength) return content;
-    return content.substr(0, maxLength) + '...';
+    return content.substring(0, maxLength) + '...';
   };
 
   const postLink = `/community/${communitySlug}/post/${post.id}`;

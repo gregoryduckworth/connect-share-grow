@@ -14,7 +14,7 @@ export interface AuditLogEntry {
   userAgent?: string;
 }
 
-export type AuditAction = 
+export type AuditAction =
   // User actions
   | 'user_login'
   | 'user_logout'
@@ -68,12 +68,12 @@ class AuditService {
   }
 
   private generateId(): string {
-    return `audit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   }
 
   private getBrowserInfo() {
     if (typeof window === 'undefined') return {};
-    
+
     return {
       ipAddress: '127.0.0.1', // In real app, get from request
       userAgent: navigator.userAgent,
@@ -85,7 +85,7 @@ class AuditService {
     resource: string,
     resourceId: string,
     details: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): AuditLogEntry {
     const entry: AuditLogEntry = {
       id: this.generateId(),
@@ -101,7 +101,7 @@ class AuditService {
     };
 
     this.logs.unshift(entry);
-    
+
     // Keep only last 1000 entries in memory
     if (this.logs.length > 1000) {
       this.logs.splice(1000);
@@ -137,14 +137,12 @@ class AuditService {
   }
 
   getLogsByUser(userId: string, limit = 100): AuditLogEntry[] {
-    return this.logs
-      .filter(log => log.userId === userId)
-      .slice(0, limit);
+    return this.logs.filter((log) => log.userId === userId).slice(0, limit);
   }
 
   getLogsByResource(resource: string, resourceId?: string, limit = 100): AuditLogEntry[] {
     return this.logs
-      .filter(log => {
+      .filter((log) => {
         if (resourceId) {
           return log.resource === resource && log.resourceId === resourceId;
         }
@@ -154,14 +152,12 @@ class AuditService {
   }
 
   getLogsByAction(action: AuditAction, limit = 100): AuditLogEntry[] {
-    return this.logs
-      .filter(log => log.action === action)
-      .slice(0, limit);
+    return this.logs.filter((log) => log.action === action).slice(0, limit);
   }
 
   getLogsByTimeRange(startDate: Date, endDate: Date, limit = 100): AuditLogEntry[] {
     return this.logs
-      .filter(log => log.timestamp >= startDate && log.timestamp <= endDate)
+      .filter((log) => log.timestamp >= startDate && log.timestamp <= endDate)
       .slice(0, limit);
   }
 
@@ -175,19 +171,39 @@ class AuditService {
     return this.log(action, 'user', this.currentUser?.id || 'anonymous', details, metadata);
   }
 
-  logAdminAction(action: AuditAction, targetId: string, details: string, metadata?: Record<string, any>) {
+  logAdminAction(
+    action: AuditAction,
+    targetId: string,
+    details: string,
+    metadata?: Record<string, any>,
+  ) {
     return this.log(action, 'admin', targetId, details, metadata);
   }
 
-  logCommunityAction(action: AuditAction, communityId: string, details: string, metadata?: Record<string, any>) {
+  logCommunityAction(
+    action: AuditAction,
+    communityId: string,
+    details: string,
+    metadata?: Record<string, any>,
+  ) {
     return this.log(action, 'community', communityId, details, metadata);
   }
 
-  logPostAction(action: AuditAction, postId: string, details: string, metadata?: Record<string, any>) {
+  logPostAction(
+    action: AuditAction,
+    postId: string,
+    details: string,
+    metadata?: Record<string, any>,
+  ) {
     return this.log(action, 'post', postId, details, metadata);
   }
 
-  logReportAction(action: AuditAction, reportId: string, details: string, metadata?: Record<string, any>) {
+  logReportAction(
+    action: AuditAction,
+    reportId: string,
+    details: string,
+    metadata?: Record<string, any>,
+  ) {
     return this.log(action, 'report', reportId, details, metadata);
   }
 

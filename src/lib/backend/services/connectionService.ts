@@ -4,7 +4,6 @@ import { CONNECTION_REQUESTS } from '../data/connectionRequests';
 
 export const connectionService = {
   getConnectionsForUser: async (userId: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
     const userConnections = CONNECTIONS_DATA.find((c) => c.userId === userId);
     if (!userConnections) return [];
     // Only return established connections
@@ -37,7 +36,6 @@ export const connectionService = {
   },
 
   getConnectionRequestsForUser: async (userId: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
     // Return all requests where the user is the recipient or sender
     return CONNECTION_REQUESTS.filter(
       (req) => req.toUserId === userId || req.fromUserId === userId,
@@ -49,7 +47,6 @@ export const connectionService = {
     connectionId: string,
     status: 'connected' | 'pending' | 'received' = 'pending',
   ) => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
     let userConnections = CONNECTIONS_DATA.find((c) => c.userId === userId);
     if (!userConnections) {
       userConnections = { userId, connections: [] };
@@ -68,7 +65,6 @@ export const connectionService = {
     connectionId: string,
     status: 'connected' | 'pending' | 'received',
   ) => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
     const userConnections = CONNECTIONS_DATA.find((c) => c.userId === userId);
     if (!userConnections) return false;
     const conn = userConnections.connections.find((c) => c.id === connectionId);
@@ -78,7 +74,6 @@ export const connectionService = {
   },
 
   removeConnection: async (userId: string, connectionId: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
     const userConnections = CONNECTIONS_DATA.find((c) => c.userId === userId);
     if (!userConnections) return false;
     userConnections.connections = userConnections.connections.filter((c) => c.id !== connectionId);

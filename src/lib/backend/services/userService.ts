@@ -8,23 +8,19 @@ import type { User, Community } from '@/lib/types';
 
 export const userService = {
   getUsers: async (): Promise<User[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 600));
     return USERS_DATA;
   },
 
   getUserById: async (userId: string): Promise<User | undefined> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
     return USERS_DATA.find((user) => user.id === userId);
   },
 
   getUserByEmail: async (email: string): Promise<User | undefined> => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
     return USERS_DATA.find((user) => user.email === email);
   },
 
   // New: Get all community memberships for a user
   getUserCommunityMemberships: async (userId: string): Promise<UserCommunityMembership[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
     return USER_COMMUNITY_MEMBERSHIPS.filter((m) => m.userId === userId);
   },
 
@@ -32,7 +28,6 @@ export const userService = {
   getUserCommunities: async (
     userId: string,
   ): Promise<Array<Community & { role: string; joinedAt: Date }>> => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
     const memberships = USER_COMMUNITY_MEMBERSHIPS.filter((m) => m.userId === userId);
     return memberships
       .map((m) => {
@@ -50,7 +45,6 @@ export const userService = {
   },
 
   createUser: async (userData: Omit<User, 'id' | 'createdAt'>): Promise<User> => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
     const newUser: User = {
       id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date(),
@@ -61,7 +55,6 @@ export const userService = {
   },
 
   updateUser: async (userId: string, updates: Partial<User>): Promise<User | null> => {
-    await new Promise((resolve) => setTimeout(resolve, 400));
     const userIndex = USERS_DATA.findIndex((user) => user.id === userId);
     if (userIndex === -1) return null;
 
@@ -71,7 +64,6 @@ export const userService = {
 
   // Remove a user-community membership (mock, mutates the join table array)
   removeUserCommunityMembership: async (userId: string, communitySlug: string): Promise<void> => {
-    await new Promise((resolve) => setTimeout(resolve, 200));
     const idx = USER_COMMUNITY_MEMBERSHIPS.findIndex(
       (m) => m.userId === userId && m.communitySlug === communitySlug,
     );

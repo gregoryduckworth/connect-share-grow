@@ -18,7 +18,7 @@ class Logger {
   }
 
   private generateSessionId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
   }
 
   setUserId(userId: string) {
@@ -50,31 +50,31 @@ class Logger {
 
   debug(message: string, data?: any) {
     if (!this.shouldLog('debug')) return;
-    
+
     const entry = this.createLogEntry('debug', message, data);
     console.debug(this.formatMessage(entry), data || '');
   }
 
   info(message: string, data?: any) {
     if (!this.shouldLog('info')) return;
-    
+
     const entry = this.createLogEntry('info', message, data);
     console.info(this.formatMessage(entry), data || '');
   }
 
   warn(message: string, data?: any) {
     if (!this.shouldLog('warn')) return;
-    
+
     const entry = this.createLogEntry('warn', message, data);
     console.warn(this.formatMessage(entry), data || '');
   }
 
   error(message: string, error?: Error | any) {
     if (!this.shouldLog('error')) return;
-    
+
     const entry = this.createLogEntry('error', message, error);
     console.error(this.formatMessage(entry), error || '');
-    
+
     // In production, send to external logging service
     if (process.env.NODE_ENV === 'production') {
       this.sendToExternalService(entry);
@@ -100,7 +100,7 @@ class Logger {
   // Get logs for debugging (development only)
   getLogs(): LogEntry[] {
     if (process.env.NODE_ENV !== 'development') return [];
-    
+
     try {
       return JSON.parse(sessionStorage.getItem('app_logs') || '[]');
     } catch {

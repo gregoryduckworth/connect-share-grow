@@ -3,21 +3,18 @@ import type { Report } from '@/lib/types';
 
 export const reportService = {
   getReports: async (): Promise<Report[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 400));
     return REPORTS_DATA;
   },
 
   getFlaggedReports: async (): Promise<Report[]> => {
-    await new Promise((resolve) => setTimeout(resolve, 400));
     return REPORTS_DATA.filter((report) => report.status === 'pending');
   },
 
   submitReport: async (
     reportData: Omit<Report, 'id' | 'createdAt' | 'status'>,
   ): Promise<Report> => {
-    await new Promise((resolve) => setTimeout(resolve, 400));
     const newReport: Report = {
-      id: `rep${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `rep${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       contentType: reportData.contentType,
       contentId: reportData.contentId,
       contentPreview: reportData.contentPreview,
