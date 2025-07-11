@@ -31,6 +31,7 @@ import {
 } from '@/lib/utils';
 import { useReportModal } from '@/hooks/useReportModal';
 import { InfoBadge } from '@/components/common/InfoBadge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const PostDetailPage = () => {
   const { postId } = useParams();
@@ -244,7 +245,11 @@ const PostDetailPage = () => {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        {/* Optionally add a loading spinner or message here */}
+        <div className="space-y-4 max-w-2xl mx-auto">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full mb-2 rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }

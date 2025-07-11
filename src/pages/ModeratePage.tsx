@@ -45,6 +45,7 @@ import { userService } from '@/lib/backend/services/userService';
 import { useDialog } from '@/hooks/useDialog';
 import { formatNumber } from '@/lib/utils';
 import { InfoBadge } from '@/components/common/InfoBadge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ModeratePage = () => {
   const { communityId } = useParams();
@@ -118,6 +119,12 @@ const ModeratePage = () => {
 
   // Flagged reports state
   const [flaggedReports, setFlaggedReports] = useState<FlaggedReport[]>([]);
+
+  // Add loading state for analytics and moderators
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 1000); // Simulate loading
+  }, []);
 
   // Map user names into flaggedReports for instant rendering
   useEffect(() => {
@@ -205,6 +212,18 @@ const ModeratePage = () => {
       description: `The moderator removal request has been rejected.`,
     });
   };
+
+  if (loading) {
+    return (
+      <div className="p-4 md:p-6 min-h-screen bg-background">
+        <div className="space-y-4 max-w-2xl mx-auto">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full mb-2 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen" data-testid="moderate-page">

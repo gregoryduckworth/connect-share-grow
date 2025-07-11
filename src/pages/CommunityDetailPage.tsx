@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { formatNumber } from '@/lib/utils';
 import { InfoBadge } from '@/components/common/InfoBadge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const CommunityDetailPage = () => {
   const { communitySlug } = useParams<{ communitySlug: string }>();
@@ -95,9 +96,12 @@ const CommunityDetailPage = () => {
     return (
       <div className="p-6 space-y-6 bg-background min-h-screen">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/3"></div>
-          <div className="h-4 bg-muted rounded w-2/3"></div>
-          <div className="h-32 bg-muted rounded"></div>
+          <Skeleton className="h-8 w-1/3 mb-2" />
+          <Skeleton className="h-4 w-2/3 mb-2" />
+          <Skeleton className="h-32 w-full mb-2" />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full mb-2 rounded-lg" />
+          ))}
         </div>
       </div>
     );

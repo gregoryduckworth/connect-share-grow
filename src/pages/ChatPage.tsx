@@ -20,6 +20,7 @@ import { User as UserType } from '@/lib/types';
 import { UserRelationship } from '@/lib/backend/data/userRelationships';
 import { ChatMessage } from '@/lib/backend/data/chatMessages';
 import { useChatThread } from '@/contexts/ChatThreadContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Chat {
   id: string;
@@ -50,9 +51,11 @@ const ChatPage = () => {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
   const [_relationships, setRelationships] = useState<UserRelationship[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
+    setLoading(true);
     // Fetch all users and relationships
     Promise.all([
       api.getUsers() as Promise<UserType[]>,
@@ -103,6 +106,7 @@ const ChatPage = () => {
         };
       });
       setChats(chatList);
+      setLoading(false);
     });
   }, [user]);
 
@@ -198,6 +202,7 @@ const ChatPage = () => {
   // Mark messages as read when a chat is selected
   useEffect(() => {
     if (!selectedChat || !user) return;
+    setLoading(true);
     // Mark all messages in this thread as read for the user
     const threadMessages: ChatMessage[] = api.getChatMessages(selectedChat);
     threadMessages.forEach((msg) => {
@@ -237,6 +242,7 @@ const ChatPage = () => {
             };
           });
         });
+        setLoading(false);
       },
     );
   }, [selectedChat, user]);
@@ -372,74 +378,80 @@ const ChatPage = () => {
                   aria-label="Chat list"
                   data-testid="chat-list"
                 >
-                  {filteredChats.map((chat) => (
-                    <div
-                      key={chat.id}
-                      className={`mt-1 mb-1 p-3 cursor-pointer flex items-center gap-3 border-2 transition-shadow bg-white max-w-[95%] mx-auto
-                        ${
-                          selectedChat === chat.id
-                            ? 'border-purple-400 bg-purple-50 scale-[1.03] rounded-lg shadow-xl'
-                            : 'border-transparent bg-white rounded-lg hover:shadow-md hover:scale-[1.01] hover:border-purple-200 hover:bg-purple-50'
-                        }
-                      `}
-                      style={{ justifyContent: 'flex-start', alignItems: 'flex-start' }}
-                      onClick={() => setSelectedChat(chat.id)}
-                      aria-selected={selectedChat === chat.id}
-                      aria-label={`Open chat with ${chat.name}`}
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') setSelectedChat(chat.id);
-                      }}
-                      data-testid={`chat-list-item-${chat.id}`}
-                    >
-                      <Avatar className="h-10 w-10 bg-social-primary text-white">
-                        <div className="flex h-full w-full items-center justify-center font-bold">
-                          {getInitials(chat.name)}
+                  {loading
+                    ? Array.from({ length: 6 }).map((_, i) => (
+                        <Skeleton key={i} className="h-16 w-full mb-2 rounded-lg" />
+                      ))
+                    : filteredChats.map((chat) => (
+                        <div
+                          key={chat.id}
+                          className={`mt-1 mb-1 p-3 cursor-pointer flex items-center gap-3 border-2 transition-shadow bg-white max-w-[95%] mx-auto
+                          ${
+                            selectedChat === chat.id
+                              ? 'border-purple-400 bg-purple-50 scale-[1.03] rounded-lg shadow-xl'
+                              : 'border-transparent bg-white rounded-lg hover:shadow-md hover:scale-[1.01] hover:border-purple-200 hover:bg-purple-50'
+                          }
+                        `}
+                          style={{ justifyContent: 'flex-start', alignItems: 'flex-start' }}
+                          onClick={() => setSelectedChat(chat.id)}
+                          aria-selected={selectedChat === chat.id}
+                          aria-label={`Open chat with ${chat.name}`}
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') setSelectedChat(chat.id);
+                          }}
+                          data-testid={`chat-list-item-${chat.id}`}
+                        >
+                          <Avatar className="h-10 w-10 bg-social-primary text-white">
+                            <div className="flex h-full w-full items-center justify-center font-bold">
+                              {getInitials(chat.name)}
+                            </div>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <p className="font-medium text-sm truncate">{chat.name}</p>
+                              <span className="text-xs text-gray-500">
+                                {chat.timestamp.toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm text-gray-500 truncate">
+                                {chat.type === 'group' && chat.lastMessage.includes(':')
+                                  ? chat.lastMessage
+                                  : chat.type === 'group'
+                                    ? `${(() => {
+                                        const participant = friends.find(
+                                          (f) => f.id === chat.participants[0],
+                                        );
+                                        return participant
+                                          ? participant.name
+                                          : chat.participants[0];
+                                      })()}: ${chat.lastMessage}`
+                                    : chat.lastMessage}
+                              </p>
+                              {chat.unreadCount > 0 && (
+                                <Badge
+                                  className="bg-muted text-primary rounded-full px-2 py-0.5 text-xs font-semibold ml-2"
+                                  data-testid={`unread-badge-${chat.id}`}
+                                >
+                                  {chat.unreadCount}
+                                </Badge>
+                              )}
+                            </div>
+                            {chat.type === 'group' && (
+                              <p
+                                className="text-xs text-gray-400"
+                                data-testid={`group-participants-${chat.id}`}
+                              >
+                                {chat.participants.length} participants
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <p className="font-medium text-sm truncate">{chat.name}</p>
-                          <span className="text-xs text-gray-500">
-                            {chat.timestamp.toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm text-gray-500 truncate">
-                            {chat.type === 'group' && chat.lastMessage.includes(':')
-                              ? chat.lastMessage
-                              : chat.type === 'group'
-                                ? `${(() => {
-                                    const participant = friends.find(
-                                      (f) => f.id === chat.participants[0],
-                                    );
-                                    return participant ? participant.name : chat.participants[0];
-                                  })()}: ${chat.lastMessage}`
-                                : chat.lastMessage}
-                          </p>
-                          {chat.unreadCount > 0 && (
-                            <Badge
-                              className="bg-muted text-primary rounded-full px-2 py-0.5 text-xs font-semibold ml-2"
-                              data-testid={`unread-badge-${chat.id}`}
-                            >
-                              {chat.unreadCount}
-                            </Badge>
-                          )}
-                        </div>
-                        {chat.type === 'group' && (
-                          <p
-                            className="text-xs text-gray-400"
-                            data-testid={`group-participants-${chat.id}`}
-                          >
-                            {chat.participants.length} participants
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                      ))}
                 </div>
                 {/* Mobile close button */}
                 <div className="block lg:hidden p-2">

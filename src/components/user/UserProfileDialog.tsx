@@ -12,12 +12,14 @@ import type { User, ConnectionRequest } from '@/lib/types';
 import AppAvatar from '@/components/common/AppAvatar';
 import { useDialog } from '@/hooks/useDialog';
 import { formatDate } from '@/lib/utils'; // Import formatDate
+import { Skeleton } from '@/components/ui/skeleton';
 
 export interface UserProfileDialogProps {
   userId: string;
   isOpen: boolean;
   onClose: () => void;
   showConnectionButton?: boolean;
+  loading?: boolean;
 }
 
 const UserProfileDialog = ({
@@ -25,6 +27,7 @@ const UserProfileDialog = ({
   isOpen,
   onClose,
   showConnectionButton = true,
+  loading = false,
 }: UserProfileDialogProps) => {
   const { user: currentUser } = useAuth();
   const { toast } = useToast();
@@ -33,7 +36,7 @@ const UserProfileDialog = ({
   const [requestMessage, setRequestMessage] = useState('');
   const [requestError, setRequestError] = useState('');
   const [user, setUser] = useState<User | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
+  const [loadingUser, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<
     'connected' | 'pending' | 'incoming' | 'none'
   >('none');
@@ -143,10 +146,9 @@ const UserProfileDialog = ({
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Loading...</DialogTitle>
-          </DialogHeader>
-          <div className="text-social-muted">Loading user profile...</div>
+          <Skeleton className="h-32 w-full mb-4" />
+          <Skeleton className="h-6 w-1/2 mb-2" />
+          <Skeleton className="h-4 w-1/3 mb-2" />
         </DialogContent>
       </Dialog>
     );

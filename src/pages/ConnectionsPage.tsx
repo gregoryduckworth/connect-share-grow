@@ -14,6 +14,7 @@ import { useDialog } from '@/hooks/useDialog';
 import { formatDate } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useChatThread } from '@/contexts/ChatThreadContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const ConnectionsPage = () => {
   const { user, isLoading } = useAuth();
@@ -86,7 +87,15 @@ const ConnectionsPage = () => {
   };
 
   if (isLoading) {
-    return <div className="p-8 text-center">Loading...</div>;
+    return (
+      <div className="p-8 text-center">
+        <div className="space-y-4 max-w-2xl mx-auto">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full mb-2 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (

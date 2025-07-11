@@ -12,6 +12,7 @@ import { Post, Community } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 import { useAuth } from '@/contexts/useAuth';
 import { useToast } from '@/components/ui/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const HotTopicsPage = () => {
   const { user } = useAuth();
@@ -167,6 +168,10 @@ const HotTopicsPage = () => {
           data-testid="tab-content-trending-posts"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {trendingPosts.length === 0 &&
+              Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-32 w-full mb-2 rounded-lg" />
+              ))}
             {filteredPosts.map((post) => (
               <InfoCard
                 key={post.id}
@@ -245,6 +250,10 @@ const HotTopicsPage = () => {
           data-testid="tab-content-growing-communities"
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {trendingCommunities.length === 0 &&
+              Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-32 w-full mb-2 rounded-lg" />
+              ))}
             {filteredCommunities.map((community) => (
               <CommunityCard
                 key={community.id}

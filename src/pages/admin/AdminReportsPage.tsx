@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Report } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const AdminReportsPage = () => {
   // Update reports state to include extra fields
@@ -56,6 +57,8 @@ const AdminReportsPage = () => {
   const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  // Add loading state for reports
+  const [loading, setLoading] = useState(true);
 
   const clearFilters = () => {
     setStatusFilter('all');
@@ -92,6 +95,7 @@ const AdminReportsPage = () => {
               : undefined,
         }));
       setReports(processedReports);
+      setLoading(false); // Set loading to false after data is fetched
     });
   }, []);
 
@@ -353,6 +357,19 @@ const AdminReportsPage = () => {
       cellClassName: 'text-right align-middle w-80',
     },
   ];
+
+  // Show skeleton loaders during initial loading state
+  if (loading) {
+    return (
+      <div className="p-4 md:p-6 min-h-screen bg-background">
+        <div className="space-y-4 max-w-2xl mx-auto">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full mb-2 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen">

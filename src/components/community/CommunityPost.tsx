@@ -1,15 +1,16 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
-import { Heart, MessageSquare, Pin, Lock, Unlock, User } from "lucide-react";
-import LockPostDialog from "./LockPostDialog";
-import UserProfileLink from "@/components/user/UserProfileLink";
-import { CommunityPostProps } from "@/lib/types";
-import { useDialog } from "@/hooks/useDialog";
-import { formatDate } from "@/lib/utils";
-import { InfoBadge } from "@/components/common/InfoBadge";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
+import { Heart, MessageSquare, Pin, Lock, Unlock, User } from 'lucide-react';
+import LockPostDialog from './LockPostDialog';
+import UserProfileLink from '@/components/user/UserProfileLink';
+import { CommunityPostProps } from '@/lib/types';
+import { useDialog } from '@/hooks/useDialog';
+import { formatDate } from '@/lib/utils';
+import { InfoBadge } from '@/components/common/InfoBadge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const CommunityPost = ({
   post,
@@ -23,19 +24,21 @@ const CommunityPost = ({
   isModerator = false,
   showPreview = false,
   communitySlug,
-}: CommunityPostProps) => {
+  loading = false,
+  ...props
+}: CommunityPostProps & { loading?: boolean }) => {
   const lockDialog = useDialog(false);
-  const [lockType, setLockType] = useState<"post" | "comments">("post");
+  const [lockType, setLockType] = useState<'post' | 'comments'>('post');
 
-  const handleLockClick = (type: "post" | "comments") => {
+  const handleLockClick = (type: 'post' | 'comments') => {
     setLockType(type);
     lockDialog.open();
   };
 
   const handleLockConfirm = (reason: string) => {
-    if (lockType === "post" && onLock) {
+    if (lockType === 'post' && onLock) {
       onLock(post.id, reason);
-    } else if (lockType === "comments" && onLockComments) {
+    } else if (lockType === 'comments' && onLockComments) {
       onLockComments(post.id, reason);
     }
     lockDialog.close();
@@ -43,7 +46,7 @@ const CommunityPost = ({
 
   const truncateContent = (content: string, maxLength: number = 150) => {
     if (content.length <= maxLength) return content;
-    return content.substr(0, maxLength) + "...";
+    return content.substr(0, maxLength) + '...';
   };
 
   const postLink = `/community/${communitySlug}/post/${post.id}`;
@@ -51,13 +54,13 @@ const CommunityPost = ({
   const cardContent = (
     <Card
       className={`mb-4 w-full max-w-[98%] sm:max-w-[98%] mx-auto ${
-        post.isPinned ? "border-social-primary bg-social-accent/10" : ""
+        post.isPinned ? 'border-social-primary bg-social-accent/10' : ''
       } ${
         showPreview
-          ? "hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent cursor-pointer"
-          : ""
+          ? 'hover-scale text-left transition-shadow hover:shadow-xl hover:bg-accent/60 hover:border-accent cursor-pointer'
+          : ''
       }`}
-      style={{ transition: "transform 0.2s", willChange: "transform" }}
+      style={{ transition: 'transform 0.2s', willChange: 'transform' }}
       data-testid={`community-post-card-${post.id}`}
     >
       <CardHeader className="pb-3">
@@ -70,10 +73,7 @@ const CommunityPost = ({
             </Avatar>
             <div>
               <div className="flex items-center gap-2">
-                <h3
-                  className="font-semibold text-lg"
-                  data-testid="community-post-title"
-                >
+                <h3 className="font-semibold text-lg" data-testid="community-post-title">
                   <Link
                     to={postLink}
                     className="transition-colors hover:text-purple-600 focus:text-purple-600"
@@ -88,22 +88,12 @@ const CommunityPost = ({
                   />
                 )}
                 {post.isLocked && (
-                  <Lock
-                    className="h-4 w-4 text-red-500"
-                    data-testid="community-post-locked"
-                  />
+                  <Lock className="h-4 w-4 text-red-500" data-testid="community-post-locked" />
                 )}
               </div>
-              <p
-                className="text-sm text-social-muted"
-                data-testid="community-post-meta"
-              >
-                by{" "}
-                <UserProfileLink
-                  userId={post.author}
-                  userName={post.userName}
-                />{" "}
-                • {formatDate(post.timestamp)}
+              <p className="text-sm text-social-muted" data-testid="community-post-meta">
+                by <UserProfileLink userId={post.author} userName={post.userName} /> •{' '}
+                {formatDate(post.timestamp)}
               </p>
             </div>
           </div>
@@ -123,7 +113,7 @@ const CommunityPost = ({
                   data-testid="community-post-pin-button"
                 >
                   <Pin className="h-3 w-3 mr-1" />
-                  {post.isPinned ? "Unpin" : "Pin"}
+                  {post.isPinned ? 'Unpin' : 'Pin'}
                 </Button>
               )}
 
@@ -151,7 +141,7 @@ const CommunityPost = ({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        handleLockClick("post");
+                        handleLockClick('post');
                       }}
                       className="text-xs border-red-400 text-red-500 hover:bg-red-50"
                       data-testid="community-post-lock-button"
@@ -185,7 +175,7 @@ const CommunityPost = ({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        handleLockClick("comments");
+                        handleLockClick('comments');
                       }}
                       className="text-xs border-orange-400 text-orange-500 hover:bg-orange-50"
                       data-testid="community-post-lock-comments-button"
@@ -224,23 +214,13 @@ const CommunityPost = ({
           </div>
         )}
 
-        <p
-          className="text-social-foreground mb-4"
-          data-testid="community-post-content"
-        >
+        <p className="text-social-foreground mb-4" data-testid="community-post-content">
           {showPreview ? truncateContent(post.content) : post.content}
         </p>
 
-        <div
-          className="flex flex-wrap gap-2 mb-4"
-          data-testid="community-post-tags"
-        >
+        <div className="flex flex-wrap gap-2 mb-4" data-testid="community-post-tags">
           {post.tags.map((tag, index) => (
-            <InfoBadge
-              key={index}
-              type="tag"
-              data-testid={`community-post-tag-${tag}`}
-            >
+            <InfoBadge key={index} type="tag" data-testid={`community-post-tag-${tag}`}>
               {tag}
             </InfoBadge>
           ))}
@@ -256,14 +236,12 @@ const CommunityPost = ({
               onLike(post.id);
             }}
             className={`flex items-center gap-2 ${
-              post.isLiked ? "text-red-500" : "text-social-muted"
+              post.isLiked ? 'text-red-500' : 'text-social-muted'
             }`}
             disabled={post.isLocked}
             data-testid="community-post-like-button"
           >
-            <Heart
-              className={`h-4 w-4 ${post.isLiked ? "fill-current" : ""}`}
-            />
+            <Heart className={`h-4 w-4 ${post.isLiked ? 'fill-current' : ''}`} />
             {post.likes}
           </Button>
 
@@ -279,7 +257,7 @@ const CommunityPost = ({
             data-testid="community-post-comment-button"
           >
             <MessageSquare className="h-4 w-4" />
-            {post.comments} {showPreview ? "replies" : ""}
+            {post.comments} {showPreview ? 'replies' : ''}
           </Button>
         </div>
       </CardContent>
@@ -288,7 +266,20 @@ const CommunityPost = ({
 
   return (
     <>
-      {showPreview ? cardContent : cardContent}
+      {loading ? (
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-1/2 mb-2" />
+            <Skeleton className="h-4 w-1/3 mb-2" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-20 w-full mb-2" />
+            <Skeleton className="h-6 w-1/4" />
+          </CardContent>
+        </Card>
+      ) : (
+        cardContent
+      )}
       <LockPostDialog
         isOpen={lockDialog.isOpen}
         onClose={lockDialog.close}
