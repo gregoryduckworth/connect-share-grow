@@ -7,7 +7,7 @@ import UserProfileDialog from '@/components/user/UserProfileDialog';
 import InfoCard from '@/components/ui/InfoCard';
 import UserProfileLink from '@/components/user/UserProfileLink';
 import { connectionService } from '@/lib/backend/services/connectionService';
-import { USERS_DATA } from '@/lib/backend/data/users';
+import { userService } from '@/lib/backend/services/userService';
 import { useAuth } from '@/contexts/useAuth';
 import { Connection, ConnectionRequest } from '@/lib/types';
 import { useDialog } from '@/hooks/useDialog';
@@ -18,36 +18,48 @@ import { useChatThread } from '@/contexts/ChatThreadContext';
 const ConnectionsPage = () => {
   const { user, isLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUserId] = useState<string | null>(null);
   const profileDialog = useDialog(false);
   const [connections, setConnections] = useState<(Connection & { chatThreadId?: string })[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<ConnectionRequest[]>([]);
   const [outgoingRequests, setOutgoingRequests] = useState<ConnectionRequest[]>([]);
+  const [allUsers, setAllUsers] = useState<{ id: string; name: string; bio?: string }[]>([]);
   const navigate = useNavigate();
   const { setSelectedThreadId } = useChatThread();
 
   useEffect(() => {
     if (!user?.id) return;
     // Load connections for the current user from backend service
-    connectionService.getConnectionsForUser(user.id).then((conns) => {
+    Promise.all([
+      connectionService.getConnectionsForUser(user.id),
+      connectionService.getConnectionRequestsForUser(user.id),
+      userService.getUsers(),
+    ]).then(([conns, requests, users]) => {
       setConnections(
-        conns.map((c) => {
-          const userObj = USERS_DATA.find((u) => u.id === c.id);
-          return {
-            id: c.id,
-            name: userObj?.name || 'Unknown',
-            status: c.status,
-            lastActive: c.lastActive,
-            bio: userObj?.bio,
-            chatThreadId: c.chatThreadId, // <-- add chatThreadId
-          };
-        }),
+        conns.map(
+          (c: {
+            id: string;
+            status: 'connected' | 'pending' | 'received';
+            lastActive: Date;
+            chatThreadId?: string;
+          }) => {
+            const userObj = users.find(
+              (u: { id: string; name: string; bio?: string }) => u.id === c.id,
+            );
+            return {
+              id: c.id,
+              name: userObj?.name || 'Unknown',
+              status: c.status,
+              lastActive: c.lastActive,
+              bio: userObj?.bio,
+              chatThreadId: c.chatThreadId,
+            };
+          },
+        ),
       );
-    });
-    // Load connection requests for the current user from backend service
-    connectionService.getConnectionRequestsForUser(user.id).then((requests) => {
-      setIncomingRequests(requests.filter((r) => r.toUserId === user.id));
-      setOutgoingRequests(requests.filter((r) => r.fromUserId === user.id));
+      setIncomingRequests(requests.filter((r: { toUserId: string }) => r.toUserId === user.id));
+      setOutgoingRequests(requests.filter((r: { fromUserId: string }) => r.fromUserId === user.id));
+      setAllUsers(users);
     });
   }, [user?.id]);
 
@@ -55,15 +67,12 @@ const ConnectionsPage = () => {
     connection.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const handleViewProfile = (connection: Connection) => {
-    setSelectedUserId(connection.id);
-    profileDialog.open();
-  };
-
   // Accept or decline a connection request
   const handleAcceptRequest = async (request: ConnectionRequest) => {
-    await connectionService.addConnection(user.id, request.fromUserId, 'connected');
-    await connectionService.addConnection(request.fromUserId, user.id, 'connected');
+    if (user) {
+      await connectionService.addConnection(user.id, request.fromUserId, 'connected');
+      await connectionService.addConnection(request.fromUserId, user.id, 'connected');
+    }
     // Remove the request from the mock data (in a real app, backend would handle this)
     setIncomingRequests((prev) =>
       prev.filter((r) => !(r.fromUserId === request.fromUserId && r.toUserId === request.toUserId)),
@@ -186,7 +195,7 @@ const ConnectionsPage = () => {
         <TabsContent value="incoming" data-testid="tab-content-incoming">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {incomingRequests.map((request) => {
-              const fromUser = USERS_DATA.find((u) => u.id === request.fromUserId);
+              const fromUser = allUsers.find((u) => u.id === request.fromUserId);
               return (
                 <InfoCard
                   key={request.fromUserId + request.toUserId + request.date}
@@ -235,7 +244,7 @@ const ConnectionsPage = () => {
         <TabsContent value="outgoing" data-testid="tab-content-outgoing">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {outgoingRequests.map((request) => {
-              const toUser = USERS_DATA.find((u) => u.id === request.toUserId);
+              const toUser = allUsers.find((u) => u.id === request.toUserId);
               return (
                 <InfoCard
                   key={request.fromUserId + request.toUserId + request.date}

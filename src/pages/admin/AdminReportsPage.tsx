@@ -27,8 +27,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import ReportDetailsDialog from '@/components/admin/ReportDetailsDialog';
-import { ADMIN_REPORTS_DATA } from '@/lib/backend/data/admin-reports';
-import { USERS_DATA } from '@/lib/backend/data/users';
+import { userService } from '@/lib/backend/services/userService';
+import { api } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -40,7 +40,10 @@ import {
 import { Report } from '@/lib/types';
 
 const AdminReportsPage = () => {
-  const [reports, setReports] = useState<Report[]>([]);
+  // Update reports state to include extra fields
+  const [reports, setReports] = useState<
+    (Report & { reportedByName: string; assignedToName?: string })[]
+  >([]);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [reasonFilter, setReasonFilter] = useState<string>('all');
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
@@ -76,19 +79,32 @@ const AdminReportsPage = () => {
   const totalPages = Math.max(1, Math.ceil(filteredReports.length / pageSize));
 
   useEffect(() => {
-    // Accept all statuses including 'in progress'
-    const processedReports = ADMIN_REPORTS_DATA.map((report) => ({
-      ...report,
-      status: report.status as Report['status'],
-    }));
-    setReports(processedReports);
+    Promise.all([api.getReports(), userService.getUsers()]).then(([reportData, users]) => {
+      // Accept all statuses including 'in progress'
+      const processedReports: (Report & { reportedByName: string; assignedToName?: string })[] =
+        reportData.map((report) => ({
+          ...report,
+          status: report.status as Report['status'],
+          reportedByName: users.find((u) => u.id === report.reportedBy)?.name || report.reportedBy,
+          assignedToName:
+            report.assignedTo && typeof report.assignedTo === 'string'
+              ? users.find((u) => u.id === report.assignedTo)?.name || report.assignedTo
+              : undefined,
+        }));
+      setReports(processedReports);
+    });
   }, []);
 
   // Get unique statuses, reasons, and assignees from reports
   const statusOptions = Array.from(new Set(reports.map((r) => r.status)));
   const reasonOptions = Array.from(new Set(reports.map((r) => r.reason)));
   // Only allow assignment to admins
-  const adminUsers = USERS_DATA.filter((u) => u.role === 'admin');
+  const adminUsers = reports
+    .filter(
+      (r) =>
+        typeof r.assignedTo === 'string' && r.assignedToName && r.assignedToName !== r.assignedTo,
+    )
+    .map((r) => ({ id: r.assignedTo as string, name: r.assignedToName as string }));
   const assigneeIdToName: Record<string, string> = Object.fromEntries(
     adminUsers.map((u) => [u.id, u.name]),
   );
@@ -238,7 +254,7 @@ const AdminReportsPage = () => {
     },
     {
       header: 'Reported By',
-      accessor: (r: Report) => r.originalContent?.author || r.reportedBy,
+      accessor: (r: Report & { reportedByName: string }) => r.reportedByName,
       headerClassName: 'hidden md:table-cell',
       cellClassName: 'hidden md:table-cell',
     },
@@ -251,9 +267,9 @@ const AdminReportsPage = () => {
     { header: 'Status', accessor: (r: Report) => getStatusBadge(r.status) },
     {
       header: 'Assignee',
-      accessor: (r: Report) =>
+      accessor: (r: Report & { assignedToName?: string }) =>
         r.assignedTo ? (
-          assigneeIdToName[r.assignedTo] || r.assignedTo
+          r.assignedToName || r.assignedTo
         ) : (
           <span className="text-gray-400 italic">Unassigned</span>
         ),

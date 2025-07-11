@@ -8,27 +8,17 @@ import CommunityCard from '@/components/community/CommunityCard';
 import InfoCard from '@/components/ui/InfoCard';
 import UserProfileLink from '@/components/user/UserProfileLink';
 import { api } from '@/lib/api';
-import { USERS_DATA } from '@/lib/backend/data/users';
-import { TrendingPostUI, TrendingCommunityUI } from '@/lib/types';
+import { Post, Community } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 import { useAuth } from '@/contexts/useAuth';
 import { useToast } from '@/components/ui/use-toast';
-
-interface TrendingCommunityWithJoin extends TrendingCommunityUI {
-  isJoined: boolean;
-}
-
-// Add isLiked to trending post UI type
-interface TrendingPostWithLike extends TrendingPostUI {
-  isLiked: boolean;
-}
 
 const HotTopicsPage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
-  const [trendingPosts, setTrendingPosts] = useState<TrendingPostWithLike[]>([]);
-  const [trendingCommunities, setTrendingCommunities] = useState<TrendingCommunityWithJoin[]>([]);
+  const [trendingPosts, setTrendingPosts] = useState<Post[]>([]);
+  const [trendingCommunities, setTrendingCommunities] = useState<Community[]>([]);
   const [userCommunities, setUserCommunities] = useState<string[]>([]);
 
   useEffect(() => {
@@ -36,64 +26,23 @@ const HotTopicsPage = () => {
       api.getHotPosts(),
       api.getCommunities(),
       user ? api.getUserLikedPosts(user.id) : Promise.resolve([] as string[]),
-    ]).then(([posts, communities, likedPosts]: [any[], any[], string[]]) => {
-      // Build a set of valid community slugs
-      const validCommunitySlugSet = new Set(communities.map((c: { slug: string }) => c.slug));
+    ]).then(([posts, communities, likedPosts]) => {
       setTrendingCommunities(
-        communities.map(
-          (c: {
-            slug: string;
-            name: string;
-            description: string;
-            memberCount: number;
-            category: string;
-          }) => ({
-            id: c.slug,
-            name: c.name,
-            description: c.description,
-            memberCount: c.memberCount,
-            growthRate: Math.round(Math.random() * 20 * 10) / 10,
-            category: c.category,
-            isJoined: false,
-          }),
-        ),
+        (communities as Community[]).map((c) => ({
+          ...c,
+          isJoined: false,
+        })),
       );
       setTrendingPosts(
-        posts
-          .filter((p: { communityId: string }) => validCommunitySlugSet.has(p.communityId))
-          .map(
-            (p: {
-              id: string;
-              title: string;
-              author: string;
-              communityId: string;
-              likes: number;
-              replies: number;
-              createdAt: Date;
-              content: string;
-            }) => {
-              const community = communities.find((c: { slug: string }) => c.slug === p.communityId);
-              const userObj = USERS_DATA.find((u: { id: string }) => u.id === p.author);
-              return {
-                id: p.id,
-                title: p.title,
-                author: p.author,
-                userName: userObj?.name || undefined,
-                communitySlug: p.communityId,
-                communityName: community ? community.name : p.communityId,
-                likes: p.likes,
-                replies: p.replies,
-                createdAt: p.createdAt,
-                isLiked: likedPosts.includes(p.id),
-                excerpt: p.content.slice(0, 120) + (p.content.length > 120 ? '...' : ''),
-              };
-            },
-          ),
+        (posts as Post[]).map((p) => ({
+          ...p,
+          isLiked: likedPosts.includes(p.id),
+        })),
       );
     });
     if (user) {
       api.getUserCommunities(user.id).then((data) => {
-        setUserCommunities(data.map((c) => c.slug));
+        setUserCommunities(data.map((c) => c.id));
       });
     }
   }, [user]);
@@ -130,40 +79,15 @@ const HotTopicsPage = () => {
         await api.likePost(user.id, postId);
       }
       // Refresh trending posts and liked posts
-      const [posts, communities, likedPosts] = await Promise.all([
+      const [posts, likedPosts] = await Promise.all([
         api.getHotPosts(),
-        api.getCommunities(),
         api.getUserLikedPosts(user.id),
       ]);
       setTrendingPosts(
-        posts.map(
-          (p: {
-            id: string;
-            title: string;
-            author: string;
-            communityId: string;
-            likes: number;
-            replies: number;
-            createdAt: Date;
-            content: string;
-          }) => {
-            const community = communities.find((c: { slug: string }) => c.slug === p.communityId);
-            const userObj = USERS_DATA.find((u: { id: string }) => u.id === p.author);
-            return {
-              id: p.id,
-              title: p.title,
-              author: p.author,
-              userName: userObj?.name || undefined,
-              communitySlug: p.communityId,
-              communityName: community ? community.name : p.communityId,
-              likes: p.likes,
-              replies: p.replies,
-              createdAt: p.createdAt,
-              isLiked: likedPosts.includes(p.id),
-              excerpt: p.content.slice(0, 120) + (p.content.length > 120 ? '...' : ''),
-            };
-          },
-        ),
+        (posts as Post[]).map((p) => ({
+          ...p,
+          isLiked: likedPosts.includes(p.id),
+        })),
       );
     } catch (err) {
       toast({
@@ -177,7 +101,7 @@ const HotTopicsPage = () => {
   const filteredPosts = trendingPosts.filter(
     (post) =>
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.communitySlug.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.communityId.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.author.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
@@ -248,14 +172,14 @@ const HotTopicsPage = () => {
                 key={post.id}
                 title={
                   <Link
-                    to={`/community/${post.communitySlug}/post/${post.id}`}
+                    to={`/community/${post.communityId}/post/${post.id}`}
                     className="hover:text-primary transition-colors"
                     data-testid={`post-title-link-${post.id}`}
                   >
                     {post.title}
                   </Link>
                 }
-                description={post.excerpt}
+                description={post.content.slice(0, 120) + (post.content.length > 120 ? '...' : '')}
                 headerRight={
                   <div className="flex flex-col items-end gap-2 min-w-[60px]">
                     <div className="flex items-center gap-1 text-xs">
@@ -282,16 +206,15 @@ const HotTopicsPage = () => {
                       by{' '}
                       <UserProfileLink
                         userId={post.author}
-                        userName={post.userName}
                         data-testid={`post-author-link-${post.id}`}
                       />{' '}
-                      • in {post.communityName} • {formatDate(post.createdAt)}
+                      • {formatDate(post.createdAt)}
                     </span>
                   </div>
                 }
                 actions={
                   <Link
-                    to={`/community/${post.communitySlug}/post/${post.id}`}
+                    to={`/community/${post.communityId}/post/${post.id}`}
                     className="flex-1"
                     data-testid={`read-more-link-${post.id}`}
                   >
@@ -329,7 +252,6 @@ const HotTopicsPage = () => {
                 name={community.name}
                 description={community.description}
                 memberCount={community.memberCount}
-                growthRate={community.growthRate}
                 category={community.category}
                 isJoined={community.isJoined}
                 onJoinLeave={handleJoinLeave}

@@ -1,43 +1,24 @@
-import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import {
-  ArrowLeft,
-  Users,
-  Calendar,
-  Tag,
-  Settings,
-  User,
-  Home,
-  ChevronRight,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import CommunityPost from "@/components/community/CommunityPost";
-import CreatePostForm from "@/components/community/CreatePostForm";
-import { useToast } from "@/components/ui/use-toast";
-import { api } from "@/lib/api";
-import type {
-  CommunityDetail,
-  CommunityPost as CommunityPostType,
-} from "@/lib/types";
-import UserProfileLink from "@/components/user/UserProfileLink";
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { ArrowLeft, Users, Calendar, Tag, Settings, User, Home, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import CommunityPost from '@/components/community/CommunityPost';
+import CreatePostForm from '@/components/community/CreatePostForm';
+import { useToast } from '@/components/ui/use-toast';
+import { api } from '@/lib/api';
+import type { CommunityDetail, CommunityPost as CommunityPostType } from '@/lib/types';
+import UserProfileLink from '@/components/user/UserProfileLink';
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { USERS_DATA } from "@/lib/backend/data/users";
-import { formatNumber } from "@/lib/utils";
-import { InfoBadge } from "@/components/common/InfoBadge";
+} from '@/components/ui/breadcrumb';
+import { formatNumber } from '@/lib/utils';
+import { InfoBadge } from '@/components/common/InfoBadge';
 
 const CommunityDetailPage = () => {
   const { communitySlug } = useParams<{ communitySlug: string }>();
@@ -45,6 +26,8 @@ const CommunityDetailPage = () => {
   const [community, setCommunity] = useState<CommunityDetail | null>(null);
   const [posts, setPosts] = useState<CommunityPostType[]>([]);
   const [loading, setLoading] = useState(true);
+  // Add state for sidebar users
+  const [sidebarUsers, setSidebarUsers] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     const fetchCommunityData = async () => {
@@ -52,24 +35,27 @@ const CommunityDetailPage = () => {
 
       try {
         setLoading(true);
-        const [communityData, communityPosts] = await Promise.all([
+        const [communityData, communityPosts, users] = await Promise.all([
           api.getCommunityDetail(communitySlug),
           api.getCommunityPosts(communitySlug),
+          api.getUsers() as Promise<{ id: string; name: string }[]>,
         ]);
         setCommunity(communityData);
-        // Map userName into each post
+        // Map userName into each post using users from API
         setPosts(
           communityPosts.map((post) => {
-            const user = USERS_DATA.find((u) => u.id === post.author);
+            const user = users.find((u) => u.id === post.author);
             return { ...post, userName: user?.name || undefined };
-          })
+          }),
         );
+        // Store users for sidebar moderator lookup
+        setSidebarUsers(users);
       } catch (error) {
-        console.error("Error fetching community data:", error);
+        console.error('Error fetching community data:', error);
         toast({
-          title: "Error",
-          description: "Failed to load community data",
-          variant: "destructive",
+          title: 'Error',
+          description: 'Failed to load community data',
+          variant: 'destructive',
         });
       } finally {
         setLoading(false);
@@ -95,14 +81,14 @@ const CommunityDetailPage = () => {
               isLiked: !post.isLiked,
               likes: post.isLiked ? post.likes - 1 : post.likes + 1,
             }
-          : post
-      )
+          : post,
+      ),
     );
   };
 
   const handleComment = (postId: string) => {
     // Navigate to post detail page for commenting
-    console.log("Navigate to post detail:", postId);
+    console.log('Navigate to post detail:', postId);
   };
 
   if (loading) {
@@ -121,9 +107,7 @@ const CommunityDetailPage = () => {
     return (
       <div className="p-6 space-y-6 bg-background min-h-screen">
         <div className="text-center py-12">
-          <h2 className="text-2xl font-bold text-muted-foreground mb-4">
-            Community Not Found
-          </h2>
+          <h2 className="text-2xl font-bold text-muted-foreground mb-4">Community Not Found</h2>
           <p className="text-muted-foreground mb-6">
             The community you're looking for doesn't exist or has been removed.
           </p>
@@ -144,10 +128,7 @@ const CommunityDetailPage = () => {
       data-testid="community-detail-page"
     >
       {/* Header */}
-      <div
-        className="flex items-center gap-4 mb-6"
-        data-testid="community-detail-header"
-      >
+      <div className="flex items-center gap-4 mb-6" data-testid="community-detail-header">
         {/* Breadcrumbs */}
         <div className="mb-6" data-testid="community-detail-breadcrumbs">
           <Breadcrumb>
@@ -172,15 +153,9 @@ const CommunityDetailPage = () => {
       </div>
 
       {/* Main Content + Sidebar Layout */}
-      <div
-        className="flex flex-col lg:flex-row gap-8"
-        data-testid="community-detail-layout"
-      >
+      <div className="flex flex-col lg:flex-row gap-8" data-testid="community-detail-layout">
         {/* Main Content */}
-        <div
-          className="flex-1 min-w-0 space-y-6"
-          data-testid="community-detail-main"
-        >
+        <div className="flex-1 min-w-0 space-y-6" data-testid="community-detail-main">
           {/* Community Info */}
           <Card data-testid="community-detail-info-card">
             <CardHeader>
@@ -192,19 +167,12 @@ const CommunityDetailPage = () => {
                   >
                     {community.name}
                   </CardTitle>
-                  <CardDescription
-                    className="text-base"
-                    data-testid="community-detail-description"
-                  >
+                  <CardDescription className="text-base" data-testid="community-detail-description">
                     {community.description}
                   </CardDescription>
                 </div>
                 {community.isModerator && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    data-testid="community-moderate-button"
-                  >
+                  <Button variant="outline" size="sm" data-testid="community-moderate-button">
                     <Settings className="h-4 w-4 mr-2" />
                     Moderate
                   </Button>
@@ -213,26 +181,17 @@ const CommunityDetailPage = () => {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
-                <div
-                  className="flex items-center gap-1"
-                  data-testid="community-detail-members"
-                >
+                <div className="flex items-center gap-1" data-testid="community-detail-members">
                   <Users className="h-4 w-4" />
                   {formatNumber(community.memberCount)} members
                 </div>
-                <div
-                  className="flex items-center gap-1"
-                  data-testid="community-detail-posts"
-                >
+                <div className="flex items-center gap-1" data-testid="community-detail-posts">
                   <Calendar className="h-4 w-4" />
                   {community.postCount} posts
                 </div>
               </div>
 
-              <div
-                className="flex flex-wrap gap-2 mb-4"
-                data-testid="community-detail-tags"
-              >
+              <div className="flex flex-wrap gap-2 mb-4" data-testid="community-detail-tags">
                 {community.tags.map((tag, index) => (
                   <InfoBadge
                     key={index}
@@ -247,16 +206,11 @@ const CommunityDetailPage = () => {
 
               <div className="flex gap-3">
                 {community.isMember ? (
-                  <Button
-                    variant="outline"
-                    data-testid="leave-community-button"
-                  >
+                  <Button variant="outline" data-testid="leave-community-button">
                     Leave Community
                   </Button>
                 ) : (
-                  <Button data-testid="join-community-button">
-                    Join Community
-                  </Button>
+                  <Button data-testid="join-community-button">Join Community</Button>
                 )}
                 <CreatePostForm
                   communityId={communitySlug!}
@@ -270,15 +224,9 @@ const CommunityDetailPage = () => {
           <Separator />
 
           {/* Posts Section */}
-          <div
-            className="space-y-6"
-            data-testid="community-detail-posts-section"
-          >
+          <div className="space-y-6" data-testid="community-detail-posts-section">
             <div className="flex justify-between items-center">
-              <h2
-                className="text-xl font-semibold"
-                data-testid="community-detail-posts-title"
-              >
+              <h2 className="text-xl font-semibold" data-testid="community-detail-posts-title">
                 Recent Posts
               </h2>
             </div>
@@ -286,9 +234,7 @@ const CommunityDetailPage = () => {
             {posts.length === 0 ? (
               <Card>
                 <CardContent className="text-center py-12">
-                  <p className="text-muted-foreground mb-4">
-                    No posts yet in this community.
-                  </p>
+                  <p className="text-muted-foreground mb-4">No posts yet in this community.</p>
                   <CreatePostForm
                     communityId={communitySlug!}
                     onPostCreated={handlePostCreated}
@@ -328,13 +274,11 @@ const CommunityDetailPage = () => {
             </CardHeader>
             <CardContent>
               {community.moderators.length === 0 ? (
-                <p className="text-muted-foreground text-sm">
-                  No moderators listed.
-                </p>
+                <p className="text-muted-foreground text-sm">No moderators listed.</p>
               ) : (
                 <ul className="space-y-2">
                   {community.moderators.map((mod) => {
-                    const user = USERS_DATA.find((u) => u.id === mod.id);
+                    const user = sidebarUsers.find((u) => u.id === mod.id);
                     return (
                       <li
                         key={mod.id}
@@ -347,9 +291,7 @@ const CommunityDetailPage = () => {
                           userName={user?.name}
                           className="font-medium hover:underline hover:text-social-primary transition-colors"
                         />
-                        <span className="text-muted-foreground">
-                          ({mod.role})
-                        </span>
+                        <span className="text-muted-foreground">({mod.role})</span>
                       </li>
                     );
                   })}
@@ -371,9 +313,7 @@ const CommunityDetailPage = () => {
                     className="flex items-start gap-2 text-sm"
                     data-testid={`community-detail-rule-${index + 1}`}
                   >
-                    <span className="font-medium text-social-primary">
-                      {index + 1}.
-                    </span>
+                    <span className="font-medium text-social-primary">{index + 1}.</span>
                     <span>{rule}</span>
                   </li>
                 ))}

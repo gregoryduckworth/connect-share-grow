@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import UserProfileDialog from "@/components/user/UserProfileDialog";
-import { userService } from "@/lib/backend/services/userService";
-import { useDialog } from "@/hooks/useDialog";
-import type { User } from "@/lib/types";
+import { useState, useEffect } from 'react';
+import UserProfileDialog from '@/components/user/UserProfileDialog';
+import { userService } from '@/lib/backend/services/userService';
+import { useDialog } from '@/hooks/useDialog';
+import type { User } from '@/lib/types';
 
 interface UserProfileLinkProps {
   userId: string;
@@ -15,7 +15,7 @@ interface UserProfileLinkProps {
 const UserProfileLink = ({
   userId,
   userName,
-  className = "",
+  className = '',
   showConnectionButton = true,
   children,
 }: UserProfileLinkProps) => {
@@ -23,7 +23,7 @@ const UserProfileLink = ({
   const profileDialog = useDialog(false);
 
   useEffect(() => {
-    if (userName) return; // No need to fetch if name is provided
+    if (userName) return;
     let mounted = true;
     userService.getUserById(userId).then((u) => {
       if (mounted) setUser(u || null);
@@ -44,7 +44,11 @@ const UserProfileLink = ({
           profileDialog.open();
         }}
       >
-        {children || userName || user?.name || userId}
+        {children || userName || user?.name ? (
+          children || userName || user?.name
+        ) : (
+          <span className="inline-block w-16 h-4 bg-gray-200 animate-pulse rounded" />
+        )}
       </button>
       <UserProfileDialog
         userId={userId}

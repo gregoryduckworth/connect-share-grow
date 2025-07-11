@@ -19,8 +19,7 @@ import ReportModal from '@/components/ui/ReportModal';
 import UserProfileLink from '@/components/user/UserProfileLink';
 import UserProfileDialog from '@/components/user/UserProfileDialog';
 import { useAuth } from '@/contexts/useAuth';
-import { REPLIES_DATA } from '@/lib/backend/data/replies';
-import { USERS_DATA } from '@/lib/backend/data/users';
+import { userService } from '@/lib/backend/services/userService';
 import PostReply from '@/components/post/PostReply';
 import ReplyForm from '@/components/post/ReplyForm';
 import {
@@ -48,17 +47,26 @@ const PostDetailPage = () => {
 
   useEffect(() => {
     if (postId) {
-      api.getPostDetail(postId).then((postData) => {
-        // Attach nested replies for this post
-        const replies = buildReplyTree(REPLIES_DATA.filter((r) => r.postId === postId));
-        // Map userName into post and replies
-        const user = USERS_DATA.find((u) => u.id === postData?.author);
+      Promise.all([api.getPostDetail(postId), userService.getUsers()]).then(([postData, users]) => {
+        const user = users.find((u: { id: string; name: string }) => u.id === postData?.author);
+        // Convert PostDetailReply[] to Reply[] for buildReplyTree
+        const repliesRaw = (postData?.replies ?? []).map((r: PostDetailReply) => ({
+          id: r.id,
+          content: r.content,
+          author: r.author,
+          postId: postId,
+          createdAt: r.timestamp ? r.timestamp : new Date(),
+          likes: r.likes,
+          isLocked: r.isLocked ?? false,
+          parentReplyId: r.parentId ? r.parentId : null,
+        }));
+        const replies = buildReplyTree(repliesRaw);
         setPost(
           postData
             ? {
                 ...postData,
                 userName: user?.name || undefined,
-                replies: mapUserNamesToReplies(replies),
+                replies: mapUserNamesToReplies(replies, users),
               }
             : null,
         );
@@ -75,15 +83,28 @@ const PostDetailPage = () => {
         await api.likePost(user.id, postId);
       }
       // Refresh post data from backend
-      const postData = await api.getPostDetail(postId, user.id);
+      const [postData, users] = await Promise.all([
+        api.getPostDetail(postId, user.id),
+        userService.getUsers(),
+      ]);
       if (postData) {
-        // Attach nested replies for this post
-        const replies = buildReplyTree(REPLIES_DATA.filter((r) => r.postId === postId));
-        const userObj = USERS_DATA.find((u) => u.id === postData.author);
+        // Convert PostDetailReply[] to Reply[] for buildReplyTree
+        const repliesRaw = (postData.replies ?? []).map((r: PostDetailReply) => ({
+          id: r.id,
+          content: r.content,
+          author: r.author,
+          postId: postId,
+          createdAt: r.timestamp ? r.timestamp : new Date(),
+          likes: r.likes,
+          isLocked: r.isLocked ?? false,
+          parentReplyId: r.parentId ? r.parentId : null,
+        }));
+        const replies = buildReplyTree(repliesRaw);
+        const userObj = users.find((u: { id: string; name: string }) => u.id === postData.author);
         setPost({
           ...postData,
           userName: userObj?.name || undefined,
-          replies: mapUserNamesToReplies(replies),
+          replies: mapUserNamesToReplies(replies, users),
         });
       }
     } catch (err) {

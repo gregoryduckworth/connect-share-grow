@@ -1,7 +1,6 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { PostDetailReply, Reply } from "@/lib/types";
-import { USERS_DATA } from "@/lib/backend/data/users";
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { PostDetailReply, Reply } from '@/lib/types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -12,16 +11,16 @@ export function formatDate(date: Date): string {
 }
 
 export function formatTime(date: Date): string {
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 export function formatDateTime(date: Date): string {
   return date.toLocaleString([], {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
@@ -56,36 +55,34 @@ export function buildReplyTree(flatReplies: Reply[]): PostDetailReply[] {
 }
 
 export function mapUserNamesToReplies(
-  replies: PostDetailReply[]
+  replies: PostDetailReply[],
+  users: { id: string; name: string }[],
 ): PostDetailReply[] {
   return replies.map((reply) => {
-    const user = USERS_DATA.find((u) => u.id === reply.author);
+    const user = users.find((u) => u.id === reply.author);
     return {
       ...reply,
       userName: user?.name || undefined,
-      replies: mapUserNamesToReplies(reply.replies || []),
+      replies: mapUserNamesToReplies(reply.replies || [], users),
     };
   });
 }
 
-export function lockReplyRecursive(
-  replies: PostDetailReply[],
-  replyId: string
-): PostDetailReply[] {
+export function lockReplyRecursive(replies: PostDetailReply[], replyId: string): PostDetailReply[] {
   return replies.map((r) =>
     r.id === replyId
-      ? { ...r, isLocked: true, lockReason: "Locked by moderator" }
-      : { ...r, replies: lockReplyRecursive(r.replies, replyId) }
+      ? { ...r, isLocked: true, lockReason: 'Locked by moderator' }
+      : { ...r, replies: lockReplyRecursive(r.replies, replyId) },
   );
 }
 
 export function unlockReplyRecursive(
   replies: PostDetailReply[],
-  replyId: string
+  replyId: string,
 ): PostDetailReply[] {
   return replies.map((r) =>
     r.id === replyId
       ? { ...r, isLocked: false, lockReason: undefined }
-      : { ...r, replies: unlockReplyRecursive(r.replies, replyId) }
+      : { ...r, replies: unlockReplyRecursive(r.replies, replyId) },
   );
 }

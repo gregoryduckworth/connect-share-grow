@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Users,
   MessageSquare,
@@ -16,7 +16,7 @@ import {
   Plus,
   X,
   AlertTriangle,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -24,7 +24,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from '@/components/ui/breadcrumb';
 import {
   Dialog,
   DialogContent,
@@ -32,36 +32,34 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import RoleChangeAlert from "@/components/admin/AdminRoleChangeAlert";
-import { getMockFlaggedReports } from "@/lib/api";
-import { Moderator, CommunityAnalytics, FlaggedReport } from "@/lib/types";
-import UserProfileLink from "@/components/user/UserProfileLink";
-import { useAuth } from "@/contexts/useAuth";
-import { USERS_DATA } from "@/lib/backend/data/users";
-import { useDialog } from "@/hooks/useDialog";
-import { formatNumber } from "@/lib/utils";
-import { InfoBadge } from "@/components/common/InfoBadge";
+} from '@/components/ui/dialog';
+import { useToast } from '@/components/ui/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import RoleChangeAlert from '@/components/admin/AdminRoleChangeAlert';
+import { getMockFlaggedReports } from '@/lib/api';
+import { Moderator, CommunityAnalytics, FlaggedReport } from '@/lib/types';
+import UserProfileLink from '@/components/user/UserProfileLink';
+import { useAuth } from '@/contexts/useAuth';
+import { userService } from '@/lib/backend/services/userService';
+
+import { useDialog } from '@/hooks/useDialog';
+import { formatNumber } from '@/lib/utils';
+import { InfoBadge } from '@/components/common/InfoBadge';
 
 const ModeratePage = () => {
   const { communityId } = useParams();
   const { toast } = useToast();
   const { user } = useAuth();
   const removeDialog = useDialog(false);
-  const [moderatorToRemove, setModeratorToRemove] = useState<Moderator | null>(
-    null
-  );
-  const [removalReason, setRemovalReason] = useState("");
+  const [moderatorToRemove, setModeratorToRemove] = useState<Moderator | null>(null);
+  const [removalReason, setRemovalReason] = useState('');
   const [editingRules, setEditingRules] = useState(false);
 
   // Mock community data
   const community = {
-    id: communityId || "1",
-    name: "Photography Enthusiasts",
-    description:
-      "A place for photographers to share their work and discuss techniques",
+    id: communityId || '1',
+    name: 'Photography Enthusiasts',
+    description: 'A place for photographers to share their work and discuss techniques',
   };
 
   const [analytics] = useState<CommunityAnalytics>({
@@ -74,47 +72,47 @@ const ModeratePage = () => {
 
   const [moderators, setModerators] = useState<Moderator[]>([
     {
-      id: "mod-1",
-      name: "Sarah Johnson",
-      role: "Lead Moderator",
+      id: 'mod-1',
+      name: 'Sarah Johnson',
+      role: 'Lead Moderator',
       joinedAsModAt: new Date(2023, 0, 15),
       actionsThisMonth: 24,
     },
     {
-      id: "mod-2",
-      name: "Mike Chen",
-      role: "Moderator",
+      id: 'mod-2',
+      name: 'Mike Chen',
+      role: 'Moderator',
       joinedAsModAt: new Date(2023, 2, 20),
       actionsThisMonth: 18,
     },
     {
-      id: "mod-3",
-      name: "Alex Rivera",
-      role: "Moderator",
+      id: 'mod-3',
+      name: 'Alex Rivera',
+      role: 'Moderator',
       joinedAsModAt: new Date(2023, 4, 10),
       actionsThisMonth: 12,
     },
   ]);
 
   const [rules, setRules] = useState([
-    "Be respectful to all members",
-    "No spam or self-promotion without approval",
+    'Be respectful to all members',
+    'No spam or self-promotion without approval',
     "Share constructive feedback on others' work",
-    "Use appropriate tags for your posts",
-    "No inappropriate or offensive content",
+    'Use appropriate tags for your posts',
+    'No inappropriate or offensive content',
   ]);
 
   const [editedRules, setEditedRules] = useState([...rules]);
-  const [newRule, setNewRule] = useState("");
+  const [newRule, setNewRule] = useState('');
 
   // Mock pending removal requests
   const [pendingRemovalRequests, setPendingRemovalRequests] = useState([
     {
-      id: "req-1",
+      id: 'req-1',
       moderator: moderators[1],
-      requestedBy: "Sarah Johnson",
+      requestedBy: 'Sarah Johnson',
       requestedAt: new Date(),
-      reason: "Inactivity and lack of engagement with the community.",
+      reason: 'Inactivity and lack of engagement with the community.',
     },
   ]);
 
@@ -126,20 +124,19 @@ const ModeratePage = () => {
     const loadFlaggedReports = async () => {
       try {
         const reports = await getMockFlaggedReports();
-        // Patch: add 'type' property for compatibility with Report type
-        // Map reportedByName for instant rendering
+        const users = await userService.getUsers();
         setFlaggedReports(
           reports.map((r) => {
-            const userObj = USERS_DATA.find((u) => u.id === r.reportedBy);
+            const userObj = users.find((u) => u.id === r.reportedBy);
             return {
               ...r,
               type: r.contentType,
-              reportedByName: userObj?.name || "Unknown",
+              reportedByName: userObj?.name || 'Unknown',
             };
-          })
+          }),
         );
       } catch (error) {
-        console.error("Failed to load flagged reports:", error);
+        console.error('Failed to load flagged reports:', error);
       }
     };
 
@@ -149,7 +146,7 @@ const ModeratePage = () => {
   }, [communityId]);
 
   // Replace hardcoded currentUser and moderator logic with user context
-  const currentUser = user?.name || "";
+  const currentUser = user?.name || '';
 
   const handleRemoveModerator = (moderator: Moderator) => {
     setModeratorToRemove(moderator);
@@ -160,12 +157,12 @@ const ModeratePage = () => {
     if (moderatorToRemove && removalReason.trim()) {
       // In a real app, this would require approval from another moderator
       toast({
-        title: "Removal Request Submitted",
+        title: 'Removal Request Submitted',
         description: `A request to remove ${moderatorToRemove.name} has been sent to other moderators for approval.`,
       });
       removeDialog.close();
       setModeratorToRemove(null);
-      setRemovalReason("");
+      setRemovalReason('');
     }
   };
 
@@ -173,15 +170,15 @@ const ModeratePage = () => {
     setRules([...editedRules]);
     setEditingRules(false);
     toast({
-      title: "Rules Updated",
-      description: "Community rules have been updated successfully.",
+      title: 'Rules Updated',
+      description: 'Community rules have been updated successfully.',
     });
   };
 
   const addRule = () => {
     if (newRule.trim()) {
       setEditedRules([...editedRules, newRule.trim()]);
-      setNewRule("");
+      setNewRule('');
     }
   };
 
@@ -193,31 +190,24 @@ const ModeratePage = () => {
     const req = pendingRemovalRequests.find((r) => r.id === requestId);
     if (req) {
       setModerators(moderators.filter((m) => m.id !== req.moderator.id));
-      setPendingRemovalRequests(
-        pendingRemovalRequests.filter((r) => r.id !== requestId)
-      );
+      setPendingRemovalRequests(pendingRemovalRequests.filter((r) => r.id !== requestId));
       toast({
-        title: "Moderator Removed",
+        title: 'Moderator Removed',
         description: `${req.moderator.name} has been removed as a moderator.`,
       });
     }
   };
 
   const handleRejectRemoval = (requestId: string) => {
-    setPendingRemovalRequests(
-      pendingRemovalRequests.filter((r) => r.id !== requestId)
-    );
+    setPendingRemovalRequests(pendingRemovalRequests.filter((r) => r.id !== requestId));
     toast({
-      title: "Removal Request Rejected",
+      title: 'Removal Request Rejected',
       description: `The moderator removal request has been rejected.`,
     });
   };
 
   return (
-    <div
-      className="p-4 md:p-6 space-y-6 bg-background min-h-screen"
-      data-testid="moderate-page"
-    >
+    <div className="p-4 md:p-6 space-y-6 bg-background min-h-screen" data-testid="moderate-page">
       {/* Breadcrumbs */}
       <div className="mb-6" data-testid="moderate-breadcrumbs">
         <Breadcrumb>
@@ -249,21 +239,12 @@ const ModeratePage = () => {
       </div>
 
       <div className="space-y-6">
-        <div
-          className="flex items-center justify-between"
-          data-testid="moderate-header"
-        >
+        <div className="flex items-center justify-between" data-testid="moderate-header">
           <div>
-            <h1
-              className="text-3xl font-bold text-social-primary"
-              data-testid="moderate-title"
-            >
+            <h1 className="text-3xl font-bold text-social-primary" data-testid="moderate-title">
               Moderate Community
             </h1>
-            <p
-              className="text-social-muted"
-              data-testid="moderate-community-name"
-            >
+            <p className="text-social-muted" data-testid="moderate-community-name">
               {community.name}
             </p>
           </div>
@@ -284,17 +265,17 @@ const ModeratePage = () => {
             user: {
               id: req.moderator.id,
               name: req.moderator.name,
-              email: "moderator@example.com",
+              email: 'moderator@example.com',
               role: req.moderator.role,
             },
             requestedBy: req.requestedBy,
             requestedAt: req.requestedAt,
-            newRole: "removed",
+            newRole: 'removed',
           }))}
           currentUser={currentUser}
           onApprove={handleApproveRemoval}
           onReject={handleRejectRemoval}
-          alertTitle={"Moderator Removal Approval Required"}
+          alertTitle={'Moderator Removal Approval Required'}
           data-testid="moderator-removal-alert"
         />
 
@@ -307,12 +288,8 @@ const ModeratePage = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-social-muted">
-                    Total Members
-                  </p>
-                  <p className="text-2xl font-bold">
-                    {formatNumber(analytics.totalMembers)}
-                  </p>
+                  <p className="text-sm font-medium text-social-muted">Total Members</p>
+                  <p className="text-2xl font-bold">{formatNumber(analytics.totalMembers)}</p>
                 </div>
                 <Users className="h-8 w-8 text-social-primary" />
               </div>
@@ -323,9 +300,7 @@ const ModeratePage = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-social-muted">
-                    Total Posts
-                  </p>
+                  <p className="text-sm font-medium text-social-muted">Total Posts</p>
                   <p className="text-2xl font-bold">{analytics.totalPosts}</p>
                 </div>
                 <MessageSquare className="h-8 w-8 text-social-primary" />
@@ -337,12 +312,8 @@ const ModeratePage = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-social-muted">
-                    Posts This Week
-                  </p>
-                  <p className="text-2xl font-bold text-green-600">
-                    +{analytics.postsThisWeek}
-                  </p>
+                  <p className="text-sm font-medium text-social-muted">Posts This Week</p>
+                  <p className="text-2xl font-bold text-green-600">+{analytics.postsThisWeek}</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-green-600" />
               </div>
@@ -353,12 +324,8 @@ const ModeratePage = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-social-muted">
-                    Active Members
-                  </p>
-                  <p className="text-2xl font-bold">
-                    {analytics.activeMembers}
-                  </p>
+                  <p className="text-sm font-medium text-social-muted">Active Members</p>
+                  <p className="text-2xl font-bold">{analytics.activeMembers}</p>
                 </div>
                 <Users className="h-8 w-8 text-blue-600" />
               </div>
@@ -369,12 +336,8 @@ const ModeratePage = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-social-muted">
-                    Reports This Week
-                  </p>
-                  <p className="text-2xl font-bold text-orange-600">
-                    {analytics.reportsThisWeek}
-                  </p>
+                  <p className="text-sm font-medium text-social-muted">Reports This Week</p>
+                  <p className="text-2xl font-bold text-orange-600">{analytics.reportsThisWeek}</p>
                 </div>
                 <Settings className="h-8 w-8 text-orange-600" />
               </div>
@@ -402,20 +365,15 @@ const ModeratePage = () => {
                       </div>
                       <div>
                         <p className="font-medium">
-                          <UserProfileLink
-                            userId={moderator.id}
-                            userName={moderator.name}
-                          />
+                          <UserProfileLink userId={moderator.id} userName={moderator.name} />
                         </p>
-                        <p className="text-sm text-social-muted">
-                          {moderator.role}
-                        </p>
+                        <p className="text-sm text-social-muted">{moderator.role}</p>
                         <p className="text-xs text-gray-400">
                           {moderator.actionsThisMonth} actions this month
                         </p>
                       </div>
                     </div>
-                    {moderator.role !== "Lead Moderator" && (
+                    {moderator.role !== 'Lead Moderator' && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -439,7 +397,7 @@ const ModeratePage = () => {
               <div className="flex items-center justify-between">
                 <CardTitle>Community Rules</CardTitle>
                 <Button
-                  variant={editingRules ? "default" : "outline"}
+                  variant={editingRules ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => {
                     if (editingRules) {
@@ -449,16 +407,14 @@ const ModeratePage = () => {
                       setEditedRules([...rules]);
                     }
                   }}
-                  data-testid={
-                    editingRules ? "save-rules-btn" : "edit-rules-btn"
-                  }
+                  data-testid={editingRules ? 'save-rules-btn' : 'edit-rules-btn'}
                 >
                   {editingRules ? (
                     <Save className="h-4 w-4 mr-1" />
                   ) : (
                     <Settings className="h-4 w-4 mr-1" />
                   )}
-                  {editingRules ? "Save" : "Edit"}
+                  {editingRules ? 'Save' : 'Edit'}
                 </Button>
               </div>
             </CardHeader>
@@ -471,9 +427,7 @@ const ModeratePage = () => {
                       className="flex items-center gap-2"
                       data-testid={`edit-rule-row-${index}`}
                     >
-                      <span className="font-medium text-social-primary text-sm">
-                        {index + 1}.
-                      </span>
+                      <span className="font-medium text-social-primary text-sm">{index + 1}.</span>
                       <Input
                         value={rule}
                         onChange={(e) => {
@@ -495,10 +449,7 @@ const ModeratePage = () => {
                       </Button>
                     </div>
                   ))}
-                  <div
-                    className="flex items-center gap-2"
-                    data-testid="add-rule-row"
-                  >
+                  <div className="flex items-center gap-2" data-testid="add-rule-row">
                     <span className="font-medium text-social-primary text-sm">
                       {editedRules.length + 1}.
                     </span>
@@ -523,14 +474,8 @@ const ModeratePage = () => {
               ) : (
                 <ol className="space-y-2 text-sm">
                   {rules.map((rule, index) => (
-                    <li
-                      key={index}
-                      className="flex"
-                      data-testid={`rule-row-${index}`}
-                    >
-                      <span className="font-medium text-social-primary mr-2">
-                        {index + 1}.
-                      </span>
+                    <li key={index} className="flex" data-testid={`rule-row-${index}`}>
+                      <span className="font-medium text-social-primary mr-2">{index + 1}.</span>
                       <span className="text-social-muted">{rule}</span>
                     </li>
                   ))}
@@ -562,24 +507,21 @@ const ModeratePage = () => {
                         {report.contentType.toUpperCase()}
                       </Badge>
                       <span className="text-sm font-medium">
-                        {report.contentType === "post" &&
-                          `Post: ${report.content}`}
-                        {report.contentType === "reply" &&
-                          `Reply: ${report.content}`}
-                        {report.contentType === "user" &&
-                          `User: ${report.content}`}
+                        {report.contentType === 'post' && `Post: ${report.content}`}
+                        {report.contentType === 'reply' && `Reply: ${report.content}`}
+                        {report.contentType === 'user' && `User: ${report.content}`}
                       </span>
                     </div>
                     <div className="text-xs text-social-muted">
-                      Reported by:{" "}
+                      Reported by:{' '}
                       <UserProfileLink
                         userId={report.reportedBy}
                         userName={report.reportedByName}
-                      />{" "}
+                      />{' '}
                       • Reason: {report.reason}
                     </div>
                     {/* Moderation actions: lock post/comments, etc. */}
-                    {report.contentType === "post" && (
+                    {report.contentType === 'post' && (
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -599,7 +541,7 @@ const ModeratePage = () => {
                         </Button>
                       </div>
                     )}
-                    {report.contentType === "reply" && (
+                    {report.contentType === 'reply' && (
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -611,7 +553,7 @@ const ModeratePage = () => {
                         </Button>
                       </div>
                     )}
-                    {report.contentType === "user" && (
+                    {report.contentType === 'user' && (
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -641,9 +583,8 @@ const ModeratePage = () => {
           <DialogHeader>
             <DialogTitle>Remove Moderator</DialogTitle>
             <DialogDescription>
-              Are you sure you want to request the removal of{" "}
-              {moderatorToRemove?.name}? This action requires approval from
-              another moderator.
+              Are you sure you want to request the removal of {moderatorToRemove?.name}? This action
+              requires approval from another moderator.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

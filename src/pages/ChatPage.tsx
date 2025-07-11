@@ -17,10 +17,8 @@ import ChatInterface from '@/components/chat/ChatInterface';
 import { useAuth } from '@/contexts/useAuth';
 import { api } from '@/lib/api';
 import { User as UserType } from '@/lib/types';
-import { USERS_DATA } from '@/lib/backend/data/users';
 import { UserRelationship } from '@/lib/backend/data/userRelationships';
 import { ChatMessage } from '@/lib/backend/data/chatMessages';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { useChatThread } from '@/contexts/ChatThreadContext';
 
 interface Chat {
@@ -47,8 +45,6 @@ const ChatPage = () => {
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
   const [groupName, setGroupName] = useState('');
   const { user } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
   const { selectedThreadId, setSelectedThreadId } = useChatThread();
 
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -91,7 +87,7 @@ const ChatPage = () => {
           threadMessages.length > 0 ? threadMessages[threadMessages.length - 1] : null;
         let lastMessage = '';
         if (lastMsg) {
-          const sender = USERS_DATA.find((u) => u.id === lastMsg.senderId);
+          const sender = users.find((u) => u.id === lastMsg.senderId);
           lastMessage = `${sender ? sender.name : lastMsg.senderId}: ${lastMsg.content}`;
         }
         // Calculate unread count for this user
@@ -121,11 +117,9 @@ const ChatPage = () => {
 
   const [showChatList, setShowChatList] = useState(true);
 
-  // Sort chats: unread first, then by most recent
+  // Sort chats: by most recent only
   const sortedChats = useMemo(() => {
-    return [...chats]
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .sort((a, b) => (b.unreadCount > 0 ? 1 : 0) - (a.unreadCount > 0 ? 1 : 0));
+    return [...chats].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   }, [chats]);
   const filteredChats = sortedChats.filter((chat) =>
     chat.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -212,35 +206,39 @@ const ChatPage = () => {
       }
     });
     // Refresh chat list to update unread counts
-    Promise.resolve(api.getChatThreads(user.id)).then((threads) => {
-      setChats((prevChats) => {
-        return threads.map((t) => {
-          const isGroup = t.isGroup;
-          const otherParticipantIds = t.participantIds.filter((id: string) => id !== user.id);
-          const name = isGroup
-            ? t.name || 'Group Chat'
-            : prevChats.find((c) => c.id === t.id)?.name || 'Unknown';
-          const threadMessages: ChatMessage[] = api.getChatMessages(t.id);
-          const lastMsg =
-            threadMessages.length > 0 ? threadMessages[threadMessages.length - 1] : null;
-          let lastMessage = '';
-          if (lastMsg) {
-            const sender = USERS_DATA.find((u) => u.id === lastMsg.senderId);
-            lastMessage = `${sender ? sender.name : lastMsg.senderId}: ${lastMsg.content}`;
-          }
-          const unreadCount = threadMessages.filter((msg) => !msg.readBy.includes(user.id)).length;
-          return {
-            id: t.id,
-            name,
-            type: isGroup ? 'group' : 'individual',
-            participants: t.participantIds,
-            lastMessage,
-            timestamp: t.createdAt,
-            unreadCount,
-          };
+    Promise.all([api.getChatThreads(user.id), api.getUsers() as Promise<UserType[]>]).then(
+      ([threads, users]) => {
+        setChats(() => {
+          return threads.map((t) => {
+            const isGroup = t.isGroup;
+            const otherParticipantIds = t.participantIds.filter((id: string) => id !== user.id);
+            const name = isGroup
+              ? t.name || 'Group Chat'
+              : users.find((u: UserType) => u.id === otherParticipantIds[0])?.name || 'Unknown';
+            const threadMessages: ChatMessage[] = api.getChatMessages(t.id);
+            const lastMsg =
+              threadMessages.length > 0 ? threadMessages[threadMessages.length - 1] : null;
+            let lastMessage = '';
+            if (lastMsg) {
+              const sender = users.find((u) => u.id === lastMsg.senderId);
+              lastMessage = `${sender ? sender.name : lastMsg.senderId}: ${lastMsg.content}`;
+            }
+            const unreadCount = threadMessages.filter(
+              (msg) => !msg.readBy.includes(user.id),
+            ).length;
+            return {
+              id: t.id,
+              name,
+              type: isGroup ? 'group' : 'individual',
+              participants: t.participantIds,
+              lastMessage,
+              timestamp: t.createdAt,
+              unreadCount,
+            };
+          });
         });
-      });
-    });
+      },
+    );
   }, [selectedChat, user]);
 
   return (
@@ -415,10 +413,10 @@ const ChatPage = () => {
                               ? chat.lastMessage
                               : chat.type === 'group'
                                 ? `${(() => {
-                                    const user = USERS_DATA.find(
-                                      (u) => u.id === chat.participants[0],
+                                    const participant = friends.find(
+                                      (f) => f.id === chat.participants[0],
                                     );
-                                    return user ? user.name : chat.participants[0];
+                                    return participant ? participant.name : chat.participants[0];
                                   })()}: ${chat.lastMessage}`
                                 : chat.lastMessage}
                           </p>

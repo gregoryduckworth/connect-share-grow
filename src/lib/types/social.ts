@@ -44,26 +44,3 @@ export interface ChatMessage {
   sentAt: Date;
   isRead: boolean;
 }
-
-// Trending/Hot Topics
-export interface TrendingPostUI {
-  id: string;
-  title: string;
-  author: string;
-  userName?: string;
-  communitySlug: string;
-  communityName: string;
-  likes: number;
-  replies: number;
-  createdAt: Date;
-  excerpt: string;
-}
-
-export interface TrendingCommunityUI {
-  id: string;
-  name: string;
-  description: string;
-  memberCount: number;
-  growthRate: number;
-  category: string;
-}

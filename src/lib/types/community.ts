@@ -2,6 +2,7 @@ import { Named, Identifiable } from './base';
 
 // Community types
 export interface CommunityBase extends Named {
+  id: string;
   description: string;
   tags: string[];
 }
@@ -15,6 +16,7 @@ export interface Community extends CommunityBase {
   createdBy?: string;
   requestedAt?: Date;
   status?: 'active' | 'pending' | 'suspended';
+  isJoined?: boolean; // Added for UI join/leave logic
 }
 
 export interface CommunityModerator extends Identifiable, Named {
