@@ -1,15 +1,29 @@
 import { logger } from '@/lib/logging/logger';
 
+export interface CurrentUser {
+  id: string;
+  role: string;
+}
+
+export enum AuditResource {
+  User = 'user',
+  Admin = 'admin',
+  Community = 'community',
+  Post = 'post',
+  Report = 'report',
+  Security = 'security',
+}
+
 export interface AuditLogEntry {
   id: string;
   timestamp: Date;
   userId: string;
   userRole: string;
-  action: string;
-  resource: string;
+  action: AuditAction;
+  resource: AuditResource;
   resourceId: string;
   details: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
 }
@@ -61,9 +75,9 @@ export type AuditAction =
 
 class AuditService {
   private logs: AuditLogEntry[] = [];
-  private currentUser: { id: string; role: string } | null = null;
+  private currentUser: CurrentUser | null = null;
 
-  setCurrentUser(user: { id: string; role: string } | null) {
+  setCurrentUser(user: CurrentUser | null): void {
     this.currentUser = user;
   }
 
@@ -71,9 +85,8 @@ class AuditService {
     return `audit-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   }
 
-  private getBrowserInfo() {
+  private getBrowserInfo(): { ipAddress?: string; userAgent?: string } {
     if (typeof window === 'undefined') return {};
-
     return {
       ipAddress: '127.0.0.1', // In real app, get from request
       userAgent: navigator.userAgent,
@@ -82,10 +95,10 @@ class AuditService {
 
   log(
     action: AuditAction,
-    resource: string,
+    resource: AuditResource,
     resourceId: string,
     details: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
   ): AuditLogEntry {
     const entry: AuditLogEntry = {
       id: this.generateId(),
@@ -99,33 +112,24 @@ class AuditService {
       metadata,
       ...this.getBrowserInfo(),
     };
-
     this.logs.unshift(entry);
-
-    // Keep only last 1000 entries in memory
     if (this.logs.length > 1000) {
       this.logs.splice(1000);
     }
-
-    // Log to console for development
     logger.info('Audit log entry created', {
       action,
       resource,
       resourceId,
       userId: entry.userId,
     });
-
-    // In production, send to external audit service
     if (process.env.NODE_ENV === 'production') {
       this.sendToAuditService(entry);
     }
-
     return entry;
   }
 
-  private async sendToAuditService(entry: AuditLogEntry) {
+  private async sendToAuditService(entry: AuditLogEntry): Promise<void> {
     try {
-      // In real app, send to external audit service like AWS CloudTrail, etc.
       logger.info('Sending audit log to external service:', entry);
     } catch (error) {
       logger.error('Failed to send audit log to external service', error);
@@ -140,7 +144,7 @@ class AuditService {
     return this.logs.filter((log) => log.userId === userId).slice(0, limit);
   }
 
-  getLogsByResource(resource: string, resourceId?: string, limit = 100): AuditLogEntry[] {
+  getLogsByResource(resource: AuditResource, resourceId?: string, limit = 100): AuditLogEntry[] {
     return this.logs
       .filter((log) => {
         if (resourceId) {
@@ -161,54 +165,67 @@ class AuditService {
       .slice(0, limit);
   }
 
-  clearLogs() {
+  clearLogs(): void {
     this.logs = [];
     logger.info('Audit logs cleared');
   }
 
-  // Convenience methods for common audit actions
-  logUserAction(action: AuditAction, details: string, metadata?: Record<string, any>) {
-    return this.log(action, 'user', this.currentUser?.id || 'anonymous', details, metadata);
+  logUserAction(
+    action: AuditAction,
+    details: string,
+    metadata?: Record<string, unknown>,
+  ): AuditLogEntry {
+    return this.log(
+      action,
+      AuditResource.User,
+      this.currentUser?.id || 'anonymous',
+      details,
+      metadata,
+    );
   }
 
   logAdminAction(
     action: AuditAction,
     targetId: string,
     details: string,
-    metadata?: Record<string, any>,
-  ) {
-    return this.log(action, 'admin', targetId, details, metadata);
+    metadata?: Record<string, unknown>,
+  ): AuditLogEntry {
+    return this.log(action, AuditResource.Admin, targetId, details, metadata);
   }
 
   logCommunityAction(
     action: AuditAction,
     communityId: string,
     details: string,
-    metadata?: Record<string, any>,
-  ) {
-    return this.log(action, 'community', communityId, details, metadata);
+    metadata?: Record<string, unknown>,
+  ): AuditLogEntry {
+    return this.log(action, AuditResource.Community, communityId, details, metadata);
   }
 
   logPostAction(
     action: AuditAction,
     postId: string,
     details: string,
-    metadata?: Record<string, any>,
-  ) {
-    return this.log(action, 'post', postId, details, metadata);
+    metadata?: Record<string, unknown>,
+  ): AuditLogEntry {
+    return this.log(action, AuditResource.Post, postId, details, metadata);
   }
 
   logReportAction(
     action: AuditAction,
     reportId: string,
     details: string,
-    metadata?: Record<string, any>,
-  ) {
-    return this.log(action, 'report', reportId, details, metadata);
+    metadata?: Record<string, unknown>,
+  ): AuditLogEntry {
+    return this.log(action, AuditResource.Report, reportId, details, metadata);
   }
 
-  logSecurityEvent(action: AuditAction, details: string, metadata?: Record<string, any>) {
-    return this.log(action, 'security', 'system', details, {
+  logSecurityEvent(
+    action: AuditAction,
+    details: string,
+    metadata?: Record<string, unknown>,
+  ): AuditLogEntry {
+    return this.log(action, AuditResource.Security, 'system', details, {
       ...metadata,
       severity: 'high',
       requiresInvestigation: true,
@@ -218,7 +235,12 @@ class AuditService {
 
 export const auditService = new AuditService();
 
-// Expose for debugging in development
+declare global {
+  interface Window {
+    __auditService?: AuditService;
+  }
+}
+
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
-  (window as any).__auditService = auditService;
+  window.__auditService = auditService;
 }

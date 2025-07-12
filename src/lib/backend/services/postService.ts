@@ -4,6 +4,7 @@ import { USERS_DATA } from '../data/users';
 import { COMMUNITIES_DATA } from '../data/communities';
 import { USER_POST_LIKES, UserPostLike } from '../data/userPostLikes';
 import type { Post, PostDetailData, PostDetailReply, CommunityPost } from '@/lib/types';
+import { auditService } from '@/lib/audit/auditService';
 
 const getUserNameById = (userId: string): string => {
   const user = USERS_DATA.find((u) => u.id === userId);
@@ -115,27 +116,17 @@ export const postService = {
     }));
   },
 
-  createPost: async (
-    communitySlug: string,
-    postData: {
-      title: string;
-      content: string;
-      tags?: string[];
-    },
-  ): Promise<Post> => {
+  createPost: async (postData: Omit<Post, 'id' | 'createdAt'>, userId: string): Promise<Post> => {
     const newPost: Post = {
-      id: `p${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      title: postData.title,
-      content: postData.content,
-      author: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
-      communityId: communitySlug,
+      id: `post-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       createdAt: new Date(),
-      likes: 0,
-      replies: 0,
-      isLiked: false,
+      ...postData,
+      author: userId,
     };
-
     POSTS_DATA.push(newPost);
+    auditService.logPostAction('post_create', newPost.id, `Post created by user ${userId}`, {
+      postData,
+    });
     return newPost;
   },
 };

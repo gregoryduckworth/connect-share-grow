@@ -64,7 +64,11 @@ class AppErrorBoundary extends Component<Props, State> {
     }
   }
 
-  private reportErrorToService = (appError: unknown, originalError: Error, errorInfo: ErrorInfo) => {
+  private reportErrorToService = (
+    appError: unknown,
+    originalError: Error,
+    errorInfo: ErrorInfo,
+  ) => {
     // This would integrate with external error reporting service
     const errorReport = {
       ...(typeof appError === 'object' && appError !== null ? appError : {}),

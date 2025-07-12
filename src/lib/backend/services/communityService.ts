@@ -5,6 +5,7 @@ import {
   UserCommunityMembership,
 } from '../data/userCommunityMemberships';
 import type { Community, CommunityDetail } from '@/lib/types';
+import { auditService } from '@/lib/audit/auditService';
 
 export const communityService = {
   getCommunities: async (): Promise<Community[]> => {
@@ -76,5 +77,25 @@ export const communityService = {
         return user ? { ...user, joinedAsModAt: m.joinedAt } : undefined;
       })
       .filter(Boolean);
+  },
+
+  // Example: log when a user joins a community (add this to the relevant join/leave methods)
+  logCommunityAction: (
+    action: 'community_join' | 'community_leave',
+    communitySlug: string,
+    userId: string,
+  ) => {
+    const community = COMMUNITIES_DATA.find((c) => c.slug === communitySlug);
+    if (!community) return;
+
+    const user = USERS_DATA.find((u) => u.id === userId);
+    if (!user) return;
+
+    auditService.logCommunityAction(
+      action,
+      communitySlug,
+      `User ${action === 'community_join' ? 'joined' : 'left'} community: ${communitySlug}`,
+      { userId },
+    );
   },
 };

@@ -26,6 +26,7 @@ import { Plus, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { logger } from '@/lib/logging/logger';
+import { auditService } from '@/lib/audit/auditService';
 
 const postSchema = z.object({
   title: z
@@ -65,6 +66,11 @@ const CreatePostForm = ({ communityId, onPostCreated }: CreatePostFormProps) => 
       tags,
       communityId,
       createdAt: new Date(),
+    });
+    auditService.logPostAction('post_create', 'frontend', 'Post created from UI', {
+      ...data,
+      tags,
+      communityId,
     });
 
     // Show success message

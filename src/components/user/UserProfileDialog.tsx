@@ -13,6 +13,7 @@ import AppAvatar from '@/components/common/AppAvatar';
 import { useDialog } from '@/hooks/useDialog';
 import { formatDate } from '@/lib/utils'; // Import formatDate
 import { Skeleton } from '@/components/ui/skeleton';
+import { auditService } from '@/lib/audit/auditService';
 
 export interface UserProfileDialogProps {
   userId: string;
@@ -31,7 +32,6 @@ const UserProfileDialog = ({
 }: UserProfileDialogProps) => {
   const { user: currentUser } = useAuth();
   const { toast } = useToast();
-  const [_connectionPending, setConnectionPending] = useState(false);
   const requestDialog = useDialog(false);
   const [requestMessage, setRequestMessage] = useState('');
   const [requestError, setRequestError] = useState('');
@@ -107,6 +107,10 @@ const UserProfileDialog = ({
       title: 'Connection request sent',
       description: `Connection request sent to ${user?.name}`,
     });
+    auditService.logUserAction('user_profile_update', `Connection request sent to ${user?.name}`, {
+      fromUserId: currentUser?.id,
+      toUserId: userId,
+    });
     await refreshConnectionStatus();
   };
 
@@ -124,6 +128,10 @@ const UserProfileDialog = ({
       title: 'Connection accepted',
       description: `You are now connected with ${user?.name}`,
     });
+    auditService.logUserAction('user_profile_update', `Connection accepted from ${user?.name}`, {
+      fromUserId: userId,
+      toUserId: currentUser?.id,
+    });
     await refreshConnectionStatus();
   };
 
@@ -139,6 +147,11 @@ const UserProfileDialog = ({
       title: 'Request declined',
       description: `You declined the connection request from ${user?.name}`,
     });
+    auditService.logUserAction(
+      'user_profile_update',
+      `Connection request declined from ${user?.name}`,
+      { fromUserId: userId, toUserId: currentUser?.id },
+    );
     await refreshConnectionStatus();
   };
 

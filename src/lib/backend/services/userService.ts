@@ -5,6 +5,7 @@ import {
 } from '../data/userCommunityMemberships';
 import { COMMUNITIES_DATA } from '../data/communities';
 import type { User, Community } from '@/lib/types';
+import { auditService } from '@/lib/audit/auditService';
 
 export const userService = {
   getUsers: async (): Promise<User[]> => {
@@ -46,19 +47,24 @@ export const userService = {
 
   createUser: async (userData: Omit<User, 'id' | 'createdAt'>): Promise<User> => {
     const newUser: User = {
-      id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       createdAt: new Date(),
       ...userData,
     };
     USERS_DATA.push(newUser);
+    auditService.logUserAction('user_register', `User registered: ${newUser.email}`, {
+      userId: newUser.id,
+    });
     return newUser;
   },
 
   updateUser: async (userId: string, updates: Partial<User>): Promise<User | null> => {
     const userIndex = USERS_DATA.findIndex((user) => user.id === userId);
     if (userIndex === -1) return null;
-
     USERS_DATA[userIndex] = { ...USERS_DATA[userIndex], ...updates };
+    auditService.logUserAction('user_profile_update', `User profile updated: ${userId}`, {
+      updates,
+    });
     return USERS_DATA[userIndex];
   },
 

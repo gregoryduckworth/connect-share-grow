@@ -1,5 +1,6 @@
 import { REPORTS_DATA } from '../data/reports';
 import type { Report } from '@/lib/types';
+import { auditService } from '@/lib/audit/auditService';
 
 export const reportService = {
   getReports: async (): Promise<Report[]> => {
@@ -29,6 +30,12 @@ export const reportService = {
     };
 
     REPORTS_DATA.push(newReport);
+    auditService.logReportAction(
+      'report_create',
+      newReport.id,
+      `Report submitted by user ${newReport.reportedBy}`,
+      { reportData },
+    );
     return newReport;
   },
 };
