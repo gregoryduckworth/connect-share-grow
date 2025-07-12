@@ -20,6 +20,7 @@ import {
 import { formatNumber } from '@/lib/utils';
 import { InfoBadge } from '@/components/common/InfoBadge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { logger } from '@/lib/logging/logger';
 
 const CommunityDetailPage = () => {
   const { communitySlug } = useParams<{ communitySlug: string }>();
@@ -89,7 +90,7 @@ const CommunityDetailPage = () => {
 
   const handleComment = (postId: string) => {
     // Navigate to post detail page for commenting
-    console.log('Navigate to post detail:', postId);
+    logger.info('Navigate to post detail:', postId);
   };
 
   if (loading) {

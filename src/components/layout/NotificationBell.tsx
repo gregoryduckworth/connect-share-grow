@@ -8,6 +8,7 @@ import { Notification } from '@/lib/types';
 import { useAuth } from '@/contexts/useAuth';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { logger } from '@/lib/logging/logger';
 
 const NotificationBell = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const NotificationBell = () => {
         const fetchedNotifications = await api.getNotifications(user.id);
         setNotifications(fetchedNotifications);
       } catch (error) {
-        console.error('Failed to fetch notifications:', error);
+        logger.error('Failed to fetch notifications', error);
       } finally {
         setLoading(false);
       }
@@ -40,7 +41,7 @@ const NotificationBell = () => {
         notifications.map((n) => (n.id === notificationId ? { ...n, readAt: new Date() } : n)),
       );
     } catch (error) {
-      console.error('Failed to mark notification as read:', error);
+      logger.error('Failed to mark notification as read', error);
     }
   };
 
@@ -54,7 +55,7 @@ const NotificationBell = () => {
       );
       setNotifications(notifications.map((n) => ({ ...n, readAt: new Date() })));
     } catch (error) {
-      console.error('Failed to mark all notifications as read:', error);
+      logger.error('Failed to mark all notifications as read', error);
     }
   };
 
@@ -70,7 +71,7 @@ const NotificationBell = () => {
       navigate(`/community/${notification.communityId}`);
     } else if (notification.type === 'system') {
       // For system notifications, stay on current page
-      console.log('System notification clicked');
+      logger.info('System notification clicked');
     }
   };
 

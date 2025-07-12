@@ -126,7 +126,7 @@ class AuditService {
   private async sendToAuditService(entry: AuditLogEntry) {
     try {
       // In real app, send to external audit service like AWS CloudTrail, etc.
-      console.log('Sending audit log to external service:', entry);
+      logger.info('Sending audit log to external service:', entry);
     } catch (error) {
       logger.error('Failed to send audit log to external service', error);
     }

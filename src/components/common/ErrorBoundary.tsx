@@ -1,8 +1,8 @@
-
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { logger } from '@/lib/logging/logger';
 
 interface Props {
   children: ReactNode;
@@ -29,8 +29,8 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
-    
+    logger.error('Error caught by boundary:', { error, errorInfo });
+
     this.setState({
       error,
       errorInfo,
@@ -39,7 +39,7 @@ class ErrorBoundary extends Component<Props, State> {
     // Log to external service in production
     if (process.env.NODE_ENV === 'production') {
       // This would integrate with services like Sentry
-      console.error('Production error:', {
+      logger.error('Production error:', {
         error: error.message,
         stack: error.stack,
         componentStack: errorInfo.componentStack,
@@ -70,9 +70,7 @@ class ErrorBoundary extends Component<Props, State> {
                 <AlertTriangle className="h-6 w-6" />
                 Something went wrong
               </CardTitle>
-              <CardDescription>
-                An unexpected error occurred. Please try again.
-              </CardDescription>
+              <CardDescription>An unexpected error occurred. Please try again.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {process.env.NODE_ENV === 'development' && this.state.error && (

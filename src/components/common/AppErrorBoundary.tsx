@@ -1,4 +1,3 @@
-
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
@@ -26,9 +25,9 @@ class AppErrorBoundary extends Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
-    this.state = { 
-      hasError: false, 
-      retryCount: 0 
+    this.state = {
+      hasError: false,
+      retryCount: 0,
     };
   }
 
@@ -38,18 +37,13 @@ class AppErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const level = this.props.level || 'component';
-    
+
     // Create structured error
-    const appError = ErrorHandler.createError(
-      ErrorType.CLIENT,
-      error.message,
-      'BOUNDARY_001',
-      {
-        level,
-        componentStack: errorInfo.componentStack,
-        retryCount: this.state.retryCount,
-      }
-    );
+    const appError = ErrorHandler.createError(ErrorType.CLIENT, error.message, 'BOUNDARY_001', {
+      level,
+      componentStack: errorInfo.componentStack,
+      retryCount: this.state.retryCount,
+    });
 
     logger.error(`Error boundary caught error at ${level} level`, {
       error: appError,
@@ -82,12 +76,12 @@ class AppErrorBoundary extends Component<Props, State> {
     };
 
     // In production, send to error reporting service
-    console.error('Error boundary report:', errorReport);
+    logger.error('Error boundary report:', errorReport);
   };
 
   private handleRetry = () => {
     if (this.state.retryCount < this.maxRetries) {
-      this.setState(prevState => ({
+      this.setState((prevState) => ({
         hasError: false,
         error: undefined,
         errorInfo: undefined,
@@ -196,18 +190,11 @@ class AppErrorBoundary extends Component<Props, State> {
             <div>
               <p className="font-medium">Component Error</p>
               {process.env.NODE_ENV === 'development' && this.state.error && (
-                <p className="text-xs mt-1 font-mono opacity-75">
-                  {this.state.error.message}
-                </p>
+                <p className="text-xs mt-1 font-mono opacity-75">{this.state.error.message}</p>
               )}
             </div>
             {canRetry && (
-              <Button 
-                size="sm" 
-                variant="outline" 
-                onClick={this.handleRetry}
-                className="ml-4"
-              >
+              <Button size="sm" variant="outline" onClick={this.handleRetry} className="ml-4">
                 <RefreshCw className="h-3 w-3 mr-1" />
                 Retry ({this.maxRetries - this.state.retryCount})
               </Button>

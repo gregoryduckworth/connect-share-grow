@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -6,28 +6,29 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import { Shield, Search, User as UserIcon } from "lucide-react";
-import { logAdminAction } from "@/lib/admin-logger";
-import UserProfileDialog from "@/components/admin/UserProfileDialog";
-import RoleChangeDialog from "@/components/admin/RoleChangeDialog";
-import AdminTablePagination from "@/components/admin/AdminTablePagination";
-import { USERS_DATA } from "@/lib/backend/data/users";
-import { User } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
-import { StatusBadge } from "@/components/common/StatusBadge";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/use-toast';
+import { Shield, Search, User as UserIcon } from 'lucide-react';
+import { logAdminAction } from '@/lib/admin-logger';
+import UserProfileDialog from '@/components/admin/UserProfileDialog';
+import RoleChangeDialog from '@/components/admin/RoleChangeDialog';
+import AdminTablePagination from '@/components/admin/AdminTablePagination';
+import { USERS_DATA } from '@/lib/backend/data/users';
+import { User } from '@/lib/types';
+import { formatDate } from '@/lib/utils';
+import { StatusBadge } from '@/components/common/StatusBadge';
+import { logger } from '@/lib/logging/logger';
 
 const AdminUsersPage = () => {
-  console.log("AdminUsersPage rendering...");
+  logger.info('AdminUsersPage rendering...');
 
   const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentUser] = useState({
-    email: "admin@example.com",
-    name: "Admin User",
+    email: 'admin@example.com',
+    name: 'Admin User',
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -39,24 +40,19 @@ const AdminUsersPage = () => {
   const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const totalPages = Math.ceil(filteredUsers.length / pageSize);
-  const paginatedUsers = filteredUsers.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const handleRoleChange = (userId: string, newRole: string) => {
     const user = users.find((u) => u.id === userId);
     if (user) {
       setUsers(
         users.map((u) =>
-          u.id === userId
-            ? { ...u, role: newRole as "user" | "moderator" | "admin" }
-            : u
-        )
+          u.id === userId ? { ...u, role: newRole as 'user' | 'moderator' | 'admin' } : u,
+        ),
       );
 
       toast({
@@ -65,10 +61,10 @@ const AdminUsersPage = () => {
       });
 
       logAdminAction({
-        action: "role_updated",
+        action: 'role_updated',
         details: `Changed ${user.name}'s role from ${user.role} to ${newRole}`,
         targetId: user.id,
-        targetType: "user",
+        targetType: 'user',
       });
     }
   };
@@ -118,37 +114,21 @@ const AdminUsersPage = () => {
                     <span className="font-medium">{user.name}</span>
                   </div>
                 </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {user.email}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {formatDate(user.createdAt)}
-                </TableCell>
+                <TableCell className="hidden md:table-cell">{user.email}</TableCell>
+                <TableCell className="hidden md:table-cell">{formatDate(user.createdAt)}</TableCell>
                 <TableCell>
                   <StatusBadge
                     status={user.role}
-                    className={
-                      isCurrentUser(user.email)
-                        ? "border-2 border-blue-500"
-                        : undefined
-                    }
+                    className={isCurrentUser(user.email) ? 'border-2 border-blue-500' : undefined}
                   >
-                    {user.role === "admin" && (
-                      <Shield className="h-3 w-3 mr-1 inline" />
-                    )}{" "}
+                    {user.role === 'admin' && <Shield className="h-3 w-3 mr-1 inline" />}{' '}
                     {user.role}
-                    {isCurrentUser(user.email) && " (You)"}
+                    {isCurrentUser(user.email) && ' (You)'}
                   </StatusBadge>
                 </TableCell>
                 <TableCell>
                   <StatusBadge
-                    status={
-                      user.isActive
-                        ? "active"
-                        : user.isSuspended
-                        ? "suspended"
-                        : "banned"
-                    }
+                    status={user.isActive ? 'active' : user.isSuspended ? 'suspended' : 'banned'}
                   />
                 </TableCell>
                 <TableCell className="text-right">
@@ -158,10 +138,7 @@ const AdminUsersPage = () => {
                       size="sm"
                       className="text-xs"
                       onClick={() => {
-                        console.log(
-                          "View Profile button clicked for user:",
-                          user.id
-                        );
+                        logger.info('View Profile button clicked for user:', user.id);
                         setSelectedUser(user);
                       }}
                     >
@@ -172,10 +149,7 @@ const AdminUsersPage = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          console.log(
-                            "Change Role button clicked for user:",
-                            user.id
-                          );
+                          logger.info('Change Role button clicked for user:', user.id);
                           handleChangeRole(user);
                         }}
                         className="text-xs"
@@ -192,9 +166,7 @@ const AdminUsersPage = () => {
 
         {paginatedUsers.length === 0 && (
           <div className="text-center p-8">
-            <p className="text-social-muted">
-              No users found matching your search.
-            </p>
+            <p className="text-social-muted">No users found matching your search.</p>
           </div>
         )}
 
@@ -218,7 +190,7 @@ const AdminUsersPage = () => {
           user={selectedUser}
           isOpen={!!selectedUser}
           onClose={() => {
-            console.log("Closing UserProfileDialog");
+            logger.info('Closing UserProfileDialog');
             setSelectedUser(null);
           }}
         />
@@ -227,7 +199,7 @@ const AdminUsersPage = () => {
       <RoleChangeDialog
         isOpen={roleChangeDialogOpen}
         onClose={() => {
-          console.log("Closing RoleChangeDialog");
+          logger.info('Closing RoleChangeDialog');
           setRoleChangeDialogOpen(false);
         }}
         user={selectedUser}
