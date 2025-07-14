@@ -1,3 +1,4 @@
+
 import { Named, Identifiable } from './base';
 
 // Community types
@@ -17,6 +18,7 @@ export interface Community extends CommunityBase {
   requestedAt?: Date;
   status?: 'active' | 'pending' | 'suspended';
   isJoined?: boolean; // Added for UI join/leave logic
+  moderators?: string[]; // Added for admin communities page
 }
 
 export interface CommunityModerator extends Identifiable, Named {

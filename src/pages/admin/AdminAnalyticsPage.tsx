@@ -26,7 +26,6 @@ const AdminAnalyticsPage = () => {
     toggleSortOrder,
     filterValue: filterCategory,
     setFilterValue: setFilterCategory,
-    filteredAndSortedData: filteredCommunities,
   } = useAdminFilters({
     data: communities,
     searchKey: 'name',
@@ -43,6 +42,7 @@ const AdminAnalyticsPage = () => {
     totalCommunities: communities.length,
     totalPosts: 8967,
     activeUsers: 3421,
+    totalReports: 142,
   };
 
   const activityData: ActivityDataPoint[] = [
@@ -55,7 +55,7 @@ const AdminAnalyticsPage = () => {
     { name: 'Sun', posts: 75, users: 45 },
   ];
 
-  const analyticsCommunitiesData: AnalyticsCommunity[] = communities.map((community, index) => ({
+  const analyticsCommunitiesData: AnalyticsCommunity[] = communities.map((community) => ({
     id: community.id || community.slug,
     name: community.name,
     members: community.memberCount,
@@ -129,9 +129,9 @@ const AdminAnalyticsPage = () => {
           timeRange={timeRange}
           onTimeRangeChange={setTimeRange}
           filterCategory={filterCategory}
-          onFilterCategoryChange={setFilterCategory}
+          onFilterCategoryChange={(value: string) => setFilterCategory(value)}
           sortBy={sortBy}
-          onSortByChange={setSortBy}
+          onSortByChange={(value: string) => setSortBy(value)}
           sortOrder={sortOrder}
           onSortToggle={toggleSortOrder}
           communitySearch={communitySearch}

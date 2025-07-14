@@ -1,5 +1,4 @@
-
-import { auditService, AuditAction } from './audit/auditService';
+import { auditService, AuditAction, AuditResource } from './audit/auditService';
 import { logger } from '@/lib/logging/logger';
 
 export interface AdminLogEntry {
@@ -112,16 +111,16 @@ function mapToAuditAction(action: string): AuditAction {
 }
 
 // Map target type strings to audit resource types
-function mapToAuditResource(targetType: string) {
-  const resourceMap: Record<string, string> = {
-    community: 'community',
-    post: 'post',
-    user: 'user',
-    reply: 'reply',
-    report: 'report',
+function mapToAuditResource(targetType: string): AuditResource {
+  const resourceMap: Record<string, AuditResource> = {
+    community: AuditResource.Community,
+    post: AuditResource.Post,
+    user: AuditResource.User,
+    reply: AuditResource.Post,
+    report: AuditResource.Report,
   };
 
-  return resourceMap[targetType] || 'content';
+  return resourceMap[targetType] || AuditResource.Security;
 }
 
 // Initialize audit service with admin user context

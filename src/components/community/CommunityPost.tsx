@@ -25,7 +25,6 @@ const CommunityPost = ({
   showPreview = false,
   communitySlug,
   loading = false,
-  ...props
 }: CommunityPostProps & { loading?: boolean }) => {
   const lockDialog = useDialog(false);
   const [lockType, setLockType] = useState<'post' | 'comments'>('post');
