@@ -1,4 +1,5 @@
 
+
 import { lazy } from 'react';
 
 // Lazy load all page components for code splitting
@@ -18,6 +19,11 @@ export const NotFound = lazy(() => import('@/pages/NotFound'));
 export const ConnectionsPage = lazy(() => import('@/pages/ConnectionsPage'));
 export const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 
+// Mentorship Pages
+export const MentorshipPage = lazy(() => import('@/pages/MentorshipPage'));
+export const BecomeMentorPage = lazy(() => import('@/pages/BecomeMentorPage'));
+export const MyMentorshipSessionsPage = lazy(() => import('@/pages/MyMentorshipSessionsPage'));
+
 // Admin Pages
 export const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
 export const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'));
@@ -27,3 +33,4 @@ export const AdminRolesPage = lazy(() => import('@/pages/admin/AdminRolesPage'))
 export const AdminAnalyticsPage = lazy(() => import('@/pages/admin/AdminAnalyticsPage'));
 export const AdminLogsPage = lazy(() => import('@/pages/admin/AdminLogsPage'));
 export const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage'));
+

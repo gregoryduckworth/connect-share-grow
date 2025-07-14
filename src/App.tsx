@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
@@ -162,6 +163,30 @@ function App() {
                       element={
                         <SuspenseWrapper componentName="ConnectionsPage">
                           <LazyPages.ConnectionsPage />
+                        </SuspenseWrapper>
+                      }
+                    />
+                    <Route
+                      path="mentorship"
+                      element={
+                        <SuspenseWrapper componentName="MentorshipPage">
+                          <LazyPages.MentorshipPage />
+                        </SuspenseWrapper>
+                      }
+                    />
+                    <Route
+                      path="mentorship/become-mentor"
+                      element={
+                        <SuspenseWrapper componentName="BecomeMentorPage">
+                          <LazyPages.BecomeMentorPage />
+                        </SuspenseWrapper>
+                      }
+                    />
+                    <Route
+                      path="mentorship/my-sessions"
+                      element={
+                        <SuspenseWrapper componentName="MyMentorshipSessionsPage">
+                          <LazyPages.MyMentorshipSessionsPage />
                         </SuspenseWrapper>
                       }
                     />

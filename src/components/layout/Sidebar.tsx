@@ -1,5 +1,6 @@
+
 import { NavLink } from "react-router-dom";
-import { Home, Users, Compass, MessageCircle } from "lucide-react";
+import { Home, Users, Compass, MessageCircle, BookOpen } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
@@ -26,6 +27,12 @@ const SidebarComponent = () => {
   const chatNavItems = [
     { title: t("nav.chat"), url: "/chat", icon: MessageCircle },
     { title: t("nav.connections"), url: "/connections", icon: Users },
+  ];
+
+  const mentorshipNavItems = [
+    { title: "Find Mentors", url: "/mentorship", icon: BookOpen },
+    { title: "Become a Mentor", url: "/mentorship/become-mentor", icon: Users },
+    { title: "My Sessions", url: "/mentorship/my-sessions", icon: MessageCircle },
   ];
 
   const adminNavItems = [
@@ -83,6 +90,29 @@ const SidebarComponent = () => {
           <SidebarGroupLabel>{t("nav.chat")}</SidebarGroupLabel>
           <SidebarMenu>
             {chatNavItems.map((item) => (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton asChild>
+                  <NavLink
+                    to={item.url}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-foreground hover:bg-accent hover:text-accent-foreground ${
+                        isActive ? "bg-accent text-accent-foreground" : ""
+                      }`
+                    }
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span className="text-sm font-medium">{item.title}</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+        <Separator className="my-4 bg-border" />
+        <SidebarGroup>
+          <SidebarGroupLabel>Mentorship</SidebarGroupLabel>
+          <SidebarMenu>
+            {mentorshipNavItems.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild>
                   <NavLink
