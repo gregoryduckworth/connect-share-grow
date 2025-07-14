@@ -130,8 +130,8 @@ const AdminAnalyticsPage = () => {
           onTimeRangeChange={setTimeRange}
           filterCategory={filterCategory}
           onFilterCategoryChange={(value: string) => setFilterCategory(value)}
-          sortBy={sortBy}
-          onSortByChange={(value: string) => setSortBy(value)}
+          sortBy={String(sortBy)}
+          onSortByChange={(value: string) => setSortBy(value as keyof Community)}
           sortOrder={sortOrder}
           onSortToggle={toggleSortOrder}
           communitySearch={communitySearch}
@@ -161,7 +161,7 @@ const AdminAnalyticsPage = () => {
               <AdminAnalyticsCommunities 
                 topCommunities={topCommunities}
                 filteredCommunities={analyticsCommunitiesData}
-                sortBy={sortBy}
+                sortBy={String(sortBy)}
                 selectedCommunityData={selectedCommunityData}
                 onCommunitySelect={handleCommunitySelect}
               />
