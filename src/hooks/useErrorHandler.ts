@@ -1,6 +1,6 @@
 
 import { useCallback } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { ErrorHandler, ErrorType, AppError } from '@/lib/errors/ErrorHandler';
 import { logger } from '@/lib/logging/logger';
 

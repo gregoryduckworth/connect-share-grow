@@ -1,139 +1,125 @@
 
-import { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp } from "lucide-react";
-import { fetchAnalyticsData } from "@/lib/backend/services/adminService";
-import { AnalyticsCommunity, PlatformStats, ActivityDataPoint, AnalyticsDataPoint } from "@/lib/types";
-import AdminHeader from "@/components/admin/AdminHeader";
-import AdminAnalyticsFilters from "@/components/admin/AdminAnalyticsFilters";
-import AdminAnalyticsOverview from "@/components/admin/AdminAnalyticsOverview";
-import AdminAnalyticsCommunities from "@/components/admin/AdminAnalyticsCommunities";
-import AdminAnalyticsEngagement from "@/components/admin/AdminAnalyticsEngagement";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import AdminAnalyticsFilters from '@/components/admin/AdminAnalyticsFilters';
+import AdminAnalyticsOverview from '@/components/admin/AdminAnalyticsOverview';
+import AdminAnalyticsCommunities from '@/components/admin/AdminAnalyticsCommunities';
+import AdminAnalyticsEngagement from '@/components/admin/AdminAnalyticsEngagement';
+import AppErrorBoundary from '@/components/common/AppErrorBoundary';
+import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { useLoadingState } from '@/hooks/useLoadingState';
+import { useAdminFilters } from '@/hooks/useAdminFilters';
+import { communityService } from '@/lib/backend/services/communityService';
+import type { Community } from '@/lib/types';
 
 const AdminAnalyticsPage = () => {
-  const [communities, setCommunities] = useState<AnalyticsCommunity[]>([]);
-  const [platformStats, setPlatformStats] = useState<PlatformStats | null>(null);
-  const [activityData, setActivityData] = useState<ActivityDataPoint[]>([]);
-  const [chartData, setChartData] = useState<AnalyticsDataPoint[]>([]);
-  const [selectedCommunity, setSelectedCommunity] = useState<string | null>(null);
-  const [timeRange, setTimeRange] = useState<string>("7d");
-  const [sortBy, setSortBy] = useState<string>("members");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [filterCategory, setFilterCategory] = useState<string>("all");
-  const [communitySearch, setCommunitySearch] = useState<string>("");
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const { isLoading, error, startLoading, stopLoading, setLoadingError } = useLoadingState();
+  
+  const {
+    searchQuery: communitySearch,
+    setSearchQuery: setCommunitySearch,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    toggleSortOrder,
+    filterValue: filterCategory,
+    setFilterValue: setFilterCategory,
+    filteredAndSortedData: filteredCommunities,
+  } = useAdminFilters({
+    data: communities,
+    searchKey: 'name',
+    sortKey: 'name',
+    filterKey: 'memberCount',
+  });
+
+  const [timeRange, setTimeRange] = useState('7d');
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadCommunities = async () => {
+      startLoading();
       try {
-        const data = await fetchAnalyticsData();
-        setCommunities(data.communities);
-        setPlatformStats(data.platformStats);
-        setActivityData(data.activityData);
-        setChartData(data.chartData);
-      } catch (error) {
-        console.error("Failed to load analytics data:", error);
+        const data = await communityService.getCommunities();
+        setCommunities(data);
+      } catch (err) {
+        setLoadingError(err as Error);
+      } finally {
+        stopLoading();
       }
     };
 
-    loadData();
-  }, []);
+    loadCommunities();
+  }, [startLoading, stopLoading, setLoadingError]);
 
-  const sortedCommunities = [...communities].sort((a, b) => {
-    const aValue = sortBy === "members" ? a.members : 
-                   sortBy === "posts" ? a.posts : 
-                   sortBy === "activity" ? (a.activity || 0) : a.members;
-    const bValue = sortBy === "members" ? b.members : 
-                   sortBy === "posts" ? b.posts : 
-                   sortBy === "activity" ? (b.activity || 0) : b.members;
-    
-    return sortOrder === "desc" ? bValue - aValue : aValue - bValue;
-  });
-
-  const filteredCommunities = sortedCommunities.filter(community => {
-    // Apply category filter
-    let matchesCategory = true;
-    if (filterCategory === "high-activity") matchesCategory = (community.activity || 0) > 70;
-    if (filterCategory === "low-activity") matchesCategory = (community.activity || 0) < 50;
-    
-    // Apply search filter
-    const matchesSearch = communitySearch === "" || 
-      community.name.toLowerCase().includes(communitySearch.toLowerCase());
-    
-    return matchesCategory && matchesSearch;
-  });
-
-  const topCommunities = filteredCommunities.slice(0, 10);
-
-  const communityGrowthData = filteredCommunities.map((community) => ({
-    name: community.name,
-    members: community.members,
-    posts: community.posts,
-    comments: community.comments || 0,
-    activity: community.activity || 0,
-    engagementRate: community.comments && community.posts ? 
-      ((community.comments / community.posts) * 100).toFixed(1) : "0.0",
-  }));
-
-  const selectedCommunityData = communities.find(
-    (c) => c.name === selectedCommunity
-  );
-
-  const handleSortToggle = () => {
-    setSortOrder(prev => prev === "desc" ? "asc" : "desc");
-  };
+  if (error) {
+    return (
+      <div className="p-6">
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-red-600">Error loading analytics data: {error.message}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 p-6">
-      <AdminHeader />
+    <AppErrorBoundary level="page">
+      <div className="space-y-6 p-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
+          <p className="text-muted-foreground">
+            Monitor community activity and engagement metrics
+          </p>
+        </div>
 
-      <AdminAnalyticsFilters
-        timeRange={timeRange}
-        onTimeRangeChange={setTimeRange}
-        filterCategory={filterCategory}
-        onFilterCategoryChange={setFilterCategory}
-        sortBy={sortBy}
-        onSortByChange={setSortBy}
-        sortOrder={sortOrder}
-        onSortToggle={handleSortToggle}
-        communitySearch={communitySearch}
-        onCommunitySearchChange={setCommunitySearch}
-      />
+        <AdminAnalyticsFilters
+          timeRange={timeRange}
+          onTimeRangeChange={setTimeRange}
+          filterCategory={filterCategory}
+          onFilterCategoryChange={setFilterCategory}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
+          sortOrder={sortOrder}
+          onSortToggle={toggleSortOrder}
+          communitySearch={communitySearch}
+          onCommunitySearchChange={setCommunitySearch}
+        />
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="bg-muted">
-          <TabsTrigger value="overview">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Overview
-          </TabsTrigger>
-          <TabsTrigger value="communities">Communities</TabsTrigger>
-          <TabsTrigger value="engagement">Engagement</TabsTrigger>
-        </TabsList>
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <LoadingSpinner size="lg" text="Loading analytics data..." />
+          </div>
+        ) : (
+          <Tabs defaultValue="overview" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="communities">Communities</TabsTrigger>
+              <TabsTrigger value="engagement">Engagement</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
-          <AdminAnalyticsOverview
-            platformStats={platformStats}
-            activityData={activityData}
-          />
-        </TabsContent>
+            <TabsContent value="overview" className="space-y-4">
+              <AdminAnalyticsOverview timeRange={timeRange} />
+            </TabsContent>
 
-        <TabsContent value="communities" className="space-y-4">
-          <AdminAnalyticsCommunities
-            topCommunities={topCommunities}
-            filteredCommunities={filteredCommunities}
-            sortBy={sortBy}
-            selectedCommunityData={selectedCommunityData}
-            onCommunitySelect={setSelectedCommunity}
-          />
-        </TabsContent>
+            <TabsContent value="communities" className="space-y-4">
+              <AdminAnalyticsCommunities 
+                communities={filteredCommunities}
+                timeRange={timeRange}
+              />
+            </TabsContent>
 
-        <TabsContent value="engagement" className="space-y-4">
-          <AdminAnalyticsEngagement
-            communityGrowthData={communityGrowthData}
-            chartData={chartData}
-          />
-        </TabsContent>
-      </Tabs>
-    </div>
+            <TabsContent value="engagement" className="space-y-4">
+              <AdminAnalyticsEngagement 
+                communities={filteredCommunities}
+                timeRange={timeRange}
+              />
+            </TabsContent>
+          </Tabs>
+        )}
+      </div>
+    </AppErrorBoundary>
   );
 };
 
