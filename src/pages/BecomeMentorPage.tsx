@@ -2,47 +2,46 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Heart, Users, Star, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { SkillsAutocomplete } from "@/components/mentorship/SkillsAutocomplete";
 
 const BecomeMentorPage = () => {
   const [formData, setFormData] = useState({
-    title: "",
-    company: "",
     bio: "",
     experience: "",
     availability: "",
-    hourlyRate: "",
     skills: [] as string[],
     mentorshipAreas: [] as string[],
     languages: [] as string[]
   });
 
   const availableSkills = [
-    "React", "JavaScript", "TypeScript", "Node.js", "Python", 
-    "UI/UX Design", "Product Management", "Data Science", "DevOps", 
-    "Mobile Development", "Machine Learning", "Cloud Computing"
+    "Leadership", "Communication", "Project Management", "Career Development", 
+    "Public Speaking", "Networking", "Strategic Planning", "Team Building",
+    "Marketing", "Sales", "Finance", "Data Analysis", "Design", "Writing",
+    "Problem Solving", "Critical Thinking", "Time Management", "Negotiation",
+    "Customer Service", "Entrepreneurship", "Innovation", "Coaching"
   ];
 
   const mentorshipAreas = [
-    "Career Guidance", "Technical Skills", "Leadership", "Interview Prep",
-    "Startup Advice", "Code Review", "Project Management", "Personal Branding"
+    "Career Guidance", "Skill Development", "Leadership Training", "Interview Preparation",
+    "Startup Advice", "Personal Branding", "Work-Life Balance", "Networking",
+    "Goal Setting", "Confidence Building", "Communication Skills", "Presentation Skills"
   ];
 
   const languages = ["English", "Spanish", "French", "German", "Mandarin", "Japanese", "Other"];
 
-  const toggleItem = (item: string, field: 'skills' | 'mentorshipAreas' | 'languages') => {
+  const toggleLanguage = (language: string) => {
     setFormData(prev => ({
       ...prev,
-      [field]: prev[field].includes(item)
-        ? prev[field].filter((i: string) => i !== item)
-        : [...prev[field], item]
+      languages: prev.languages.includes(language)
+        ? prev.languages.filter((l: string) => l !== language)
+        : [...prev.languages, language]
     }));
   };
 
@@ -110,27 +109,6 @@ const BecomeMentorPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="title">Job Title</Label>
-                  <Input
-                    id="title"
-                    placeholder="e.g., Senior Software Engineer"
-                    value={formData.title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="company">Company</Label>
-                  <Input
-                    id="company"
-                    placeholder="e.g., Google, Microsoft, Startup"
-                    value={formData.company}
-                    onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                  />
-                </div>
-              </div>
-              
               <div>
                 <Label htmlFor="bio">Professional Bio</Label>
                 <Textarea
@@ -163,41 +141,25 @@ const BecomeMentorPage = () => {
             <CardHeader>
               <CardTitle>Skills & Expertise</CardTitle>
               <CardDescription>
-                Select the skills you can mentor others in
+                Add the skills you can mentor others in
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label>Skills</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {availableSkills.map(skill => (
-                    <Badge
-                      key={skill}
-                      variant={formData.skills.includes(skill) ? "default" : "outline"}
-                      className="cursor-pointer"
-                      onClick={() => toggleItem(skill, 'skills')}
-                    >
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
+              <SkillsAutocomplete
+                label="Skills"
+                selectedSkills={formData.skills}
+                onSkillsChange={(skills) => setFormData(prev => ({ ...prev, skills }))}
+                availableSkills={availableSkills}
+                placeholder="Type to add skills..."
+              />
               
-              <div>
-                <Label>Mentorship Areas</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {mentorshipAreas.map(area => (
-                    <Badge
-                      key={area}
-                      variant={formData.mentorshipAreas.includes(area) ? "default" : "outline"}
-                      className="cursor-pointer"
-                      onClick={() => toggleItem(area, 'mentorshipAreas')}
-                    >
-                      {area}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
+              <SkillsAutocomplete
+                label="Mentorship Areas"
+                selectedSkills={formData.mentorshipAreas}
+                onSkillsChange={(areas) => setFormData(prev => ({ ...prev, mentorshipAreas: areas }))}
+                availableSkills={mentorshipAreas}
+                placeholder="Type to add mentorship areas..."
+              />
             </CardContent>
           </Card>
 
@@ -209,45 +171,34 @@ const BecomeMentorPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="availability">Availability</Label>
-                  <Select value={formData.availability} onValueChange={(value) => setFormData(prev => ({ ...prev, availability: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your availability" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1-2">1-2 hours per week</SelectItem>
-                      <SelectItem value="3-5">3-5 hours per week</SelectItem>
-                      <SelectItem value="5-10">5-10 hours per week</SelectItem>
-                      <SelectItem value="flexible">Flexible</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="rate">Hourly Rate (Optional)</Label>
-                  <Input
-                    id="rate"
-                    type="number"
-                    placeholder="Leave empty for free mentoring"
-                    value={formData.hourlyRate}
-                    onChange={(e) => setFormData(prev => ({ ...prev, hourlyRate: e.target.value }))}
-                  />
-                </div>
+              <div>
+                <Label htmlFor="availability">Availability</Label>
+                <Select value={formData.availability} onValueChange={(value) => setFormData(prev => ({ ...prev, availability: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your availability" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1-2">1-2 hours per week</SelectItem>
+                    <SelectItem value="3-5">3-5 hours per week</SelectItem>
+                    <SelectItem value="5-10">5-10 hours per week</SelectItem>
+                    <SelectItem value="flexible">Flexible</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>
                 <Label>Languages</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {languages.map(language => (
-                    <Badge
+                    <Button
                       key={language}
+                      type="button"
                       variant={formData.languages.includes(language) ? "default" : "outline"}
-                      className="cursor-pointer"
-                      onClick={() => toggleItem(language, 'languages')}
+                      size="sm"
+                      onClick={() => toggleLanguage(language)}
                     >
                       {language}
-                    </Badge>
+                    </Button>
                   ))}
                 </div>
               </div>

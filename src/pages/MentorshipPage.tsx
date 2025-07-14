@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Star, Users, BookOpen, MessageCircle } from "lucide-react";
+import { Search, Star, Users, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const MentorshipPage = () => {
@@ -13,8 +13,9 @@ const MentorshipPage = () => {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
 
   const skills = [
-    "React", "JavaScript", "TypeScript", "Node.js", "Python", 
-    "UI/UX Design", "Product Management", "Data Science", "DevOps", "Mobile Development"
+    "Leadership", "Communication", "Project Management", "Career Development", 
+    "Public Speaking", "Networking", "Strategic Planning", "Team Building",
+    "Marketing", "Sales", "Finance", "Data Analysis", "Design", "Writing"
   ];
 
   const mentors = [
@@ -25,8 +26,8 @@ const MentorshipPage = () => {
       company: "Tech Corp",
       rating: 4.9,
       sessions: 127,
-      skills: ["React", "JavaScript", "TypeScript"],
-      bio: "Helping developers master modern web development with 8+ years of experience.",
+      skills: ["Leadership", "Communication", "Career Development"],
+      bio: "Helping professionals master career growth with 8+ years of experience.",
       avatar: "/placeholder.svg"
     },
     {
@@ -36,7 +37,7 @@ const MentorshipPage = () => {
       company: "StartupXYZ",
       rating: 4.8,
       sessions: 93,
-      skills: ["Product Management", "Strategy", "Analytics"],
+      skills: ["Project Management", "Strategic Planning", "Leadership"],
       bio: "Passionate about building products that users love. Former Google PM.",
       avatar: "/placeholder.svg"
     },
@@ -47,7 +48,7 @@ const MentorshipPage = () => {
       company: "Design Studio",
       rating: 4.9,
       sessions: 156,
-      skills: ["UI/UX Design", "Figma", "User Research"],
+      skills: ["Design", "Communication", "Team Building"],
       bio: "Creating delightful user experiences with a focus on accessibility.",
       avatar: "/placeholder.svg"
     }
@@ -178,8 +179,7 @@ const MentorshipPage = () => {
                   Message
                 </Button>
                 <Button size="sm" variant="outline" className="flex-1">
-                  <BookOpen className="h-4 w-4 mr-1" />
-                  Book Session
+                  Request Session
                 </Button>
               </div>
             </CardContent>
