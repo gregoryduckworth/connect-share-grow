@@ -1,8 +1,10 @@
+
 import { Community } from '@/lib/types';
 import { USERS_DATA } from './users';
 
 export const COMMUNITIES_DATA: Community[] = [
   {
+    id: 'comm-photography-1',
     slug: 'photography-enthusiasts',
     name: 'Photography Enthusiasts',
     description:
@@ -16,6 +18,7 @@ export const COMMUNITIES_DATA: Community[] = [
     status: 'active',
   },
   {
+    id: 'comm-tech-2',
     slug: 'tech-discussions',
     name: 'Tech Discussions',
     description:
@@ -29,6 +32,7 @@ export const COMMUNITIES_DATA: Community[] = [
     status: 'active',
   },
   {
+    id: 'comm-fitness-3',
     slug: 'fitness-wellness',
     name: 'Fitness & Wellness',
     description:
@@ -42,6 +46,7 @@ export const COMMUNITIES_DATA: Community[] = [
     status: 'active',
   },
   {
+    id: 'comm-business-4',
     slug: 'entrepreneurs-united',
     name: 'Entrepreneurs United',
     description:

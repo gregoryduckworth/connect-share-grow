@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminAnalyticsFilters from '@/components/admin/AdminAnalyticsFilters';
 import AdminAnalyticsOverview from '@/components/admin/AdminAnalyticsOverview';
@@ -11,7 +11,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { useLoadingState } from '@/hooks/useLoadingState';
 import { useAdminFilters } from '@/hooks/useAdminFilters';
 import { communityService } from '@/lib/backend/services/communityService';
-import type { Community } from '@/lib/types';
+import type { Community, AnalyticsCommunity, PlatformStats, ActivityDataPoint, AnalyticsDataPoint } from '@/lib/types';
 
 const AdminAnalyticsPage = () => {
   const [communities, setCommunities] = useState<Community[]>([]);
@@ -35,6 +35,52 @@ const AdminAnalyticsPage = () => {
   });
 
   const [timeRange, setTimeRange] = useState('7d');
+  const [selectedCommunityData, setSelectedCommunityData] = useState<AnalyticsCommunity | undefined>();
+
+  // Mock data for analytics components
+  const platformStats: PlatformStats = {
+    totalUsers: 12453,
+    totalCommunities: communities.length,
+    totalPosts: 8967,
+    activeUsers: 3421,
+  };
+
+  const activityData: ActivityDataPoint[] = [
+    { name: 'Mon', posts: 120, users: 80 },
+    { name: 'Tue', posts: 95, users: 65 },
+    { name: 'Wed', posts: 140, users: 90 },
+    { name: 'Thu', posts: 110, users: 75 },
+    { name: 'Fri', posts: 165, users: 105 },
+    { name: 'Sat', posts: 85, users: 55 },
+    { name: 'Sun', posts: 75, users: 45 },
+  ];
+
+  const analyticsCommunitiesData: AnalyticsCommunity[] = communities.map((community, index) => ({
+    id: community.id || community.slug,
+    name: community.name,
+    members: community.memberCount,
+    posts: community.postCount,
+    activity: Math.floor(Math.random() * 100),
+    comments: Math.floor(Math.random() * 500),
+  }));
+
+  const topCommunities = analyticsCommunitiesData.slice(0, 10);
+
+  const chartData: AnalyticsDataPoint[] = [
+    { name: 'Technology', value: 400 },
+    { name: 'Creative Arts', value: 300 },
+    { name: 'Health & Fitness', value: 200 },
+    { name: 'Business', value: 150 },
+  ];
+
+  const communityGrowthData = analyticsCommunitiesData.map(community => ({
+    name: community.name,
+    members: community.members,
+    posts: community.posts,
+    comments: community.comments || 0,
+    activity: community.activity || 0,
+    engagementRate: `${Math.floor(Math.random() * 50 + 10)}%`,
+  }));
 
   useEffect(() => {
     const loadCommunities = async () => {
@@ -51,6 +97,11 @@ const AdminAnalyticsPage = () => {
 
     loadCommunities();
   }, [startLoading, stopLoading, setLoadingError]);
+
+  const handleCommunitySelect = (communityName: string) => {
+    const selected = analyticsCommunitiesData.find(c => c.name === communityName);
+    setSelectedCommunityData(selected);
+  };
 
   if (error) {
     return (
@@ -100,20 +151,26 @@ const AdminAnalyticsPage = () => {
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">
-              <AdminAnalyticsOverview timeRange={timeRange} />
+              <AdminAnalyticsOverview 
+                platformStats={platformStats}
+                activityData={activityData}
+              />
             </TabsContent>
 
             <TabsContent value="communities" className="space-y-4">
               <AdminAnalyticsCommunities 
-                communities={filteredCommunities}
-                timeRange={timeRange}
+                topCommunities={topCommunities}
+                filteredCommunities={analyticsCommunitiesData}
+                sortBy={sortBy}
+                selectedCommunityData={selectedCommunityData}
+                onCommunitySelect={handleCommunitySelect}
               />
             </TabsContent>
 
             <TabsContent value="engagement" className="space-y-4">
               <AdminAnalyticsEngagement 
-                communities={filteredCommunities}
-                timeRange={timeRange}
+                communityGrowthData={communityGrowthData}
+                chartData={chartData}
               />
             </TabsContent>
           </Tabs>

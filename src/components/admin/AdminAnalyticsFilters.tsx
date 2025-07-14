@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -45,7 +46,6 @@ const AdminAnalyticsFilters = ({
   onCommunitySearchChange,
 }: AdminAnalyticsFiltersProps) => {
   const [communities, setCommunities] = useState<Community[]>([]);
-  const [commandOpen, setCommandOpen] = useState(false);
   const [inputFocused, setInputFocused] = useState(false);
   const searchWrapperRef = React.useRef<HTMLDivElement>(null);
 
@@ -62,7 +62,7 @@ const AdminAnalyticsFilters = ({
     inputFocused && communitySearch.length >= 1 && filteredCommunities.length > 0;
 
   // Handle blur to close dropdown only if focus leaves the wrapper
-  function handleBlur(e: React.FocusEvent) {
+  function handleBlur() {
     setTimeout(() => {
       if (searchWrapperRef.current && !searchWrapperRef.current.contains(document.activeElement)) {
         setInputFocused(false);

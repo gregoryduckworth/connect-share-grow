@@ -1,3 +1,4 @@
+
 import { auditService, AuditAction } from './audit/auditService';
 import { logger } from '@/lib/logging/logger';
 
@@ -82,7 +83,9 @@ export const logAdminAction = (action: AdminAction) => {
 
   // Also log to the new audit service
   const auditAction = mapToAuditAction(action.action);
-  auditService.log(auditAction, action.targetType, action.targetId, action.details, {
+  // Fix: Use proper resource type instead of targetType string
+  const resourceType = mapToAuditResource(action.targetType);
+  auditService.log(auditAction, resourceType, action.targetId, action.details, {
     adminAction: true,
     originalAction: action.action,
   });
@@ -106,6 +109,19 @@ function mapToAuditAction(action: string): AuditAction {
   };
 
   return actionMap[action] || 'content_moderate';
+}
+
+// Map target type strings to audit resource types
+function mapToAuditResource(targetType: string) {
+  const resourceMap: Record<string, string> = {
+    community: 'community',
+    post: 'post',
+    user: 'user',
+    reply: 'reply',
+    report: 'report',
+  };
+
+  return resourceMap[targetType] || 'content';
 }
 
 // Initialize audit service with admin user context

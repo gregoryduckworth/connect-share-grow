@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/useAuth';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -36,7 +37,7 @@ const UserProfileDialog = ({
   const [requestMessage, setRequestMessage] = useState('');
   const [requestError, setRequestError] = useState('');
   const [user, setUser] = useState<User | undefined>(undefined);
-  const [loadingUser, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<
     'connected' | 'pending' | 'incoming' | 'none'
   >('none');
@@ -71,10 +72,10 @@ const UserProfileDialog = ({
   };
 
   useEffect(() => {
-    setLoading(true);
+    setIsLoading(true);
     userService.getUserById(userId).then((u) => {
       setUser(u);
-      setLoading(false);
+      setIsLoading(false);
     });
     refreshConnectionStatus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -155,7 +156,7 @@ const UserProfileDialog = ({
     await refreshConnectionStatus();
   };
 
-  if (loading) {
+  if (loading || isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent>

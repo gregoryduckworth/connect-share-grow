@@ -1,6 +1,7 @@
+
 import { Identifiable } from './base';
 
-export interface Report extends Identifiable {
+export interface ReportBase extends Identifiable {
   contentType: 'post' | 'reply' | 'user';
   contentId: string;
   contentPreview: string;
@@ -19,6 +20,10 @@ export interface Report extends Identifiable {
     parentPost?: string;
   };
   originalLink?: string;
+}
+
+export interface Report extends ReportBase {
+  // Additional properties specific to full Report if needed
 }
 
 export interface FlaggedReport extends Report {
