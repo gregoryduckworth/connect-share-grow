@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Heart, Users, BookOpen, Star, ArrowLeft } from "lucide-react";
+import { Heart, Users, Star, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const BecomeMentorPage = () => {
@@ -37,11 +37,11 @@ const BecomeMentorPage = () => {
 
   const languages = ["English", "Spanish", "French", "German", "Mandarin", "Japanese", "Other"];
 
-  const toggleItem = (item: string, field: keyof typeof formData) => {
+  const toggleItem = (item: string, field: 'skills' | 'mentorshipAreas' | 'languages') => {
     setFormData(prev => ({
       ...prev,
       [field]: prev[field].includes(item)
-        ? prev[field].filter(i => i !== item)
+        ? prev[field].filter((i: string) => i !== item)
         : [...prev[field], item]
     }));
   };
